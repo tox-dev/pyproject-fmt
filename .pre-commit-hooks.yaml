@@ -1,0 +1,7 @@
+-   id: pyproject-fmt
+    name: pyproject-fmt
+    description: apply a consistent format to `tox.ini` files
+    entry: pyproject-fmt
+    language: python
+    language_version: python3
+    files: '(^|/)tox\.ini$'

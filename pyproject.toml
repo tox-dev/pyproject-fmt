@@ -1,0 +1,75 @@
+[build-system]
+requires = ["hatchling>=0.14.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyproject-fmt"
+version = "0.1.0"
+description = "Format your pyproject.toml file"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.7"
+keywords = ["pyproject", "format"]
+authors = [{ name = "Bernat Gabor", email = "gaborjbernat@gmail.com" }]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+]
+dependencies = [ "tomlkit>=0.10.0"]
+
+[project.optional-dependencies]
+test = [
+  "covdefaults>=2",
+  "pytest>=7",
+  "pytest-cov>=3",
+]
+
+[project.urls]
+Documentation = "https://github.com/gaborbernat/pyproject-fmt/"
+"Source Code" = "https://github.com/gaborbernat/pyproject-fmt"
+"Bug Tracker" = "https://github.com/gaborbernat/pyproject-fmt/issues"
+
+[project.scripts]
+pyproject-fmt = "pyproject_fmt.__main__:run"
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests"]
+
+[tool.isort]
+profile = "black"
+known_first_party = ["helpers", "package_info"]
+
+[tool.black]
+skip-magic-trailing-comma = true
+line-length = 120
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+plugins = ["covdefaults"]
+parallel = true
+
+[tool.coverage.paths]
+source = ["src", ".tox/*/lib/python*/site-packages", "*/src"]
+
+[tool.coverage.report]
+fail_under = 99
+
+[tool.coverage.html]
+show_contexts = true
+skip_covered = false
+
+[tool.mypy]
+strict = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["comdb2.*", "localnode.*", 'bloomberg.guts.api.*']
+ignore_missing_imports = true
