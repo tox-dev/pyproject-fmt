@@ -11,6 +11,7 @@ class PyProjectFmtNamespace(Namespace):
 
     pyproject_toml: Path
     stdout: bool
+    indent = 2
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:
@@ -45,6 +46,5 @@ def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
         action="store_true",
         help="print the formatted text to the stdout (instead of update in-place)",
     )
-
     parser.add_argument("pyproject_toml", type=pyproject_toml_path_creator, help="tox ini file to format")
     return parser.parse_args(namespace=PyProjectFmtNamespace(), args=args)

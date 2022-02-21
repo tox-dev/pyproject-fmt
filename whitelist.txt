@@ -1,5 +1,6 @@
 capsys
 chdir
+dedent
 difflib
 envs
 finditer
@@ -8,13 +9,16 @@ formatter
 fromfile
 iread
 iwrite
+multiline
 pathlib
 pyproject
 raws
 readouterr
 req
 skipif
+textwrap
 tmp
 tofile
 toml
 tomlkit
+util

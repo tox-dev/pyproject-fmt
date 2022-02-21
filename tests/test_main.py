@@ -55,15 +55,15 @@ def no_color(diff: Any) -> Any:
     ("start", "outcome", "output"),
     [
         (
-            '[build-system]\nrequires = ["hatchling>=0.14"]',
-            '[build-system]\nrequires = ["hatchling>=0.14"]',
+            '[build-system]\nrequires = [\n  "hatchling>=0.14",\n]\n',
+            '[build-system]\nrequires = [\n  "hatchling>=0.14",\n]\n',
             "no change for {0}\n",
         ),
         (
             '[build-system]\nrequires = ["hatchling>=0.14.0"]',
-            '[build-system]\nrequires = ["hatchling>=0.14"]',
-            "--- {0}\n\n+++ {0}\n\n@@ -1,2 +1,2 @@\n\n"
-            ' [build-system]\n-requires = ["hatchling>=0.14.0"]\n+requires = ["hatchling>=0.14"]\n',
+            '[build-system]\nrequires = [\n  "hatchling>=0.14",\n]\n',
+            "--- {0}\n\n+++ {0}\n\n@@ -1,2 +1,4 @@\n\n [build-system]\n-requires = "
+            '["hatchling>=0.14.0"]\n+requires = [\n+  "hatchling>=0.14",\n+]\n',
         ),
     ],
 )
