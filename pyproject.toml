@@ -1,10 +1,9 @@
 [build-system]
-requires = ["hatchling>=0.14.0"]
+requires = ["hatchling>=0.14",  "hatch-vcs>=0.1"]
 build-backend = "hatchling.build"
 
 [project]
 name = "pyproject-fmt"
-version = "0.1.0"
 description = "Format your pyproject.toml file"
 readme = "README.md"
 license = "MIT"
@@ -22,6 +21,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
 ]
 dependencies = [ "tomlkit>=0.10.0"]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
@@ -29,6 +29,12 @@ test = [
   "pytest>=7",
   "pytest-cov>=3",
 ]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/pyproject_fmt/_version.py"
 
 [project.urls]
 Documentation = "https://github.com/gaborbernat/pyproject-fmt/"

@@ -4,4 +4,4 @@
 __pycache__
 **.pyc
 dist
-/src/pyproject_fmt/version.py
+/src/pyproject_fmt/_version.py
