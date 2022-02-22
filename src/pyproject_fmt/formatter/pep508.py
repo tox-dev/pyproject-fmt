@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import re
 
+from tomlkit.items import Array, String
+
+from .util import ArrayEntries, sorted_array
+
 BASE_NAME_REGEX = re.compile(r"[^!=><~\s@]+")
 REQ_REGEX = re.compile(r"(===|==|!=|~=|>=?|<=?|@)\s*([^,]+)")
 
@@ -39,4 +43,21 @@ def _req_base(lib: str) -> str:
     return match.group(0)
 
 
-__all__ = ["normalize_requires", "normalize_req"]
+def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
+    if requires_array is None:
+        return
+    # first normalize values
+    for at in range(len(requires_array)):
+        normalized = String.from_raw(normalize_req(str(requires_array[at])))
+        requires_array[at] = normalized
+    # then sort
+    sorted_array(requires_array, indent, key=_get_pkg_name)
+
+
+def _get_pkg_name(entry: ArrayEntries) -> str:
+    match = BASE_NAME_REGEX.match(entry.text)
+    assert match is not None
+    return match.group(0)
+
+
+__all__ = ["normalize_requires", "normalize_req", "normalize_pep508_array"]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from pyproject_fmt.formatter.requires import normalize_req, normalize_requires
+from pyproject_fmt.formatter.pep508 import normalize_req, normalize_requires
 
 
 @pytest.mark.parametrize(
