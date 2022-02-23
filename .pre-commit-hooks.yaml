@@ -4,4 +4,4 @@
     entry: pyproject-fmt
     language: python
     language_version: python3
-    files: '(^|/)tox\.ini$'
+    files: '(^|/)pyproject\.toml$'
