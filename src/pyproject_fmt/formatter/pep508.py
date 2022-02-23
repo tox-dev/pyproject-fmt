@@ -10,19 +10,11 @@ BASE_NAME_REGEX = re.compile(r"[^!=><~\s@]+")
 REQ_REGEX = re.compile(r"(===|==|!=|~=|>=?|<=?|@)\s*([^,]+)")
 
 
-def normalize_requires(raws: list[str]) -> list[str]:
-    values = (normalize_req(req) for req in raws if req)
-    normalized = sorted(values, key=lambda req: (";" in req, _req_base(req), req))
-    return normalized
-
-
-def normalize_req(req: str) -> str:
-    lib, _, envs = req.partition(";")
-    normalized = _normalize_lib(lib)
-    envs = envs.strip()
-    if not envs:
-        return normalized
-    return f"{normalized};{envs}"
+def _req_base(lib: str) -> str:
+    match = re.match(BASE_NAME_REGEX, lib)
+    if match is None:
+        raise ValueError(repr(lib))
+    return match.group(0)
 
 
 def _normalize_lib(lib: str) -> str:
@@ -36,10 +28,24 @@ def _normalize_lib(lib: str) -> str:
     return f"{base}{','.join(values)}"
 
 
-def _req_base(lib: str) -> str:
-    match = re.match(BASE_NAME_REGEX, lib)
-    if match is None:
-        raise ValueError(repr(lib))
+def normalize_req(req: str) -> str:
+    lib, _, envs = req.partition(";")
+    normalized = _normalize_lib(lib)
+    envs = envs.strip()
+    if not envs:
+        return normalized
+    return f"{normalized};{envs}"
+
+
+def normalize_requires(raws: list[str]) -> list[str]:
+    values = (normalize_req(req) for req in raws if req)
+    normalized = sorted(values, key=lambda req: (";" in req, _req_base(req), req))
+    return normalized
+
+
+def _get_pkg_name(entry: ArrayEntries) -> str:
+    match = BASE_NAME_REGEX.match(entry.text)
+    assert match is not None
     return match.group(0)
 
 
@@ -52,12 +58,6 @@ def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
         requires_array[at] = normalized
     # then sort
     sorted_array(requires_array, indent, key=_get_pkg_name)
-
-
-def _get_pkg_name(entry: ArrayEntries) -> str:
-    match = BASE_NAME_REGEX.match(entry.text)
-    assert match is not None
-    return match.group(0)
 
 
 __all__ = ["normalize_requires", "normalize_req", "normalize_pep508_array"]
