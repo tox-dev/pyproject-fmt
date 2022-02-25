@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from tomlkit.api import string as toml_string
 from tomlkit.items import Array, String
 
 from .util import ArrayEntries, sorted_array
@@ -49,12 +50,30 @@ def _get_pkg_name(entry: ArrayEntries) -> str:
     return match.group(0)
 
 
+def _best_effort_string_repr(req: str) -> String:
+    """
+    Convert requirement to a TOML string, choosing the most appropriate
+    representation (basic or literal).
+
+    This function will attempt to use literal strings to avoid escaping
+    double-quotes ("), if the requirement value allows it, e.g. it does not
+    contain other reserved characters such as single quotes (') or newlines (\\n).
+
+    This is similar to black's approach (if the string contains double quotes,
+    black uses single quotes as delimiter).
+    """
+    try:
+        return toml_string(req, literal=('"' in req))
+    except ValueError:
+        return toml_string(req)
+
+
 def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
     if requires_array is None:
         return
     # first normalize values
     for at in range(len(requires_array)):
-        normalized = String.from_raw(normalize_req(str(requires_array[at])))
+        normalized = _best_effort_string_repr(normalize_req(str(requires_array[at])))
         requires_array[at] = normalized
     # then sort
     sorted_array(requires_array, indent, key=_get_pkg_name)
