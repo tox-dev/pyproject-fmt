@@ -8,6 +8,7 @@ from .util import ArrayEntries, sorted_array
 
 BASE_NAME_REGEX = re.compile(r"[^!=><~\s@]+")
 REQ_REGEX = re.compile(r"(===|==|!=|~=|>=?|<=?|@)\s*([^,]+)")
+SINGLE_QUOTE_REGEX = re.compile(r"'([^']*)'")
 
 
 def _req_base(lib: str) -> str:
@@ -34,6 +35,9 @@ def normalize_req(req: str) -> str:
     envs = envs.strip()
     if not envs:
         return normalized
+    # Inspired by `packaging`, let's make all contained strings double-quoted.
+    # This avoids the having mixed quotes inside the same requirement
+    envs = SINGLE_QUOTE_REGEX.sub(r'"\1"', envs)
     return f"{normalized};{envs}"
 
 
