@@ -14,6 +14,24 @@ def test_project_dependencies(fmt: Fmt) -> None:
     fmt(fmt_project, start, expected)
 
 
+def test_project_dependencies_with_double_quotes(fmt: Fmt) -> None:
+    start = """
+    [project]
+    dependencies = [
+        'packaging>=20.0;python_version>"3.4"',
+        "appdirs"
+    ]
+    """
+    expected = """
+    [project]
+    dependencies = [
+      "appdirs",
+      'packaging>=20;python_version>"3.4"',
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
 def test_project_description(fmt: Fmt) -> None:
     start = '[project]\ndescription=" Magical stuff\t"'
     expected = '[project]\ndescription="Magical stuff"\n'
