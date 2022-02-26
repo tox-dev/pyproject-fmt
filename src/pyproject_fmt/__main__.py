@@ -25,14 +25,14 @@ def color_diff(diff: Iterable[str]) -> Iterable[str]:
 
 def run(args: Sequence[str] | None = None) -> int:
     opts = cli_args(sys.argv[1:] if args is None else args)
-    formatted = format_pyproject(opts)
     toml = opts.pyproject_toml
-    before = toml.read_text()
+    before = toml.read_text(encoding="utf-8")
+    formatted = format_pyproject(before, opts.format_options)
     changed = before != formatted
     if opts.stdout:  # stdout just prints new format to stdout
         print(formatted, end="")
     else:
-        toml.write_text(formatted)
+        toml.write_text(formatted, encoding="utf-8")
         try:
             name = str(toml.relative_to(Path.cwd()))
         except ValueError:

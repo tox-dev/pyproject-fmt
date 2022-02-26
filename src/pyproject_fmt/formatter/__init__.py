@@ -13,8 +13,7 @@ def _perform(parsed: TOMLDocument, opts: PyProjectFmtNamespace) -> None:
     fmt_project(parsed, opts)
 
 
-def format_pyproject(opts: PyProjectFmtNamespace) -> str:
-    text = opts.pyproject_toml.read_text()
+def format_pyproject(text: str, opts: PyProjectFmtNamespace) -> str:
     parsed: TOMLDocument = parse(text)
     _perform(parsed, opts)
     result = parsed.as_string().rstrip("\n")

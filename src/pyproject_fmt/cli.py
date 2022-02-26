@@ -7,11 +7,22 @@ from typing import Sequence
 
 
 class PyProjectFmtNamespace(Namespace):
+    """Options for the pyproject_fmt library"""
+
+    indent = 2
+    """Number of indentation spaces used for formatting"""
+
+
+class PyProjectFmtCliNamespace(Namespace):
     """Options for pyproject-fmt tool"""
 
     pyproject_toml: Path
     stdout: bool
     indent = 2
+
+    @property
+    def format_options(self) -> PyProjectFmtNamespace:
+        return PyProjectFmtNamespace(indent=self.indent)
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:
@@ -40,7 +51,7 @@ def _build_cli() -> ArgumentParser:
     return parser
 
 
-def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
+def cli_args(args: Sequence[str]) -> PyProjectFmtCliNamespace:
     """
     Load the tools options.
 
@@ -48,7 +59,7 @@ def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
     :return: the parsed options
     """
     parser = _build_cli()
-    return parser.parse_args(namespace=PyProjectFmtNamespace(), args=args)
+    return parser.parse_args(namespace=PyProjectFmtCliNamespace(), args=args)
 
 
 __all__ = [
