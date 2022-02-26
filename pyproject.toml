@@ -19,6 +19,7 @@ dependencies = [
 ]
 optional-dependencies.test = [
   "covdefaults>=2",
+  "packaging>=21.3",
   "pytest>=7",
   "pytest-cov>=3",
   "pytest-mock>=3.7",
