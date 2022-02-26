@@ -7,7 +7,7 @@ from typing import Sequence
 
 
 class PyProjectFmtNamespace(Namespace):
-    """Options for the pyproject_fmt library"""
+    """Options for the ``pyproject_fmt`` library"""
 
     indent = 2
     """Number of indentation spaces used for formatting"""
