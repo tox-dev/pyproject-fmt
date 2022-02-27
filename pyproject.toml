@@ -23,6 +23,13 @@ optional-dependencies.test = [
   "pytest-cov>=3",
   "pytest-mock>=3.7",
 ]
+optional-dependencies.docs = [
+  "furo>=2022.1.2b11",
+  "sphinx>=4.4",
+  "sphinx-argparse-cli>=1.8",
+  "sphinx-autodoc-typehints>=1.17",
+  "sphinx-copybutton>=0.5",
+]
 scripts.pyproject-fmt = "pyproject_fmt.__main__:run"
 dynamic = ["version"]
 classifiers = [
@@ -48,7 +55,6 @@ profile = "black"
 
 [tool.black]
 line-length = 120
-skip-magic-trailing-comma = true
 
 [tool.pytest]
 ini_options.testpaths = ["tests"]

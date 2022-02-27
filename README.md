@@ -7,29 +7,5 @@
 [![PyPI - License](https://img.shields.io/pypi/l/pyproject-fmt?style=flat-square)](https://opensource.org/licenses/MIT)
 ![check](https://github.com/gaborbernat/pyproject-fmt/workflows/check/badge.svg?branch=main)
 
-apply a consistent format to `pyproject.toml` files
-
-## installation
-
-`pip install pyproject-fmt`
-
-## as a pre-commit hook
-
-See [pre-commit](https://github.com/pre-commit/pre-commit) for instructions
-
-Sample `.pre-commit-config.yaml`:
-
-```yaml
-- repo: https://github.com/gaborbernat/pyproject-fmt
-  rev: "0.1.0"
-  hooks:
-    - id: pyproject-fmt
-```
-
-## cli
-
-Consult the help for the latest usage:
-
-```console
-$ pyproject-fmt --help
-```
+Apply a consistent format to `pyproject.toml` files.
+[Read the full documentation here](https://pyproject-fmt.readthedocs.io/en/latest/).

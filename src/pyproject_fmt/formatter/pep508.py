@@ -60,4 +60,8 @@ def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
     sorted_array(requires_array, indent, key=_get_pkg_name)
 
 
-__all__ = ["normalize_requires", "normalize_req", "normalize_pep508_array"]
+__all__ = [
+    "normalize_requires",
+    "normalize_req",
+    "normalize_pep508_array",
+]

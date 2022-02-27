@@ -79,4 +79,8 @@ def sorted_array(
     body.append(Whitespace("\n"))
 
 
-__all__ = ["ArrayEntries", "sorted_array", "order_keys"]
+__all__ = [
+    "ArrayEntries",
+    "sorted_array",
+    "order_keys",
+]

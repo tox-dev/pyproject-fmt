@@ -21,4 +21,6 @@ def format_pyproject(opts: PyProjectFmtNamespace) -> str:
     return f"{result}\n"
 
 
-__all__ = ["format_pyproject"]
+__all__ = [
+    "format_pyproject",
+]
