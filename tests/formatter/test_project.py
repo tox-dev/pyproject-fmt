@@ -37,6 +37,7 @@ def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
     [project]
     dependencies = [
         "packaging>=20.0;python_version>\\"3.4\\" and python_version != '3.5'",
+        "foobar@ git+https://weird-vcs/w/index.php?param=org'repo ; python_version == '2.7'",
         "appdirs"
     ]
     """
@@ -44,6 +45,7 @@ def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
     [project]
     dependencies = [
       "appdirs",
+      "foobar@ git+https://weird-vcs/w/index.php?param=org'repo ; python_version == \\"2.7\\"",
       'packaging>=20; python_version > "3.4" and python_version != "3.5"',
     ]
     """
