@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from packaging.requirements import Requirement
 from tomlkit.api import string as toml_string
 from tomlkit.items import Array, String
 
@@ -30,12 +31,9 @@ def _normalize_lib(lib: str) -> str:
 
 
 def normalize_req(req: str) -> str:
-    lib, _, envs = req.partition(";")
+    lib, sep, envs = req.partition(";")
     normalized = _normalize_lib(lib)
-    envs = envs.strip()
-    if not envs:
-        return normalized
-    return f"{normalized};{envs}"
+    return str(Requirement(f"{normalized}{sep}{envs}"))
 
 
 def normalize_requires(raws: list[str]) -> list[str]:
