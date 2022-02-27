@@ -12,33 +12,19 @@ BASE_NAME_REGEX = re.compile(r"[^!=><~\s@]+")
 REQ_REGEX = re.compile(r"(===|==|!=|~=|>=?|<=?|@)\s*([^,]+)")
 
 
-def _req_base(lib: str) -> str:
-    match = re.match(BASE_NAME_REGEX, lib)
-    if match is None:
-        raise ValueError(repr(lib))
-    return match.group(0)
-
-
-def _normalize_lib(lib: str) -> str:
-    base = _req_base(lib)
-    values = sorted(
-        (f"{m.group(1)}{m.group(2)}" for m in REQ_REGEX.finditer(lib)), key=lambda c: ("<" in c, ">" in "c", c)
-    )
+def normalize_req(req: str) -> str:
+    parsed = Requirement(req)
+    orig_specifiers = str(parsed.specifier)
+    values = [f"{m.group(1)}{m.group(2)}" for m in REQ_REGEX.finditer(orig_specifiers)]
     if values:  # strip .0 version
         while values[0].endswith(".0") and (values[0].startswith(">=") or values[0].startswith("==")):
             values[0] = values[0][:-2]
-    return f"{base}{','.join(values)}"
-
-
-def normalize_req(req: str) -> str:
-    lib, sep, envs = req.partition(";")
-    normalized = _normalize_lib(lib)
-    return str(Requirement(f"{normalized}{sep}{envs}"))
+    return str(parsed).replace(orig_specifiers, ",".join(values))
 
 
 def normalize_requires(raws: list[str]) -> list[str]:
     values = (normalize_req(req) for req in raws if req)
-    normalized = sorted(values, key=lambda req: (";" in req, _req_base(req), req))
+    normalized = sorted(values, key=lambda req: (";" in req, Requirement(req).name, req))
     return normalized
 
 
