@@ -18,4 +18,6 @@ def fmt_build_system(parsed: TOMLDocument, opts: PyProjectFmtNamespace) -> None:
         order_keys(system.value.body, ("build-backend", "requires", "backend-path"))
 
 
-__all__ = ["fmt_build_system"]
+__all__ = [
+    "fmt_build_system",
+]

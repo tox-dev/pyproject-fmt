@@ -75,4 +75,6 @@ def fmt_project(parsed: TOMLDocument, opts: PyProjectFmtNamespace) -> None:
     )
 
 
-__all__ = ["fmt_project"]
+__all__ = [
+    "fmt_project",
+]

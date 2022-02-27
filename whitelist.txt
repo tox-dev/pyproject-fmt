@@ -1,3 +1,5 @@
+autoclass
+autodoc
 capsys
 chdir
 dedent
@@ -5,16 +7,20 @@ deps
 difflib
 dunder
 envs
+extlinks
 finditer
 fmt
 formatter
 fromfile
 func
+intersphinx
 iread
 iwrite
+nitpicky
 pathlib
 pep508
 py38
+pygments
 pyproject
 raws
 readouterr
@@ -26,4 +32,5 @@ tmp
 tofile
 toml
 tomlkit
+typehints
 util

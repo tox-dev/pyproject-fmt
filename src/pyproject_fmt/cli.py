@@ -32,6 +32,14 @@ def pyproject_toml_path_creator(argument: str) -> Path:
     return path
 
 
+def _build_cli() -> ArgumentParser:
+    parser = ArgumentParser()
+    msg = "print the formatted text to the stdout (instead of update in-place)"
+    parser.add_argument("-s", "--stdout", action="store_true", help=msg)
+    parser.add_argument("pyproject_toml", type=pyproject_toml_path_creator, help="tox ini file to format")
+    return parser
+
+
 def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
     """
     Load the tools options.
@@ -39,12 +47,11 @@ def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
     :param args: CLI arguments
     :return: the parsed options
     """
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-s",
-        "--stdout",
-        action="store_true",
-        help="print the formatted text to the stdout (instead of update in-place)",
-    )
-    parser.add_argument("pyproject_toml", type=pyproject_toml_path_creator, help="tox ini file to format")
+    parser = _build_cli()
     return parser.parse_args(namespace=PyProjectFmtNamespace(), args=args)
+
+
+__all__ = [
+    "cli_args",
+    "PyProjectFmtNamespace",
+]
