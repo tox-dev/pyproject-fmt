@@ -41,3 +41,11 @@ Command line interface
 
    self
    changelog
+
+Python API
+----------
+
+.. autofunction:: pyproject_fmt::format_pyproject
+
+.. autoclass:: pyproject_fmt::PyProjectFmtNamespace
+   :members:
