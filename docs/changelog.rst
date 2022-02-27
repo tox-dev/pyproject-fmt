@@ -1,8 +1,8 @@
 changelog
 =========
 
-NEXT
-----
+v0.3.0 (2022-02-27)
+-------------------
 * Handle ``project`` section in first iteration - by :user:`gaborbernat`.
 * Add documentation build to the project - by :user:`gaborbernat`.
 * Add a programmatic API as :meth:`format_pyproject <pyproject_fmt.format_pyproject>` - by :user:`gaborbernat`.
