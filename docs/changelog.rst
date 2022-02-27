@@ -1,6 +1,11 @@
 changelog
 =========
 
+v0.3.1 (2022-02-27)
+-------------------
+* Better handling of PEP-508 dependencies by using the ``packaging`` module instead of the our own parsing logic - by
+  :user:`abravalheri`.
+
 v0.3.0 (2022-02-27)
 -------------------
 * Handle ``project`` section in first iteration - by :user:`gaborbernat`.
