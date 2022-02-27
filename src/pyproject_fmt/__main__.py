@@ -27,7 +27,7 @@ def run(args: Sequence[str] | None = None) -> int:
     opts = cli_args(sys.argv[1:] if args is None else args)
     toml = opts.pyproject_toml
     before = toml.read_text(encoding="utf-8")
-    formatted = format_pyproject(before, opts.format_options)
+    formatted = format_pyproject(before, opts)
     changed = before != formatted
     if opts.stdout:  # stdout just prints new format to stdout
         print(formatted, end="")

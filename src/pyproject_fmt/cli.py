@@ -13,16 +13,11 @@ class PyProjectFmtNamespace(Namespace):
     """Number of indentation spaces used for formatting"""
 
 
-class PyProjectFmtCliNamespace(Namespace):
+class PyProjectFmtCliNamespace(PyProjectFmtNamespace):
     """Options for pyproject-fmt tool"""
 
     pyproject_toml: Path
     stdout: bool
-    indent = 2
-
-    @property
-    def format_options(self) -> PyProjectFmtNamespace:
-        return PyProjectFmtNamespace(indent=self.indent)
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:
