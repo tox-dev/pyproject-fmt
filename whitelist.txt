@@ -2,6 +2,7 @@ autoclass
 autodoc
 capsys
 chdir
+conf
 dedent
 deps
 difflib

@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 import os
-from argparse import ArgumentParser, ArgumentTypeError, Namespace
+from argparse import (
+    ArgumentDefaultsHelpFormatter,
+    ArgumentParser,
+    ArgumentTypeError,
+    Namespace,
+)
 from pathlib import Path
 from typing import Sequence
+
+from pyproject_fmt.formatter.config import DEFAULT_INDENT, Config
 
 
 class PyProjectFmtNamespace(Namespace):
@@ -11,7 +18,14 @@ class PyProjectFmtNamespace(Namespace):
 
     pyproject_toml: Path
     stdout: bool
-    indent = 2
+    indent: int
+
+    @property
+    def as_config(self) -> Config:
+        return Config(
+            toml=self.pyproject_toml.read_text(encoding="utf-8"),
+            indent=self.indent,
+        )
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:
@@ -33,9 +47,10 @@ def pyproject_toml_path_creator(argument: str) -> Path:
 
 
 def _build_cli() -> ArgumentParser:
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     msg = "print the formatted text to the stdout (instead of update in-place)"
     parser.add_argument("-s", "--stdout", action="store_true", help=msg)
+    parser.add_argument("--indent", type=int, default=DEFAULT_INDENT, help="number of spaces to indent")
     parser.add_argument("pyproject_toml", type=pyproject_toml_path_creator, help="tox ini file to format")
     return parser
 

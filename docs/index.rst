@@ -36,6 +36,12 @@ Command line interface
   :prog: pyproject-fmt
   :title:
 
+API
+---
+
+.. automodule:: pyproject_fmt
+   :members:
+
 .. toctree::
    :hidden:
 
