@@ -1,25 +1,21 @@
 from __future__ import annotations
 
-import re
-
 from packaging.requirements import Requirement
 from tomlkit.api import string as toml_string
 from tomlkit.items import Array, String
 
-from .util import ArrayEntries, sorted_array
-
-BASE_NAME_REGEX = re.compile(r"[^!=><~\s@]+")
-REQ_REGEX = re.compile(r"(===|==|!=|~=|>=?|<=?|@)\s*([^,]+)")
+from .util import sorted_array
 
 
 def normalize_req(req: str) -> str:
     parsed = Requirement(req)
-    orig_specifiers = str(parsed.specifier)
-    values = [f"{m.group(1)}{m.group(2)}" for m in REQ_REGEX.finditer(orig_specifiers)]
-    if values:  # strip .0 version
-        while values[0].endswith(".0") and (values[0].startswith(">=") or values[0].startswith("==")):
-            values[0] = values[0][:-2]
-    return str(parsed).replace(orig_specifiers, ",".join(values))
+    for spec in parsed.specifier:
+        if spec.operator in (">=", "=="):
+            version = spec.version
+            while version.endswith(".0"):
+                version = version[:-2]
+            spec._spec = (spec._spec[0], version)
+    return str(parsed)
 
 
 def normalize_requires(raws: list[str]) -> list[str]:
@@ -28,24 +24,10 @@ def normalize_requires(raws: list[str]) -> list[str]:
     return normalized
 
 
-def _get_pkg_name(entry: ArrayEntries) -> str:
-    match = BASE_NAME_REGEX.match(entry.text)
-    assert match is not None
-    return match.group(0)
-
-
 def _best_effort_string_repr(req: str) -> String:
-    """
-    Convert requirement to a TOML string, choosing the most appropriate
-    representation (basic or literal).
-
-    This function will attempt to use literal strings to avoid escaping
-    double-quotes ("), if the requirement value allows it, e.g. it does not
-    contain other reserved characters such as single quotes (') or newlines (\\n).
-
-    This is similar to black's approach (if the string contains double quotes,
-    black uses single quotes as delimiter).
-    """
+    # Convert requirement to a TOML string, choosing the most appropriate representation (basic or literal).
+    # This function will attempt to use literal strings to avoid escaping double-quotes ("), if the requirement value
+    # allows it, e.g. it does not contain other reserved characters such as single quotes (') or newlines (\\n).
     try:
         return toml_string(req, literal=('"' in req))
     except ValueError:
@@ -60,7 +42,7 @@ def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
         normalized = _best_effort_string_repr(normalize_req(str(requires_array[at])))
         requires_array[at] = normalized
     # then sort
-    sorted_array(requires_array, indent, key=_get_pkg_name)
+    sorted_array(requires_array, indent, key=lambda e: Requirement(e.text).name.lower())
 
 
 __all__ = [
