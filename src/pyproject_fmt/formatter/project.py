@@ -5,12 +5,12 @@ from typing import Optional, cast
 from tomlkit.items import Array, String, Table
 from tomlkit.toml_document import TOMLDocument
 
-from ..cli import PyProjectFmtNamespace
+from .config import Config
 from .pep508 import normalize_pep508_array
 from .util import order_keys, sorted_array
 
 
-def fmt_project(parsed: TOMLDocument, opts: PyProjectFmtNamespace) -> None:
+def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     project = cast(Optional[Table], parsed.get("project"))
     if project is None:
         return
@@ -22,14 +22,14 @@ def fmt_project(parsed: TOMLDocument, opts: PyProjectFmtNamespace) -> None:
     if "description" in project:
         project["description"] = String.from_raw(str(project["description"]).strip())
 
-    sorted_array(cast(Optional[Array], project.get("keywords")), indent=opts.indent)
-    sorted_array(cast(Optional[Array], project.get("dynamic")), indent=opts.indent)
+    sorted_array(cast(Optional[Array], project.get("keywords")), indent=conf.indent)
+    sorted_array(cast(Optional[Array], project.get("dynamic")), indent=conf.indent)
 
-    normalize_pep508_array(cast(Optional[Array], project.get("dependencies")), opts.indent)
+    normalize_pep508_array(cast(Optional[Array], project.get("dependencies")), conf.indent)
     if "optional-dependencies" in project:
         opt_deps = cast(Table, project["optional-dependencies"])
         for value in opt_deps.values():
-            normalize_pep508_array(cast(Array, value), opts.indent)
+            normalize_pep508_array(cast(Array, value), conf.indent)
         order_keys(opt_deps.value.body, (), sort_key=lambda k: k[0])
 
     for of_type in ("scripts", "gui-scripts", "entry-points", "urls"):
