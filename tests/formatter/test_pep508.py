@@ -18,11 +18,17 @@ from pyproject_fmt.formatter.pep508 import normalize_req, normalize_requires
         (
             'packaging>=20.0;python_version>"3.4"\n'
             "xonsh>=0.9.16;python_version > '3.4' and python_version != '3.9'\n"
-            "pytest-xdist>=1.31.0\n",
+            "pytest-xdist>=1.31.0\n"
+            "foo@http://foo.com\n"
+            "bar [fred,al] @ http://bat.com ;python_version=='2.7'\n"
+            "baz [quux, strange];python_version<\"2.7\" and platform_version=='2'\n",
             [
+                "foo@ http://foo.com",
                 "pytest-xdist>=1.31",
-                'packaging>=20;python_version>"3.4"',
-                "xonsh>=0.9.16;python_version > '3.4' and python_version != '3.9'",
+                'bar[al,fred]@ http://bat.com ; python_version == "2.7"',
+                'baz[quux,strange]; python_version < "2.7" and platform_version == "2"',
+                'packaging>=20; python_version > "3.4"',
+                'xonsh>=0.9.16; python_version > "3.4" and python_version != "3.9"',
             ],
         ),
         ("pytest>=6.0.0", ["pytest>=6"]),

@@ -14,6 +14,7 @@ urls."Source Code" = "https://github.com/gaborbernat/pyproject-fmt"
 authors = [{ name = "Bernat Gabor", email = "gaborjbernat@gmail.com" }]
 requires-python = ">=3.7"
 dependencies = [
+  "packaging>=21.3",
   "tomlkit>=0.10",
   'typing-extensions>=3.10;python_version<"3.8"',
 ]
