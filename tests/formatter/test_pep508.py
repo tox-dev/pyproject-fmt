@@ -21,8 +21,8 @@ from pyproject_fmt.formatter.pep508 import normalize_req, normalize_requires
             "pytest-xdist>=1.31.0\n",
             [
                 "pytest-xdist>=1.31",
-                'packaging>=20;python_version>"3.4"',
-                "xonsh>=0.9.16;python_version > '3.4' and python_version != '3.9'",
+                'packaging>=20; python_version > "3.4"',
+                'xonsh>=0.9.16; python_version > "3.4" and python_version != "3.9"',
             ],
         ),
         ("pytest>=6.0.0", ["pytest>=6"]),

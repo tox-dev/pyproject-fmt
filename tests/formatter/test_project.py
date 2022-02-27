@@ -26,7 +26,7 @@ def test_project_dependencies_with_double_quotes(fmt: Fmt) -> None:
     [project]
     dependencies = [
       "appdirs",
-      'packaging>=20;python_version>"3.4"',
+      'packaging>=20; python_version > "3.4"',
     ]
     """
     fmt(fmt_project, start, expected)
@@ -44,7 +44,7 @@ def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
     [project]
     dependencies = [
       "appdirs",
-      "packaging>=20;python_version>\\"3.4\\" and python_version != '3.5'",
+      'packaging>=20; python_version > "3.4" and python_version != "3.5"',
     ]
     """
     fmt(fmt_project, start, expected)
