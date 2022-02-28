@@ -30,18 +30,18 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
         opt_deps = cast(Table, project["optional-dependencies"])
         for value in opt_deps.values():
             normalize_pep508_array(cast(Array, value), conf.indent)
-        order_keys(opt_deps.value.body, (), sort_key=lambda k: k[0])
+        order_keys(opt_deps, (), sort_key=lambda k: k[0])
 
     for of_type in ("scripts", "gui-scripts", "entry-points", "urls"):
         if of_type in project:
             table = cast(Table, project[of_type])
-            order_keys(table.value.body, (), sort_key=lambda k: k[0])
+            order_keys(table, (), sort_key=lambda k: k[0])
 
     if "entry-points" in project:  # order entry points sub-table
         entry_points = cast(Table, project["entry-points"])
-        order_keys(entry_points.value.body, (), sort_key=lambda k: k[0])
+        order_keys(entry_points, (), sort_key=lambda k: k[0])
         for entry_point in entry_points.values():
-            order_keys(entry_point.value.body, (), sort_key=lambda k: k[0])
+            order_keys(entry_point, (), sort_key=lambda k: k[0])
 
     # license: Optional[Union[str, LicenseTableLegacy]]
     # license_files: Optional[LicenseFilesTable] = Field(alias="license-files")
@@ -51,7 +51,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     # handle readme table
 
     order_keys(
-        project.value.body,
+        project,
         (
             "name",
             "version",

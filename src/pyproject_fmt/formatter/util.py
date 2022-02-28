@@ -4,7 +4,17 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
-from tomlkit.items import Array, Comment, Item, Key, String, Trivia, Whitespace
+from tomlkit.items import (
+    AbstractTable,
+    Array,
+    Comment,
+    Item,
+    Key,
+    String,
+    Table,
+    Trivia,
+    Whitespace,
+)
 
 if sys.version_info >= (3, 8):  # pragma: no cover (py38+)
     from typing import Protocol
@@ -23,10 +33,11 @@ class SupportsDunderGT(Protocol):
 
 
 def order_keys(
-    body: list[tuple[Key | None, Item]],
+    table: AbstractTable,
     to_pin: Sequence[str] | None = None,
     sort_key: None | Callable[[tuple[str, tuple[Key, Item]]], SupportsDunderLT | SupportsDunderGT] = None,
 ) -> None:
+    body = table.value.body
     entries = {i.key: (i, v) for (i, v) in body if isinstance(i, Key)}
     body.clear()
 
@@ -39,7 +50,9 @@ def order_keys(
         body.extend(entries.values())
     else:
         body.extend(v for k, v in sorted(entries.items(), key=sort_key))
-    body.append((None, Whitespace("\n")))  # add trailing newline to separate
+
+    if isinstance(table, Table):
+        body.append((None, Whitespace("\n")))  # add trailing newline to separate
 
 
 @dataclass
