@@ -1,6 +1,10 @@
 changelog
 =========
 
+v0.3.2 (2022-03-01)
+-------------------
+* Fix invalid newline inside inline-table - by :user:`abravalheri`.
+
 v0.3.1 (2022-02-27)
 -------------------
 * Better handling of PEP-508 dependencies by using the ``packaging`` module instead of the our own parsing logic - by
