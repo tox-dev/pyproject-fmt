@@ -101,9 +101,7 @@ def test_entry_points(fmt: Fmt) -> None:
     """
     expected = """
     [project.entry-points]
-    alpha = {"A.A" = "a",B = "b"
-    }
-    beta = {C = "c",D = "d"
-    }
+    alpha = {"A.A" = "a",B = "b"}
+    beta = {C = "c",D = "d"}
     """
     fmt(fmt_project, start, expected)
