@@ -22,7 +22,7 @@ def test_cli_pyproject_toml_not_exists(tmp_path: Path, capsys: pytest.CaptureFix
     assert context.value.code != 0
     out, err = capsys.readouterr()
     assert not out
-    assert "argument pyproject_toml: path does not exists" in err
+    assert "argument pyproject_toml: path does not exist" in err
 
 
 def test_cli_pyproject_toml_not_file(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
