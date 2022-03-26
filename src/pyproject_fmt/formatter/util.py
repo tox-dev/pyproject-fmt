@@ -55,7 +55,7 @@ def store_comments(table: AbstractTable) -> TableComments:
 
     body = table.value.body
     first_key_index = -1
-    for index, (key, item) in enumerate(body):
+    for index, (key, _) in enumerate(body):
         if isinstance(key, Key):
             first_key_index = index
             break
