@@ -9,3 +9,7 @@
 
 Apply a consistent format to `pyproject.toml` files.
 [Read the full documentation here](https://pyproject-fmt.readthedocs.io/en/latest/).
+
+## To users of `setuptools`
+
+This tool uses `hatchling` as a `PEP 517` build backend. Thanks to `PEP 621` the metatata is mostly unified, and in order to use `setuptools` instead you only have to apply [a small patch](./use_setuptools.patch).

@@ -1,0 +1,22 @@
+From 598f1bb310c61a50fc62edda528ec35ad6a9e58c Mon Sep 17 00:00:00 2001
+From: KOLANICH <KOLANICH@users.noreply.github.com>
+Subject: Switch build backend to `setuptools` instead of `hatchling`.
+
+---
+ pyproject.toml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 374b558..d2fce00 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [build-system]
+-build-backend = "hatchling.build"
+-requires = ["hatchling>=0.14", "hatch-vcs>=0.1"]
++requires = ["setuptools>=61.2.0", "wheel", "setuptools_scm[toml]>=3.4.3"]
++build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "pyproject_fmt"
+-- 

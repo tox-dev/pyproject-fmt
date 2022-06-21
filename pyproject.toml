@@ -7,7 +7,7 @@ name = "pyproject_fmt"
 description = "Format your pyproject.toml file"
 readme = "README.md"
 keywords = ["format", "pyproject"]
-license = "MIT"
+license = {text="MIT"}
 urls."Bug Tracker" = "https://github.com/gaborbernat/pyproject-fmt/issues"
 urls.Documentation = "https://github.com/gaborbernat/pyproject-fmt/"
 urls."Source Code" = "https://github.com/gaborbernat/pyproject-fmt"
@@ -49,6 +49,18 @@ build.dev-mode-dirs = ["src"]
 build.hooks.vcs.version-file = "src/pyproject_fmt/_version.py"
 build.targets.sdist.include = ["/src", "/tests"]
 version.source = "vcs"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools_scm]
+write_to = "src/pyproject_fmt/_version.py"
+write_to_template = "version = \"{version}\"\n"
 
 [tool.isort]
 known_first_party = ["helpers", "package_info"]
