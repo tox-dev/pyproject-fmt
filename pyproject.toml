@@ -8,9 +8,9 @@ description = "Format your pyproject.toml file"
 readme = "README.md"
 keywords = ["format", "pyproject"]
 license = "MIT"
-urls."Bug Tracker" = "https://github.com/gaborbernat/pyproject-fmt/issues"
-urls.Documentation = "https://github.com/gaborbernat/pyproject-fmt/"
-urls."Source Code" = "https://github.com/gaborbernat/pyproject-fmt"
+urls."Bug Tracker" = "https://github.com/tox-dev/pyproject-fmt/issues"
+urls.Documentation = "https://github.com/tox-dev/pyproject-fmt/"
+urls."Source Code" = "https://github.com/tox-dev/pyproject-fmt"
 authors = [{ name = "Bernat Gabor", email = "gaborjbernat@gmail.com" }]
 requires-python = ">=3.7"
 dependencies = [
