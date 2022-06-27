@@ -105,3 +105,13 @@ def test_entry_points(fmt: Fmt) -> None:
     beta = {C = "c",D = "d"}
     """
     fmt(fmt_project, start, expected)
+
+
+def test_comments(fmt: Fmt) -> None:
+    start = expected = """
+    [project]
+    # A comment-only line
+    name = "something"  # This is the name
+    # Another comment
+    """
+    fmt(fmt_project, start, expected)
