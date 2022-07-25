@@ -27,9 +27,9 @@ autoclass_content, autodoc_member_order, autodoc_typehints = "class", "bysource"
 autodoc_default_options = {"member-order": "bysource", "undoc-members": True, "show-inheritance": True}
 
 extlinks = {
-    "issue": (f"https://github.com/{company}/{name}/issues/%s", "#"),
-    "user": ("https://github.com/%s", "@"),
-    "gh": ("https://github.com/%s", ""),
+    "issue": (f"https://github.com/{company}/{name}/issues/%s", "#%s"),
+    "user": ("https://github.com/%s", "@%s"),
+    "gh": ("https://github.com/%s", "%s"),
 }
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 nitpicky = True
