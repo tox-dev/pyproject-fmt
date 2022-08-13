@@ -1,6 +1,10 @@
 changelog
 =========
 
+v0.3.3 (2022-08-12)
+-------------------
+* Support ``tomlkit>=0.11`` and CPython 3.11.
+
 v0.3.2 (2022-03-01)
 -------------------
 * Fix invalid newline inside inline-table - by :user:`abravalheri`.
