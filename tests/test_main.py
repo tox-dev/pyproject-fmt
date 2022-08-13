@@ -49,8 +49,20 @@ def no_color(diff: Any) -> Any:
     return diff
 
 
-@pytest.mark.parametrize("in_place", [True, False])
-@pytest.mark.parametrize("cwd", [True, False])
+@pytest.mark.parametrize(
+    "in_place",
+    [
+        True,
+        False,
+    ],
+)
+@pytest.mark.parametrize(
+    "cwd",
+    [
+        True,
+        False,
+    ],
+)
 @pytest.mark.parametrize(
     ("start", "outcome", "output"),
     [
