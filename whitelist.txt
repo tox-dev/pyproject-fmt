@@ -20,4 +20,5 @@ skipif
 tofile
 toml
 tomlkit
+tomls
 typehints

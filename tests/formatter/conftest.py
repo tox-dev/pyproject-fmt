@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 from typing import Callable
 
@@ -16,7 +17,7 @@ from tests import Fmt
 def fmt(mocker: MockerFixture) -> Fmt:
     def _func(formatter: Callable[[TOMLDocument, Config], None], start: str, expected: str) -> None:
         mocker.patch("pyproject_fmt.formatter._perform", formatter)
-        opts = Config(toml=dedent(start))
+        opts = Config(pyproject_toml=Path(), toml=dedent(start))
         result = format_pyproject(opts)
 
         expected = dedent(expected)

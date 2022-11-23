@@ -25,30 +25,31 @@ def color_diff(diff: Iterable[str]) -> Iterable[str]:
 
 def run(args: Sequence[str] | None = None) -> int:
     opts = cli_args(sys.argv[1:] if args is None else args)
-    config = opts.as_config
-    formatted = format_pyproject(config)
-    toml = opts.pyproject_toml
-    before = config.toml
-    changed = before != formatted
-    if opts.stdout:  # stdout just prints new format to stdout
-        print(formatted, end="")
-    else:
-        toml.write_text(formatted, encoding="utf-8")
-        try:
-            name = str(toml.relative_to(Path.cwd()))
-        except ValueError:
-            name = str(toml)
-        diff: Iterable[str] = []
-        if changed:
-            diff = difflib.unified_diff(before.splitlines(), formatted.splitlines(), fromfile=name, tofile=name)
-
-        if diff:
-            diff = color_diff(diff)
-            print("\n".join(diff))  # print diff on change
+    any_modified = False
+    for config in opts.as_configs:
+        formatted = format_pyproject(config)
+        before = config.toml
+        changed = before != formatted
+        any_modified = any_modified or changed
+        if opts.stdout:  # stdout just prints new format to stdout
+            print(formatted, end="")
         else:
-            print(f"no change for {name}")
+            config.pyproject_toml.write_text(formatted, encoding="utf-8")
+            try:
+                name = str(config.pyproject_toml.relative_to(Path.cwd()))
+            except ValueError:
+                name = str(config.pyproject_toml)
+            diff: Iterable[str] = []
+            if changed:
+                diff = difflib.unified_diff(before.splitlines(), formatted.splitlines(), fromfile=name, tofile=name)
+
+            if diff:
+                diff = color_diff(diff)
+                print("\n".join(diff))  # print diff on change
+            else:
+                print(f"no change for {name}")
     # exit with non success on change
-    return 1 if changed else 0
+    return 1 if any_modified else 0
 
 
 if __name__ == "__main__":
