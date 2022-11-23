@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 if sys.version_info >= (3, 8):  # pragma: no cover (py38+)
     from typing import Final
@@ -18,6 +19,7 @@ class Config:
 
     toml: str  #: the text to format
     indent: int = DEFAULT_INDENT  #: indentation to apply
+    pyproject_toml: Path | None = None  # Only necessary when writing
 
 
 __all__ = [

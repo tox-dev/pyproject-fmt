@@ -16,16 +16,20 @@ from pyproject_fmt.formatter.config import DEFAULT_INDENT, Config
 class PyProjectFmtNamespace(Namespace):
     """Options for pyproject-fmt tool"""
 
-    pyproject_toml: Path
+    pyproject_tomls: list[Path]
     stdout: bool
     indent: int
 
     @property
-    def as_config(self) -> Config:
-        return Config(
-            toml=self.pyproject_toml.read_text(encoding="utf-8"),
-            indent=self.indent,
-        )
+    def as_configs(self) -> list[Config]:
+        return [
+            Config(
+                pyproject_toml=pyproject_toml,
+                toml=pyproject_toml.read_text(encoding="utf-8"),
+                indent=self.indent,
+            )
+            for pyproject_toml in self.pyproject_tomls
+        ]
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:
@@ -51,7 +55,9 @@ def _build_cli() -> ArgumentParser:
     msg = "print the formatted text to the stdout (instead of update in-place)"
     parser.add_argument("-s", "--stdout", action="store_true", help=msg)
     parser.add_argument("--indent", type=int, default=DEFAULT_INDENT, help="number of spaces to indent")
-    parser.add_argument("pyproject_toml", type=pyproject_toml_path_creator, help="pyproject.toml file to format")
+    parser.add_argument(
+        "pyproject_tomls", nargs="+", type=pyproject_toml_path_creator, help="pyproject.toml file(s) to format"
+    )
     return parser
 
 
