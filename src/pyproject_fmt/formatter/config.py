@@ -17,9 +17,9 @@ DEFAULT_INDENT: Final[int] = 2  #: default indentation level
 class Config:
     """Configuration flags for the formatting."""
 
+    pyproject_toml: Path
     toml: str  #: the text to format
     indent: int = DEFAULT_INDENT  #: indentation to apply
-    pyproject_toml: Path | None = None  # Only necessary when writing
 
 
 __all__ = [
