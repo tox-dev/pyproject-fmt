@@ -24,7 +24,7 @@ See :gh:`pre-commit/pre-commit` for instructions, sample ``.pre-commit-config.ya
 .. code-block:: yaml
 
     - repo: https://github.com/tox-dev/pyproject-fmt
-      rev: "0.1.0"
+      rev: "0.4.1"
       hooks:
         - id: pyproject-fmt
 
