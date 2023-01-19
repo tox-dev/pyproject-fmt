@@ -34,7 +34,8 @@ def run(args: Sequence[str] | None = None) -> int:
         if opts.stdout:  # stdout just prints new format to stdout
             print(formatted, end="")
         else:
-            config.pyproject_toml.write_text(formatted, encoding="utf-8")
+            if before != formatted:
+                config.pyproject_toml.write_text(formatted, encoding="utf-8")
             try:
                 name = str(config.pyproject_toml.relative_to(Path.cwd()))
             except ValueError:
