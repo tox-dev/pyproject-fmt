@@ -4,6 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
+from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.items import (
     AbstractTable,
     Array,
@@ -34,10 +35,12 @@ class SupportsDunderGT(Protocol):
 
 
 def order_keys(
-    table: AbstractTable,
+    table: AbstractTable | OutOfOrderTableProxy,
     to_pin: Sequence[str] | None = None,
     sort_key: None | Callable[[tuple[str, tuple[Key, Item]]], SupportsDunderLT | SupportsDunderGT] = None,
 ) -> None:
+    if isinstance(table, OutOfOrderTableProxy):
+        return  # pragma: no cover
     body = table.value.body
     entries = {i.key: (i, v) for (i, v) in body if isinstance(i, Key)}
     body.clear()

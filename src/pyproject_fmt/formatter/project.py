@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, cast
 
+from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.items import Array, String, Table
 from tomlkit.toml_document import TOMLDocument
 
@@ -15,6 +16,8 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     if project is None:
         return
 
+    key_order = ["name", "version", "description", "readme", "keywords", "license", "license-files"]
+    key_order.extend(["maintainers", "authors", "requires-python", "classifiers", "dynamic", "dependencies"])
     if "name" in project:  # normalize names to underscore so sdist / wheel have the same prefix
         name = project["name"]
         assert isinstance(name, str)
@@ -49,30 +52,8 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     # order maintainers and authors table
     # update classifiers depending on requires
     # handle readme table
-
-    order_keys(
-        project,
-        (
-            "name",
-            "version",
-            "description",
-            "readme",
-            "keywords",
-            "license",
-            "license-files",
-            "maintainers",
-            "authors",
-            "requires-python",
-            "dependencies",
-            "dynamic",
-            "classifiers",
-            "optional-dependencies",
-            "urls",
-            "scripts",
-            "gui-scripts",
-            "entry-points",
-        ),
-    )
+    key_order.extend(["optional-dependencies", "urls", "scripts", "gui-scripts", "entry-points"])
+    order_keys(project, key_order)
 
 
 __all__ = [
