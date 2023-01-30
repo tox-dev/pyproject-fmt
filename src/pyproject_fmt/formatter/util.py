@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
@@ -34,6 +35,11 @@ class SupportsDunderGT(Protocol):
         ...
 
 
+def sort_inline_table(item: tuple[str, Any | Table]) -> str:
+    key, value = item
+    return f"{key}{'-'.join(value) if isinstance(value, Table) else ''}"
+
+
 def order_keys(
     table: AbstractTable | OutOfOrderTableProxy,
     to_pin: Sequence[str] | None = None,
@@ -42,18 +48,23 @@ def order_keys(
     if isinstance(table, OutOfOrderTableProxy):
         return  # pragma: no cover
     body = table.value.body
-    entries = {i.key: (i, v) for (i, v) in body if isinstance(i, Key)}
+    entries: dict[str, list[Any]] = defaultdict(list)
+    for key, value in body:
+        if isinstance(key, Key):
+            entries[key.key].append((key, value))
     body.clear()
 
     for pin in to_pin or []:  # push pinned to start
         if pin in entries:
-            body.append(entries[pin])
+            body.extend(sorted(entries[pin], key=sort_inline_table))  # type: ignore
             del entries[pin]
     # append the rest
     if sort_key is None:
-        body.extend(entries.values())
+        for elements in entries.values():
+            body.extend(elements)  # pragma: no cover
     else:
-        body.extend(v for k, v in sorted(entries.items(), key=sort_key))
+        for _, elements in sorted(entries.items(), key=sort_inline_table):
+            body.extend(elements)
 
     if isinstance(table, Table):
         body.append((None, Whitespace("\n")))  # add trailing newline to separate
