@@ -13,17 +13,17 @@ def test_cli_pyproject_toml_ok(tmp_path: Path) -> None:
     path = tmp_path / "tox.ini"
     path.write_text("")
     result = cli_args([str(path)])
-    assert result.pyproject_tomls == [path]
+    assert result.inputs == [path]
 
 
-def test_cli_pyproject_tomls_ok(tmp_path: Path) -> None:
+def test_cli_inputs_ok(tmp_path: Path) -> None:
     paths = []
     for filename in ("tox.ini", "tox2.ini", "tox3.ini"):
         path = tmp_path / filename
         path.write_text("")
         paths.append(path)
     result = cli_args([*map(str, paths)])
-    assert result.pyproject_tomls == paths
+    assert result.inputs == paths
 
 
 def test_cli_pyproject_toml_not_exists(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -32,7 +32,7 @@ def test_cli_pyproject_toml_not_exists(tmp_path: Path, capsys: pytest.CaptureFix
     assert context.value.code != 0
     out, err = capsys.readouterr()
     assert not out
-    assert "argument pyproject_tomls: path does not exist" in err
+    assert "argument inputs: path does not exist" in err
 
 
 def test_cli_pyproject_toml_not_file(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -41,7 +41,7 @@ def test_cli_pyproject_toml_not_file(tmp_path: Path, capsys: pytest.CaptureFixtu
     assert context.value.code != 0
     out, err = capsys.readouterr()
     assert not out
-    assert "argument pyproject_tomls: path is not a file" in err
+    assert "argument inputs: path is not a file" in err
 
 
 @pytest.mark.parametrize(("flag", "error"), [(S_IREAD, "write"), (S_IWRITE, "read")])
@@ -60,7 +60,7 @@ def test_cli_pyproject_toml_permission_fail(
     assert context.value.code != 0
     out, err = capsys.readouterr()
     assert not out
-    assert f"argument pyproject_tomls: cannot {error} path" in err
+    assert f"argument inputs: cannot {error} path" in err
 
 
 def test_pyproject_toml_resolved(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -68,4 +68,4 @@ def test_pyproject_toml_resolved(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     path = tmp_path / "tox.ini"
     path.write_text("")
     result = cli_args(["tox.ini"])
-    assert result.pyproject_tomls == [path]
+    assert result.inputs == [path]

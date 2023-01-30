@@ -64,3 +64,9 @@ run.plugins = ["covdefaults"]
 [tool.mypy]
 show_error_codes = true
 strict = true
+
+[tool.flake8]
+max-line-length = 120
+unused-arguments-ignore-abstract-functions = true
+noqa-require-code = true
+dictionaries = ["en_US", "python", "technical", "django"]
