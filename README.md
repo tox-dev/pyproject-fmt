@@ -9,3 +9,12 @@
 
 Apply a consistent format to `pyproject.toml` files.
 [Read the full documentation here](https://pyproject-fmt.readthedocs.io/en/latest/).
+
+## add to pre-commit
+
+```yaml
+- repo: https://github.com/tox-dev/pyproject-fmt
+  rev: "0.6.0"
+  hooks:
+    - id: pyproject-fmt
+```
