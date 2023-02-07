@@ -32,7 +32,7 @@ def _handle_one(config: Config, opts: PyProjectFmtNamespace) -> bool:
         print(formatted, end="")
         return changed
 
-    if before != formatted:
+    if before != formatted and not opts.check:
         config.pyproject_toml.write_text(formatted, encoding="utf-8")
     try:
         name = str(config.pyproject_toml.relative_to(Path.cwd()))
