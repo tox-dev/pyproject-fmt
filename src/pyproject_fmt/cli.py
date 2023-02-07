@@ -50,7 +50,7 @@ def _build_cli() -> ArgumentParser:
     msg = "print the formatted text to the stdout (instead of update in-place)"
     group.add_argument("-s", "--stdout", action="store_true", help=msg)
     msg = "check and fail if any input would be formatted, printing any diffs"
-    group.add_argument("-x", "--check", action="store_true", help=msg)
+    group.add_argument("--check", action="store_true", help=msg)
     parser.add_argument("--indent", type=int, default=DEFAULT_INDENT, help="number of spaces to indent")
     msg = "pyproject.toml file(s) to format"
     parser.add_argument("inputs", nargs="+", type=pyproject_toml_path_creator, help=msg)
