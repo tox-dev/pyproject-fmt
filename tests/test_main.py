@@ -57,6 +57,13 @@ def no_color(diff: Any) -> Any:
     ],
 )
 @pytest.mark.parametrize(
+    "check",
+    [
+        True,
+        False,
+    ],
+)
+@pytest.mark.parametrize(
     "cwd",
     [
         True,
@@ -87,7 +94,8 @@ def test_main(
     outcome: str,
     output: str,
     monkeypatch: pytest.MonkeyPatch,
-    cwd: Path,
+    cwd: bool,
+    check: bool,
 ) -> None:
     monkeypatch.setattr(pyproject_fmt.__main__, "color_diff", no_color)
     if cwd:
@@ -98,13 +106,24 @@ def test_main(
     if not in_place:
         args.append("--stdout")
 
+    if check:
+        args.append("--check")
+
+        if not in_place:
+            with pytest.raises(SystemExit):
+                run(args)
+            assert pyproject_toml.read_text() == start
+            return
+
     result = run(args)
     assert result == (0 if start == outcome else 1)
 
     out, err = capsys.readouterr()
     assert not err
 
-    if in_place:
+    if check:
+        assert pyproject_toml.read_text() == start
+    elif in_place:
         name = "pyproject.toml" if cwd else str(tmp_path / "pyproject.toml")
         output = output.format(name)
         assert pyproject_toml.read_text() == outcome

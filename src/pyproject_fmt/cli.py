@@ -19,6 +19,7 @@ class PyProjectFmtNamespace(Namespace):
     inputs: list[Path]
     stdout: bool
     indent: int
+    check: bool
 
     @property
     def configs(self) -> list[Config]:
@@ -45,8 +46,11 @@ def pyproject_toml_path_creator(argument: str) -> Path:
 
 def _build_cli() -> ArgumentParser:
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    group = parser.add_mutually_exclusive_group()
     msg = "print the formatted text to the stdout (instead of update in-place)"
-    parser.add_argument("-s", "--stdout", action="store_true", help=msg)
+    group.add_argument("-s", "--stdout", action="store_true", help=msg)
+    msg = "check and fail if any input would be formatted, printing any diffs"
+    group.add_argument("-x", "--check", action="store_true", help=msg)
     parser.add_argument("--indent", type=int, default=DEFAULT_INDENT, help="number of spaces to indent")
     msg = "pyproject.toml file(s) to format"
     parser.add_argument("inputs", nargs="+", type=pyproject_toml_path_creator, help=msg)
