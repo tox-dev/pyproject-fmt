@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, cast
 
+from packaging.utils import canonicalize_name
 from tomlkit.items import Array, String, Table
 from tomlkit.toml_document import TOMLDocument
 
@@ -15,10 +16,10 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     if project is None:
         return
 
-    if "name" in project:  # normalize names to underscore so sdist / wheel have the same prefix
+    if "name" in project:  # normalize names to hyphen so sdist / wheel have the same prefix
         name = project["name"]
         assert isinstance(name, str)
-        project["name"] = name.replace("-", "_")
+        project["name"] = canonicalize_name(name)
     if "description" in project:
         project["description"] = String.from_raw(str(project["description"]).strip())
 

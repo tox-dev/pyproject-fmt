@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import pytest
+
 from pyproject_fmt.formatter.project import fmt_project
 from tests import Fmt
 
 
-def test_project_name(fmt: Fmt) -> None:
-    fmt(fmt_project, "[project]\nname='a-b'", '[project]\nname="a_b"\n')
+@pytest.mark.parametrize(
+    "value",
+    [
+        "[project]\nname='a-b'",
+        "[project]\nname='A_B'",
+        "[project]\nname='a.-..-__B'",
+    ],
+)
+def test_project_name(fmt: Fmt, value: str) -> None:
+    fmt(fmt_project, value, '[project]\nname="a-b"\n')
 
 
 def test_project_dependencies(fmt: Fmt) -> None:
