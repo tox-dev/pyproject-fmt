@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import re
 from typing import Optional, cast
 
+from packaging.utils import canonicalize_name
 from tomlkit.items import Array, String, Table
 from tomlkit.toml_document import TOMLDocument
 
@@ -11,22 +11,15 @@ from .pep508 import normalize_pep508_array
 from .util import order_keys, sorted_array
 
 
-def normalize(name: str) -> str:
-    """Follow the package name normalization spec
-    https://packaging.python.org/en/latest/specifications/name-normalization/#normalization
-    """
-    return re.sub(r"[-_.]+", "-", name).lower()
-
-
 def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     project = cast(Optional[Table], parsed.get("project"))
     if project is None:
         return
 
-    if "name" in project:  # normalize names to underscore so sdist / wheel have the same prefix
+    if "name" in project:  # normalize names to hyphen so sdist / wheel have the same prefix
         name = project["name"]
         assert isinstance(name, str)
-        project["name"] = normalize(name)
+        project["name"] = canonicalize_name(name)
     if "description" in project:
         project["description"] = String.from_raw(str(project["description"]).strip())
 

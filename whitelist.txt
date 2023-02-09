@@ -1,5 +1,6 @@
 autoclass
 autodoc
+canonicalize
 capsys
 chdir
 conf
