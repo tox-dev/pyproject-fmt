@@ -17,6 +17,8 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.flake8]
     [tool.hatch]
     a = 0
+    [tool.setuptools_scm]
+    a = 0
     [tool.setuptools]
     a.b = 0
 
@@ -24,6 +26,9 @@ def test_tools_ordering(fmt: Fmt) -> None:
     expected = """
     [tool.setuptools]
     a.b = 0
+
+    [tool.setuptools_scm]
+    a = 0
 
     [tool.hatch]
     a = 0
