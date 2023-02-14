@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from stat import S_IREAD, S_IWRITE
@@ -36,8 +37,10 @@ def test_cli_pyproject_toml_not_exists(tmp_path: Path, capsys: pytest.CaptureFix
 
 
 def test_cli_pyproject_toml_not_file(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = tmp_path / "temp"
+    os.mkfifo(path)
     with pytest.raises(SystemExit) as context:
-        cli_args([str(tmp_path)])
+        cli_args([str(path)])
     assert context.value.code != 0
     out, err = capsys.readouterr()
     assert not out
@@ -69,3 +72,8 @@ def test_pyproject_toml_resolved(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     path.write_text("")
     result = cli_args(["tox.ini"])
     assert result.inputs == [path]
+
+
+def test_pyproject_toml_dir(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text("")
+    cli_args([str(tmp_path)])

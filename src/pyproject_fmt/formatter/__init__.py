@@ -6,11 +6,13 @@ from tomlkit.toml_document import TOMLDocument
 from .build_system import fmt_build_system
 from .config import Config
 from .project import fmt_project
+from .tools import fmt_tools
 
 
 def _perform(parsed: TOMLDocument, conf: Config) -> None:
     fmt_build_system(parsed, conf)
     fmt_project(parsed, conf)
+    fmt_tools(parsed, conf)
 
 
 def format_pyproject(conf: Config) -> str:
