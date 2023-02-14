@@ -16,7 +16,18 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: U100
     for tool in tools:
         table = tools[tool]
         ensure_newline_at_end(cast(Table, table))
-    order_keys(tools, to_pin=["setuptools", "hatch", "black", "isort", "flake8", "pytest", "coverage", "mypy"])
+    order = [
+        "setuptools",
+        "setuptools_scm",
+        "hatch",
+        "black",
+        "isort",
+        "flake8",
+        "pytest",
+        "coverage",
+        "mypy",
+    ]
+    order_keys(tools, to_pin=order)
 
 
 __all__ = [
