@@ -8,4 +8,6 @@ from pyproject_fmt.formatter.config import Config
 
 Fmt = Callable[[Callable[[TOMLDocument, Config], None], str, str], None]
 
-__all__ = ["Fmt"]
+__all__ = [
+    "Fmt",
+]

@@ -7,7 +7,7 @@ from tomlkit.toml_document import TOMLDocument
 
 from .config import Config
 from .pep508 import normalize_pep508_array
-from .util import order_keys, sorted_array
+from .util import ensure_newline_at_end, order_keys, sorted_array
 
 
 def fmt_build_system(parsed: TOMLDocument, conf: Config) -> None:
@@ -16,6 +16,7 @@ def fmt_build_system(parsed: TOMLDocument, conf: Config) -> None:
         normalize_pep508_array(cast(Optional[Array], system.get("requires")), conf.indent)
         sorted_array(cast(Optional[Array], system.get("backend-path")), indent=conf.indent)
         order_keys(system, ("build-backend", "requires", "backend-path"))
+        ensure_newline_at_end(system)
 
 
 __all__ = [

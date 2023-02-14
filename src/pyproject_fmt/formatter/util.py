@@ -66,9 +66,6 @@ def order_keys(
         for _, elements in sorted(entries.items(), key=sort_inline_table):
             body.extend(elements)
 
-    if isinstance(table, Table):
-        body.append((None, Whitespace("\n")))  # add trailing newline to separate
-
 
 @dataclass
 class ArrayEntries:
@@ -109,8 +106,21 @@ def sorted_array(
     body.append(_ArrayItemGroup(indent=Whitespace("\n")))
 
 
+def ensure_newline_at_end(body: Table) -> None:
+    content = body
+    while content.value.body and isinstance(content.value.body[-1][1], Table):
+        content = content.value.body[-1][1]
+    whitespace = Whitespace("\n")
+    insert_body = content.value.body
+    if insert_body and isinstance(insert_body[-1][1], Whitespace):
+        insert_body[-1] = insert_body[-1][0], whitespace
+    else:
+        insert_body.append((None, whitespace))
+
+
 __all__ = [
     "ArrayEntries",
     "sorted_array",
     "order_keys",
+    "ensure_newline_at_end",
 ]

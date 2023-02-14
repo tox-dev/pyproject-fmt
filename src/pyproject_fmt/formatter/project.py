@@ -8,7 +8,7 @@ from tomlkit.toml_document import TOMLDocument
 
 from .config import Config
 from .pep508 import normalize_pep508_array
-from .util import order_keys, sorted_array
+from .util import ensure_newline_at_end, order_keys, sorted_array
 
 
 def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
@@ -56,6 +56,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     # these go at the end as they may be inline or exploded
     key_order.extend(["optional-dependencies", "urls", "scripts", "gui-scripts", "entry-points"])
     order_keys(project, key_order)
+    ensure_newline_at_end(project)
 
 
 __all__ = [

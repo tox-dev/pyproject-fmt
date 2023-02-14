@@ -2,6 +2,7 @@ pyproject-fmt
 =============
 
 Apply a consistent format to your ``pyproject.toml`` file with comment support.
+See `changelog here <https://github.com/tox-dev/pyproject-fmt/releases>`_.
 
 Use
 ---
@@ -46,4 +47,3 @@ API
    :hidden:
 
    self
-   changelog
