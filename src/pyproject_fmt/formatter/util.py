@@ -8,6 +8,7 @@ from typing import Any, Callable, Sequence
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.items import (
     AbstractTable,
+    AoT,
     Array,
     Comment,
     Item,
@@ -108,8 +109,13 @@ def sorted_array(
 
 def ensure_newline_at_end(body: Table) -> None:
     content = body
-    while content.value.body and isinstance(content.value.body[-1][1], Table):
-        content = content.value.body[-1][1]
+    while True:
+        if isinstance(content, AoT) and content.value and isinstance(content[-1], (AoT, Table)):
+            content = content[-1]
+        elif isinstance(content, Table) and content.value.body and isinstance(content.value.body[-1][1], (AoT, Table)):
+            content = content.value.body[-1][1]
+        else:
+            break
     whitespace = Whitespace("\n")
     insert_body = content.value.body
     if insert_body and isinstance(insert_body[-1][1], Whitespace):
