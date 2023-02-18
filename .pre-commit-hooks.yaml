@@ -1,7 +1,7 @@
 -   id: pyproject-fmt
     name: pyproject-fmt
     description: apply a consistent format to `pyproject.toml` files
-    entry: pyproject-fmt
+    entry: pyproject-fmt --check
     language: python
     language_version: python3
     files: '(^|/)pyproject\.toml$'
