@@ -48,3 +48,40 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
         """
     fmt(fmt_tools, content, expected)
+
+
+def test_sub_table_newline(fmt: Fmt) -> None:
+    content = """
+    [tool.mypy]
+    a = 0
+
+    [[tool.mypy.overrides]]
+    a = 1
+    [tool.something-else]
+    b = 0
+    """
+    expected = """
+    [tool.mypy]
+    a = 0
+
+    [[tool.mypy.overrides]]
+    a = 1
+
+    [tool.something-else]
+    b = 0
+    """
+    fmt(fmt_tools, content, expected)
+
+
+def test_sub_table_no_op(fmt: Fmt) -> None:
+    content = """
+    [tool.mypy]
+    a = 0
+
+    [[tool.mypy.overrides]]
+    a = 1
+
+    [tool.something-else]
+    b = 0
+    """
+    fmt(fmt_tools, content, content)
