@@ -108,12 +108,12 @@ def sorted_array(
 
 
 def ensure_newline_at_end(body: Table) -> None:
-    content = body
+    content: Table = body
     while True:
         if isinstance(content, AoT) and content.value and isinstance(content[-1], (AoT, Table)):
             content = content[-1]
         elif isinstance(content, Table) and content.value.body and isinstance(content.value.body[-1][1], (AoT, Table)):
-            content = content.value.body[-1][1]
+            content = content.value.body[-1][1]  # type: ignore # can be AoT temporarily
         else:  # pragma: no cover
             # coverage has a bug on python < 3.10, seeing this line as uncovered
             # https://github.com/nedbat/coveragepy/issues/1480

@@ -54,7 +54,6 @@ def test_sub_table_newline(fmt: Fmt) -> None:
     content = """
     [tool.mypy]
     a = 0
-
     [[tool.mypy.overrides]]
     a = 1
     [tool.something-else]
@@ -63,7 +62,6 @@ def test_sub_table_newline(fmt: Fmt) -> None:
     expected = """
     [tool.mypy]
     a = 0
-
     [[tool.mypy.overrides]]
     a = 1
 
