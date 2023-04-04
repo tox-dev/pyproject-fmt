@@ -5,6 +5,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
+from natsort import natsorted
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.items import (
     AbstractTable,
@@ -75,7 +76,10 @@ class ArrayEntries:
 
 
 def sorted_array(
-    array: Array | None, indent: int, key: Callable[[ArrayEntries], str] = lambda e: str(e.text).lower()
+    array: Array | None,
+    indent: int,
+    key: Callable[[ArrayEntries], str] = lambda e: str(e.text).lower(),
+    custom_sort: str | None = None,
 ) -> None:
     if array is None:
         return
@@ -94,7 +98,8 @@ def sorted_array(
     indent_text = " " * indent
     for start_entry in start:
         body.append(_ArrayItemGroup(indent=Whitespace(f"\n{indent_text}"), comment=start_entry))
-    for element in sorted(entries, key=key):
+    sort_method = natsorted if custom_sort == "natsort" else sorted
+    for element in sort_method(entries, key=key):
         if element.comments:
             com = " ".join(i.trivia.comment[1:].strip() for i in element.comments)
             comment = Comment(Trivia(comment=f" # {com}", trail=""))

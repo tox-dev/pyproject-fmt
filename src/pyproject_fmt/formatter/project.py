@@ -25,6 +25,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
 
     sorted_array(cast(Optional[Array], project.get("keywords")), indent=conf.indent)
     sorted_array(cast(Optional[Array], project.get("dynamic")), indent=conf.indent)
+    sorted_array(cast(Optional[Array], project.get("classifiers")), indent=conf.indent, custom_sort="natsort")
 
     normalize_pep508_array(cast(Optional[Array], project.get("dependencies")), conf.indent)
     if "optional-dependencies" in project:
