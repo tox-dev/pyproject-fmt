@@ -41,7 +41,7 @@ T = TypeVar("T")
 
 
 class SortingFunction(Protocol[T]):
-    def __call__(self, seq: Iterable[T], /, key: Callable[[T], SupportsDunderLT]) -> list[T]:  # noqa: U100
+    def __call__(self, __seq: Iterable[T], key: Callable[[T], SupportsDunderLT]) -> list[T]:  # noqa: U100, U101
         ...
 
 
