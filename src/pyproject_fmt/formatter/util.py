@@ -3,8 +3,9 @@ from __future__ import annotations
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Iterable, Sequence, TypeVar
 
+from natsort import natsorted
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.items import (
     AbstractTable,
@@ -33,6 +34,14 @@ class SupportsDunderLT(Protocol):
 
 class SupportsDunderGT(Protocol):
     def __gt__(self, __other: Any) -> bool:  # noqa: U101
+        ...
+
+
+T = TypeVar("T")
+
+
+class SortingFunction(Protocol[T]):
+    def __call__(self, __seq: Iterable[T], key: Callable[[T], SupportsDunderLT]) -> list[T]:  # noqa: U100, U101
         ...
 
 
@@ -75,7 +84,10 @@ class ArrayEntries:
 
 
 def sorted_array(
-    array: Array | None, indent: int, key: Callable[[ArrayEntries], str] = lambda e: str(e.text).lower()
+    array: Array | None,
+    indent: int,
+    key: Callable[[ArrayEntries], str] = lambda e: str(e.text).lower(),
+    custom_sort: str | None = None,
 ) -> None:
     if array is None:
         return
@@ -94,7 +106,12 @@ def sorted_array(
     indent_text = " " * indent
     for start_entry in start:
         body.append(_ArrayItemGroup(indent=Whitespace(f"\n{indent_text}"), comment=start_entry))
-    for element in sorted(entries, key=key):
+    sort_method: SortingFunction[ArrayEntries]
+    if custom_sort == "natsort":
+        sort_method = natsorted
+    else:
+        sort_method = sorted  # type: ignore[assignment]
+    for element in sort_method(entries, key=key):
         if element.comments:
             com = " ".join(i.trivia.comment[1:].strip() for i in element.comments)
             comment = Comment(Trivia(comment=f" # {com}", trail=""))

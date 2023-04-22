@@ -11,6 +11,8 @@ intersphinx
 iread
 iwrite
 mkfifo
+natsort
+natsorted
 nitpicky
 pep508
 py38
