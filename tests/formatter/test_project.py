@@ -18,6 +18,40 @@ def test_project_name(fmt: Fmt, value: str) -> None:
     fmt(fmt_project, value, '[project]\nname="a-b"\n')
 
 
+def test_project_classifiers(fmt: Fmt) -> None:
+    start = """
+    [project]
+    classifiers = [
+      "Operating System :: OS Independent",
+      "Programming Language :: Python",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3 :: Only",
+      "License :: OSI Approved :: MIT License",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+      "License :: OSI Approved :: MIT License",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.11",
+    ]
+    """
+    expected = """
+    [project]
+    classifiers = [
+      "License :: OSI Approved :: MIT License",
+      "License :: OSI Approved :: MIT License",
+      "Operating System :: OS Independent",
+      "Programming Language :: Python",
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
 def test_project_dependencies(fmt: Fmt) -> None:
     start = '[project]\ndependencies=["pytest","pytest-cov",]'
     expected = '[project]\ndependencies=[\n  "pytest",\n  "pytest-cov",\n]\n'
