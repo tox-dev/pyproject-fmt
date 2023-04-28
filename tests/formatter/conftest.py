@@ -14,10 +14,11 @@ from tests import Fmt
 
 
 @pytest.fixture()
-def fmt(mocker: MockerFixture) -> Fmt:
+def fmt(monkeypatch: pytest.MonkeyPatch, mocker: MockerFixture, tmp_path: Path) -> Fmt:
     def _func(formatter: Callable[[TOMLDocument, Config], None], start: str, expected: str) -> None:
         mocker.patch("pyproject_fmt.formatter._perform", formatter)
         opts = Config(pyproject_toml=Path(), toml=dedent(start))
+        monkeypatch.chdir(tmp_path)
         result = format_pyproject(opts)
 
         expected = dedent(expected)
