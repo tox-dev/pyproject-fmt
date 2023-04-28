@@ -1,4 +1,4 @@
-Ao
+ao
 autoclass
 autodoc
 canonicalize
@@ -25,4 +25,5 @@ skipif
 tofile
 toml
 tomlkit
+tox
 typehints
