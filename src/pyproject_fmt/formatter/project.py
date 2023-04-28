@@ -55,7 +55,7 @@ def _add_py_classifiers(project: Table) -> None:
         project["classifiers"] = classifiers
 
     exist = set(classifiers.unwrap())
-    remove = [e for e in exist if e.startswith("Programming Language :: Python ::") and e not in add]
+    remove = [e for e in exist if re.fullmatch(r"Programming Language :: Python :: \d.*", e) and e not in add]
     deleted = 0
     for at, item in enumerate(list(classifiers)):
         if item in remove:

@@ -250,3 +250,16 @@ def test_classifier_gt_tox_conf_missing(fmt: Fmt) -> None:
     ]
     """
     fmt(fmt_project, start, expected)
+
+
+def test_classifier_keep_impl(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python=">=3.11"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: Implementation :: CPython",
+    ]
+    """
+    fmt(fmt_project, start, start)
