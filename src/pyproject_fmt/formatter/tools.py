@@ -17,6 +17,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: U100
         table = tools[tool]
         ensure_newline_at_end(cast(Table, table))
     order = [
+        "poetry",
         "setuptools",
         "setuptools_scm",
         "hatch",
