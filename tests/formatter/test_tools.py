@@ -6,8 +6,12 @@ from tests import Fmt
 
 def test_tools_ordering(fmt: Fmt) -> None:
     content = """
+    [tool.poetry]
+    name = "a"
     [tool.coverage]
     a = 0
+    [tool.poetry.scripts]
+    version = "1"
     [tool.pytest]
     a = 0
     [tool.black]
@@ -24,6 +28,10 @@ def test_tools_ordering(fmt: Fmt) -> None:
 
     """
     expected = """
+    [tool.poetry]
+    name = "a"
+    [tool.poetry.scripts]
+    version = "1"
     [tool.setuptools]
     a.b = 0
 
