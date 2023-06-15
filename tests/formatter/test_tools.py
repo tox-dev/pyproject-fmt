@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pyproject_fmt.formatter.tools import fmt_tools
-from tests import Fmt
+
+if TYPE_CHECKING:
+    from tests import Fmt
 
 
 def test_tools_ordering(fmt: Fmt) -> None:

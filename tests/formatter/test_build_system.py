@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pyproject_fmt.formatter.build_system import fmt_build_system
-from tests import Fmt
+
+if TYPE_CHECKING:
+    from tests import Fmt
 
 
 def test_build_system_missing(fmt: Fmt) -> None:

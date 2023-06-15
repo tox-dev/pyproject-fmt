@@ -1,3 +1,4 @@
+"""Utility methods."""
 from __future__ import annotations
 
 import sys
@@ -28,12 +29,12 @@ else:  # pragma: no cover (<py38)
 
 
 class SupportsDunderLT(Protocol):
-    def __lt__(self, __other: Any) -> bool:  # noqa: U101
+    def __lt__(self, __other: Any) -> bool:
         ...
 
 
 class SupportsDunderGT(Protocol):
-    def __gt__(self, __other: Any) -> bool:  # noqa: U101
+    def __gt__(self, __other: Any) -> bool:
         ...
 
 
@@ -41,7 +42,11 @@ T = TypeVar("T")
 
 
 class SortingFunction(Protocol[T]):
-    def __call__(self, __seq: Iterable[T], key: Callable[[T], SupportsDunderLT]) -> list[T]:  # noqa: U100, U101
+    def __call__(
+        self,
+        __seq: Iterable[T],
+        key: Callable[[T], SupportsDunderLT],
+    ) -> list[T]:
         ...
 
 
@@ -53,8 +58,19 @@ def sort_inline_table(item: tuple[str, Any | Table]) -> str:
 def order_keys(
     table: AbstractTable | OutOfOrderTableProxy,
     to_pin: Sequence[str] | None = None,
-    sort_key: None | Callable[[tuple[str, tuple[Key, Item]]], SupportsDunderLT | SupportsDunderGT] = None,
+    sort_key: None
+    | Callable[
+        [tuple[str, tuple[Key, Item]]],
+        SupportsDunderLT | SupportsDunderGT,
+    ] = None,
 ) -> None:
+    """
+    Order keys in table.
+
+    :param table:
+    :param to_pin:
+    :param sort_key:
+    """
     if isinstance(table, OutOfOrderTableProxy):
         return  # pragma: no cover
     body = table.value.body
@@ -66,12 +82,12 @@ def order_keys(
 
     for pin in to_pin or []:  # push pinned to start
         if pin in entries:
-            body.extend(sorted(entries[pin], key=sort_inline_table))  # type: ignore
+            body.extend(sorted(entries[pin], key=sort_inline_table))  # type: ignore[arg-type]
             del entries[pin]
     # append the rest
     if sort_key is None:
         for elements in entries.values():
-            body.extend(elements)  # pragma: no cover
+            body.extend(elements)
     else:
         for _, elements in sorted(entries.items(), key=sort_inline_table):
             body.extend(elements)
@@ -79,6 +95,8 @@ def order_keys(
 
 @dataclass
 class ArrayEntries:
+    """Array entries."""
+
     text: String
     comments: list[Comment] = field(default_factory=list)
 
@@ -89,9 +107,18 @@ def sorted_array(
     key: Callable[[ArrayEntries], str] = lambda e: str(e.text).lower(),
     custom_sort: str | None = None,
 ) -> None:
+    """
+    Ensure array is sorted.
+
+    :param array:
+    :param indent:
+    :param key:
+    :param custom_sort:
+    :return:
+    """
     if array is None:
         return
-    body = array._value
+    body = array._value  # noqa: SLF001
 
     entries: list[ArrayEntries] = []
     start: list[Comment] = []
@@ -105,12 +132,13 @@ def sorted_array(
     body.clear()
     indent_text = " " * indent
     for start_entry in start:
-        body.append(_ArrayItemGroup(indent=Whitespace(f"\n{indent_text}"), comment=start_entry))
-    sort_method: SortingFunction[ArrayEntries]
-    if custom_sort == "natsort":
-        sort_method = natsorted
-    else:
-        sort_method = sorted  # type: ignore[assignment]
+        body.append(
+            _ArrayItemGroup(indent=Whitespace(f"\n{indent_text}"), comment=start_entry),
+        )
+
+    sort_method: SortingFunction[ArrayEntries] = (
+        natsorted if custom_sort == "natsort" else sorted  # type: ignore[assignment]
+    )
     for element in sort_method(entries, key=key):
         if element.comments:
             com = " ".join(i.trivia.comment[1:].strip() for i in element.comments)
@@ -118,23 +146,37 @@ def sorted_array(
         else:
             comment = None
         group = _ArrayItemGroup(
-            indent=Whitespace(f"\n{indent_text}"), value=element.text, comma=Whitespace(","), comment=comment
+            indent=Whitespace(f"\n{indent_text}"),
+            value=element.text,
+            comma=Whitespace(","),
+            comment=comment,
         )
         body.append(group)
     body.append(_ArrayItemGroup(indent=Whitespace("\n")))
 
 
 def ensure_newline_at_end(body: Table) -> None:
+    """
+    Ensure newline at the end.
+
+    :param body: the body
+    """
     content: Table = body
     while True:
-        if isinstance(content, AoT) and content.value and isinstance(content[-1], (AoT, Table)):
+        if (
+            isinstance(content, AoT)
+            and content.value
+            and isinstance(content[-1], (AoT, Table))
+        ):
             content = content[-1]
-        elif isinstance(content, Table) and content.value.body and isinstance(content.value.body[-1][1], (AoT, Table)):
-            content = content.value.body[-1][1]  # type: ignore # can be AoT temporarily
-        else:  # pragma: no cover
-            # coverage has a bug on python < 3.10, seeing this line as uncovered
-            # https://github.com/nedbat/coveragepy/issues/1480
-            break
+        elif (
+            isinstance(content, Table)
+            and content.value.body
+            and isinstance(content.value.body[-1][1], (AoT, Table))
+        ):
+            content = content.value.body[-1][1]  # type: ignore[assignment] # can be AoT temporarily
+        else:
+            break  # pragma: no cover # https://github.com/nedbat/coveragepy/issues/1480
     if isinstance(body, OutOfOrderTableProxy):
         return
     whitespace = Whitespace("\n")

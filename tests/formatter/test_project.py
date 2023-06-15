@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from pyproject_fmt.formatter.project import fmt_project
-from tests import Fmt
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from tests import Fmt
 
 
 @pytest.mark.parametrize(

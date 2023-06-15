@@ -1,17 +1,21 @@
+"""Format the project table."""
 from __future__ import annotations
 
 import re
 import subprocess
 from shutil import which
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 
 from packaging.utils import canonicalize_name
 from tomlkit.items import Array, String, Table, Trivia
-from tomlkit.toml_document import TOMLDocument
 
-from .config import Config
 from .pep508 import normalize_pep508_array
 from .util import ensure_newline_at_end, order_keys, sorted_array
+
+if TYPE_CHECKING:
+    from tomlkit.toml_document import TOMLDocument
+
+    from .config import Config
 
 _PY_MIN_VERSION: int = 7
 _PY_MAX_VERSION: int = 11
@@ -21,7 +25,11 @@ def _get_max_version() -> int:
     max_version = _PY_MAX_VERSION
     tox = which("tox")
     if tox is not None:  # pragma: no branch
-        tox_environments = subprocess.check_output(["tox", "-aqq"], encoding="utf-8", text=True)
+        tox_environments = subprocess.check_output(
+            ["tox", "-aqq"],  # noqa: S603, S607
+            encoding="utf-8",
+            text=True,
+        )
         if not re.match(r"ROOT: No .* found, assuming empty", tox_environments):
             found = set()
             for env in tox_environments.split():
@@ -37,7 +45,7 @@ def _get_max_version() -> int:
 def _add_py_classifiers(project: Table) -> None:
     # update classifiers depending on requires
     requires = project.get("requires-python", f">=3.{_PY_MIN_VERSION}")
-    if not (requires.startswith("==") or requires.startswith(">=")):
+    if not (requires.startswith(("==", ">="))):
         return
     versions = [int(i) for i in requires[2:].split(".")[:2]]
     major, minor = versions[0], versions[1] if len(versions) > 1 else _PY_MIN_VERSION
@@ -55,7 +63,11 @@ def _add_py_classifiers(project: Table) -> None:
         project["classifiers"] = classifiers
 
     exist = set(classifiers.unwrap())
-    remove = [e for e in exist if re.fullmatch(r"Programming Language :: Python :: \d.*", e) and e not in add]
+    remove = [
+        e
+        for e in exist
+        if re.fullmatch(r"Programming Language :: Python :: \d.*", e) and e not in add
+    ]
     deleted = 0
     for at, item in enumerate(list(classifiers)):
         if item in remove:
@@ -67,14 +79,22 @@ def _add_py_classifiers(project: Table) -> None:
             classifiers.insert(len(add), entry)
 
 
-def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
+def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
+    """
+    Format the project table.
+
+    :param parsed: the raw parsed table
+    :param conf: configuration
+    """
     project = cast(Optional[Table], parsed.get("project"))
     if project is None:
         return
 
-    if "name" in project:  # normalize names to hyphen so sdist / wheel have the same prefix
+    if (
+        "name" in project
+    ):  # normalize names to hyphen so sdist / wheel have the same prefix
         name = project["name"]
-        assert isinstance(name, str)
+        assert isinstance(name, str)  # noqa: S101
         project["name"] = canonicalize_name(name)
     if "description" in project:
         project["description"] = String.from_raw(str(project["description"]).strip())
@@ -85,9 +105,16 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
     if "requires-python" in project:
         _add_py_classifiers(project)
 
-    sorted_array(cast(Optional[Array], project.get("classifiers")), indent=conf.indent, custom_sort="natsort")
+    sorted_array(
+        cast(Optional[Array], project.get("classifiers")),
+        indent=conf.indent,
+        custom_sort="natsort",
+    )
 
-    normalize_pep508_array(cast(Optional[Array], project.get("dependencies")), conf.indent)
+    normalize_pep508_array(
+        cast(Optional[Array], project.get("dependencies")),
+        conf.indent,
+    )
     if "optional-dependencies" in project:
         opt_deps = cast(Table, project["optional-dependencies"])
         for value in opt_deps.values():
@@ -105,16 +132,32 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:
         for entry_point in entry_points.values():
             order_keys(entry_point, (), sort_key=lambda k: k[0])  # pragma: no branch
 
-    # license: Optional[Union[str, LicenseTableLegacy]]
-    # license_files: Optional[LicenseFilesTable] = Field(alias="license-files")
-    # readme: Optional[Union[str, ReadmeTable]]
     # order maintainers and authors table
     # handle readme table
 
-    key_order = ["name", "version", "description", "readme", "keywords", "license", "license-files"]
-    key_order.extend(["maintainers", "authors", "requires-python", "classifiers", "dynamic", "dependencies"])
+    key_order = [
+        "name",
+        "version",
+        "description",
+        "readme",
+        "keywords",
+        "license",
+        "license-files",
+    ]
+    key_order.extend(
+        [
+            "maintainers",
+            "authors",
+            "requires-python",
+            "classifiers",
+            "dynamic",
+            "dependencies",
+        ],
+    )
     # these go at the end as they may be inline or exploded
-    key_order.extend(["optional-dependencies", "urls", "scripts", "gui-scripts", "entry-points"])
+    key_order.extend(
+        ["optional-dependencies", "urls", "scripts", "gui-scripts", "entry-points"],
+    )
     order_keys(project, key_order)
     ensure_newline_at_end(project)
 

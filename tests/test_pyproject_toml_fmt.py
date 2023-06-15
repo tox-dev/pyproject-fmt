@@ -10,4 +10,6 @@ def test_help_invocation_as_module() -> None:
 
 
 def test_help_invocation_as_script() -> None:
-    subprocess.check_call([str(Path(sys.executable).parent / "pyproject-fmt"), "--help"])
+    subprocess.check_call(
+        [str(Path(sys.executable).parent / "pyproject-fmt"), "--help"],
+    )
