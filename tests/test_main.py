@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import difflib
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
 import pyproject_fmt.__main__
 from pyproject_fmt.__main__ import GREEN, RED, RESET, color_diff, run
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_color_diff() -> None:
@@ -86,7 +88,7 @@ def no_color(diff: Any) -> Any:
         ),
     ],
 )
-def test_main(
+def test_main(  # noqa: PLR0913
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     in_place: bool,

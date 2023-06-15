@@ -1,27 +1,45 @@
+"""Apply package name normalization."""
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from packaging.requirements import Requirement
 from tomlkit.api import string as toml_string
-from tomlkit.items import Array, String
 
 from .util import sorted_array
 
+if TYPE_CHECKING:
+    from tomlkit.items import Array, String
+
 
 def normalize_req(req: str) -> str:
+    """
+    Normalize a python requirement.
+
+    :param req: the raw requirement
+    :return: normalized name
+    """
     parsed = Requirement(req)
     for spec in parsed.specifier:
         if spec.operator in (">=", "=="):
             version = spec.version
             while version.endswith(".0"):
                 version = version[:-2]
-            spec._spec = (spec._spec[0], version)
+            spec._spec = (spec._spec[0], version)  # noqa: SLF001
     return str(parsed)
 
 
 def normalize_requires(raws: list[str]) -> list[str]:
-    values = (normalize_req(req) for req in raws if req)
-    normalized = sorted(values, key=lambda req: (";" in req, Requirement(req).name, req))
-    return normalized
+    """
+    Normalize a list of requirements.
+
+    :param raws: the raw values
+    :return: the normalized values
+    """
+    return sorted(
+        (normalize_req(req) for req in raws if req),
+        key=lambda req: (";" in req, Requirement(req).name, req),
+    )
 
 
 def _best_effort_string_repr(req: str) -> String:
@@ -35,6 +53,12 @@ def _best_effort_string_repr(req: str) -> String:
 
 
 def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
+    """
+    Normalize a TOML array via PEP-508.
+
+    :param requires_array: the input array
+    :param indent: indentation level
+    """
     if requires_array is None:
         return
     # first normalize values

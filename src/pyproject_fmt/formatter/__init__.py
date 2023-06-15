@@ -1,12 +1,18 @@
+"""Logic related to how to format."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from tomlkit import parse
-from tomlkit.toml_document import TOMLDocument
 
 from .build_system import fmt_build_system
-from .config import Config
 from .project import fmt_project
 from .tools import fmt_tools
+
+if TYPE_CHECKING:
+    from tomlkit.toml_document import TOMLDocument
+
+    from .config import Config
 
 
 def _perform(parsed: TOMLDocument, conf: Config) -> None:
