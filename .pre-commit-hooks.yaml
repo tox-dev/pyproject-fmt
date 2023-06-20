@@ -5,3 +5,4 @@
   language: python
   language_version: python3
   files: '(^|/)pyproject\.toml$'
+  types: [file, text, toml]
