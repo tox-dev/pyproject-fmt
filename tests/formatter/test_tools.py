@@ -29,6 +29,8 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
     [tool.setuptools]
     a.b = 0
+    [tool.autopep8]
+    a = 0
 
     """
     expected = """
@@ -43,6 +45,9 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
 
     [tool.hatch]
+    a = 0
+
+    [tool.autopep8]
     a = 0
 
     [tool.black]

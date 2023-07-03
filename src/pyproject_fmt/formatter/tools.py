@@ -31,6 +31,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "setuptools",
         "setuptools_scm",
         "hatch",
+        "autopep8",
         "black",
         "ruff",
         "isort",
