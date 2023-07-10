@@ -132,7 +132,7 @@ def sorted_array(
     body.clear()
     indent_text = " " * indent
     for start_entry in start:
-        body.append(
+        body.append(  # noqa: PERF401
             _ArrayItemGroup(indent=Whitespace(f"\n{indent_text}"), comment=start_entry),
         )
 
