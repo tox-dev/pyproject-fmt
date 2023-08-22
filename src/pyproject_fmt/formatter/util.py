@@ -1,10 +1,9 @@
 """Utility methods."""
 from __future__ import annotations
 
-import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Sequence, TypeVar
+from typing import Any, Callable, Iterable, Protocol, Sequence, TypeVar
 
 from natsort import natsorted
 from tomlkit.container import OutOfOrderTableProxy
@@ -21,11 +20,6 @@ from tomlkit.items import (
     Whitespace,
     _ArrayItemGroup,
 )
-
-if sys.version_info >= (3, 8):  # pragma: no cover (py38+)
-    from typing import Protocol
-else:  # pragma: no cover (<py38)
-    from typing_extensions import Protocol
 
 
 class SupportsDunderLT(Protocol):

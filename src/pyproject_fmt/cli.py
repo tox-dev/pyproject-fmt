@@ -82,7 +82,9 @@ def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
     :return: the parsed options
     """
     parser = _build_cli()
-    return parser.parse_args(namespace=PyProjectFmtNamespace(), args=args)
+    result = PyProjectFmtNamespace()
+    parser.parse_args(namespace=result, args=args)
+    return result
 
 
 __all__ = [

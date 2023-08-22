@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 import pytest
@@ -8,6 +9,8 @@ from pyproject_fmt.formatter.project import fmt_project
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from pytest_mock import MockerFixture
 
     from tests import Fmt
 
@@ -256,14 +259,39 @@ def test_classifier_gt_tox_conf_missing(fmt: Fmt) -> None:
     fmt(fmt_project, start, expected)
 
 
-def test_classifier_keep_impl(fmt: Fmt) -> None:
+def test_classifier_tox_fails_call(fmt: Fmt, mocker: MockerFixture) -> None:
+    mocker.patch(
+        "pyproject_fmt.formatter.project.check_output",
+        side_effect=CalledProcessError(1, []),
+    )
+
     start = """
     [project]
     requires-python=">=3.11"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.11",
-      "Programming Language :: Python :: Implementation :: CPython",
+    ]
+    """
+    fmt(fmt_project, start, start)
+
+
+def test_classifier_tox_exe_bad(
+    fmt: Fmt,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PATH", str(tmp_path))
+    tox_bin = tmp_path / "tox"
+    tox_bin.write_text("")
+    tox_bin.chmod(0o755)
+
+    start = """
+    [project]
+    requires-python=">=3.11"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.11",
     ]
     """
     fmt(fmt_project, start, start)
