@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from shutil import which
+from subprocess import CalledProcessError, check_output
 from typing import TYPE_CHECKING, Optional, cast
 
 from packaging.utils import canonicalize_name
@@ -25,11 +25,14 @@ def _get_max_version() -> int:
     max_version = _PY_MAX_VERSION
     tox = which("tox")
     if tox is not None:  # pragma: no branch
-        tox_environments = subprocess.check_output(
-            ["tox", "-aqq"],  # noqa: S603, S607
-            encoding="utf-8",
-            text=True,
-        )
+        try:
+            tox_environments = check_output(
+                [tox, "-aqq"],  # noqa: S603
+                encoding="utf-8",
+                text=True,
+            )
+        except (OSError, CalledProcessError):
+            return max_version
         if not re.match(r"ROOT: No .* found, assuming empty", tox_environments):
             found = set()
             for env in tox_environments.split():

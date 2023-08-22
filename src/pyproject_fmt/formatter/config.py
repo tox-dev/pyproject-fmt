@@ -5,13 +5,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import sys
     from pathlib import Path
-
-    if sys.version_info >= (3, 8):  # pragma: no cover (py38+)
-        from typing import Final
-    else:  # pragma: no cover (<py38)
-        from typing_extensions import Final
+    from typing import Final
 
 
 DEFAULT_INDENT: Final[int] = 2  #: default indentation level
