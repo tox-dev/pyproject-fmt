@@ -98,7 +98,7 @@ def test_pyproject_toml_dir(tmp_path: Path) -> None:
 
 
 def test_tox_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.syspath_prepend(tmp_path)
     tox_bin = tmp_path / "tox"
     with tox_bin.open("wb"):
-        monkeypatch.syspath_prepend(tmp_path)
         cli_args(["tox.ini"])
