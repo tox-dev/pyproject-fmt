@@ -101,4 +101,5 @@ def test_tox_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.syspath_prepend(tmp_path)
     tox_bin = tmp_path / "tox"
     with tox_bin.open("wb"):
+        tox_bin.chmod(0o755)
         cli_args(["tox.ini"])
