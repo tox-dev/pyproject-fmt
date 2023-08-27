@@ -160,12 +160,26 @@ def test_entry_points(fmt: Fmt) -> None:
     fmt(fmt_project, start, expected)
 
 
+def test_classifier_none(fmt: Fmt) -> None:
+    start = """
+    [project]
+    """
+    fmt(fmt_project, start, start)
+
+
 def test_classifier_lt(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python = "<=3.7"
+    requires-python = "<3.7"
     """
-    fmt(fmt_project, start, start)
+    expected = """
+    [project]
+    requires-python = "<3.7"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+    ]
+    """
+    fmt(fmt_project, start, expected)
 
 
 def test_classifier_gt(fmt: Fmt) -> None:
@@ -202,7 +216,128 @@ def test_classifier_eq(fmt: Fmt) -> None:
     [project]
     requires-python="==3.11"
     classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.11",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_neq(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python = "!=3.9"
+    """
+    expected = """
+    [project]
+    requires-python = "!=3.9"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_range(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python=">=3.7,<3.12"
+    """
+    expected = """
+    [project]
+    requires-python=">=3.7,<3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_range_neq(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python = "<=3.11,!=3.9,>=3.8"
+    """
+    expected = """
+    [project]
+    requires-python = "<=3.11,!=3.9,>=3.8"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_high_range(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python = "<=3.13,>3.10"
+    """
+    expected = """
+    [project]
+    requires-python = "<=3.13,>3.10"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
+      "Programming Language :: Python :: 3.13",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_upper_bound(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python = "<3.8"
+    classifiers = [
+      "Programming Language :: Python :: 3.5",
+      "Programming Language :: Python :: 3.6",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+    ]
+    """
+    expected = """
+    [project]
+    requires-python = "<3.8"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.7",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_two_upper_bounds(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python = "<3.8,<=3.10"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.5",
+      "Programming Language :: Python :: 3.6",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+    ]
+    """
+    expected = """
+    [project]
+    requires-python = "<3.8,<=3.10"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.7",
     ]
     """
     fmt(fmt_project, start, expected)

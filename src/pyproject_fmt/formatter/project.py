@@ -6,7 +6,9 @@ from shutil import which
 from subprocess import CalledProcessError, check_output
 from typing import TYPE_CHECKING, Optional, cast
 
+from packaging.specifiers import SpecifierSet
 from packaging.utils import canonicalize_name
+from packaging.version import Version
 from tomlkit.items import Array, String, Table, Trivia
 
 from .pep508 import normalize_pep508_array
@@ -21,7 +23,22 @@ _PY_MIN_VERSION: int = 7
 _PY_MAX_VERSION: int = 11
 
 
-def _get_max_version() -> int:
+def _get_max_version_specifier(specifiers: SpecifierSet) -> int | None:
+    max_version: list[int] = []
+
+    for specifier in specifiers:
+        if specifier.operator == "<=":
+            max_version.append(Version(specifier.version).minor)
+        if specifier.operator == "<":
+            max_version.append(Version(specifier.version).minor - 1)
+
+    if max_version:
+        return max(max_version)
+
+    return None
+
+
+def _get_max_version_tox() -> int:
     max_version = _PY_MAX_VERSION
     tox = which("tox")
     if tox is not None:  # pragma: no branch
@@ -48,17 +65,20 @@ def _get_max_version() -> int:
 def _add_py_classifiers(project: Table) -> None:
     # update classifiers depending on requires
     requires = project.get("requires-python", f">=3.{_PY_MIN_VERSION}")
-    if not (requires.startswith(("==", ">="))):
-        return
-    versions = [int(i) for i in requires[2:].split(".")[:2]]
-    major, minor = versions[0], versions[1] if len(versions) > 1 else _PY_MIN_VERSION
-    if requires.startswith(">="):
-        supports = [(major, i) for i in range(minor, _get_max_version() + 1)]
-    else:
-        supports = [(major, minor)]
-    add = [f"Programming Language :: Python :: {ma}.{mi}" for (ma, mi) in supports]
-    if requires.startswith(">="):
-        add.append("Programming Language :: Python :: 3 :: Only")
+
+    specifiers = SpecifierSet(requires)
+
+    max_version = _get_max_version_specifier(specifiers)
+    if not max_version:
+        max_version = _get_max_version_tox()
+
+    allowed_versions = list(
+        specifiers.filter(f"3.{v}" for v in range(_PY_MIN_VERSION, max_version + 1)),
+    )
+
+    add = [f"Programming Language :: Python :: {v}" for v in allowed_versions]
+    add.append("Programming Language :: Python :: 3 :: Only")
+
     if "classifiers" in project:
         classifiers: Array = cast(Array, project["classifiers"])
     else:
