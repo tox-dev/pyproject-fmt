@@ -37,6 +37,7 @@ def test_project_classifiers(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3 :: Only",
       "License :: OSI Approved :: MIT License",
       "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.12",
       "Programming Language :: Python :: 3.8",
       "License :: OSI Approved :: MIT License",
       "Programming Language :: Python :: 3.9",
@@ -56,6 +57,7 @@ def test_project_classifiers(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -197,6 +199,7 @@ def test_classifier_gt(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -205,19 +208,20 @@ def test_classifier_gt(fmt: Fmt) -> None:
 def test_classifier_eq(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python="==3.11"
+    requires-python="==3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     expected = """
     [project]
-    requires-python="==3.11"
+    requires-python="==3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -237,6 +241,7 @@ def test_classifier_neq(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -245,11 +250,11 @@ def test_classifier_neq(fmt: Fmt) -> None:
 def test_classifier_range(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python=">=3.7,<3.12"
+    requires-python=">=3.7,<3.13"
     """
     expected = """
     [project]
-    requires-python=">=3.7,<3.12"
+    requires-python=">=3.7,<3.13"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.7",
@@ -257,6 +262,7 @@ def test_classifier_range(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -265,16 +271,17 @@ def test_classifier_range(fmt: Fmt) -> None:
 def test_classifier_range_neq(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python = "<=3.11,!=3.9,>=3.8"
+    requires-python = "<=3.12,!=3.9,>=3.8"
     """
     expected = """
     [project]
-    requires-python = "<=3.11,!=3.9,>=3.8"
+    requires-python = "<=3.12,!=3.9,>=3.8"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -373,6 +380,7 @@ def test_classifier_gt_tox_no_py_ver(fmt: Fmt, tmp_path: Path) -> None:
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -381,14 +389,14 @@ def test_classifier_gt_tox_no_py_ver(fmt: Fmt, tmp_path: Path) -> None:
 def test_classifier_gt_tox_conf_missing(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python=">=3.11"
+    requires-python=">=3.12"
     """
     expected = """
     [project]
-    requires-python=">=3.11"
+    requires-python=">=3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, expected)
@@ -402,10 +410,10 @@ def test_classifier_tox_fails_call(fmt: Fmt, mocker: MockerFixture) -> None:
 
     start = """
     [project]
-    requires-python=">=3.11"
+    requires-python=">=3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, start)
@@ -423,10 +431,10 @@ def test_classifier_tox_exe_bad(
 
     start = """
     [project]
-    requires-python=">=3.11"
+    requires-python=">=3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
     ]
     """
     fmt(fmt_project, start, start)
