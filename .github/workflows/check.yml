@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         py:
-          - "3.12.0-rc.3"
+          - "3.12"
           - "3.11"
           - "3.10"
           - "3.9"
@@ -35,6 +35,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.py }}
+          allow-prereleases: true
       - name: Pick environment to run
         run: |
           import codecs; import os; import sys
