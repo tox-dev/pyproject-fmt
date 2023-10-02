@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from .config import Config
 
 _PY_MIN_VERSION: int = 7
-_PY_MAX_VERSION: int = 11
+_PY_MAX_VERSION: int = 12
 
 
 def _get_max_version_specifier(specifiers: SpecifierSet) -> int | None:
