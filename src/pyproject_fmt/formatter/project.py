@@ -23,6 +23,18 @@ _PY_MIN_VERSION: int = 7
 _PY_MAX_VERSION: int = 12
 
 
+def _get_min_version_specifier(specifiers: SpecifierSet) -> int:
+    min_version: list[int] = [_PY_MIN_VERSION]
+
+    for specifier in specifiers:
+        if specifier.operator == ">=":
+            min_version.append(Version(specifier.version).minor)
+        if specifier.operator == ">":
+            min_version.append(Version(specifier.version).minor + 1)
+
+    return min(min_version)
+
+
 def _get_max_version_specifier(specifiers: SpecifierSet) -> int | None:
     max_version: list[int] = []
 
@@ -68,12 +80,13 @@ def _add_py_classifiers(project: Table) -> None:
 
     specifiers = SpecifierSet(requires)
 
+    min_version = _get_min_version_specifier(specifiers)
     max_version = _get_max_version_specifier(specifiers)
     if not max_version:
         max_version = _get_max_version_tox()
 
     allowed_versions = list(
-        specifiers.filter(f"3.{v}" for v in range(_PY_MIN_VERSION, max_version + 1)),
+        specifiers.filter(f"3.{v}" for v in range(min_version, max_version + 1)),
     )
 
     add = [f"Programming Language :: Python :: {v}" for v in allowed_versions]
