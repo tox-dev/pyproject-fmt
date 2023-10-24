@@ -7,10 +7,19 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from pyproject_fmt._version import __version__
 from pyproject_fmt.cli import cli_args
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+def test_cli_version(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as context:
+        cli_args(["--version"])
+    assert context.value.code == 0
+    out, err = capsys.readouterr()
+    assert out == f"pyproject-fmt ({__version__})\n"
 
 
 def test_cli_pyproject_toml_ok(tmp_path: Path) -> None:

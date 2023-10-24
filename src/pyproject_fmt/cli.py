@@ -11,6 +11,7 @@ from argparse import (
 from pathlib import Path
 from typing import Sequence
 
+from ._version import __version__
 from pyproject_fmt.formatter.config import DEFAULT_INDENT, Config
 
 
@@ -57,7 +58,17 @@ def pyproject_toml_path_creator(argument: str) -> Path:
 
 
 def _build_cli() -> ArgumentParser:
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        prog="pyproject-fmt",
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        help="print package version of pyproject_fmt",
+        version=f"%(prog)s ({__version__})",
+    )
     group = parser.add_mutually_exclusive_group()
     msg = "print the formatted text to the stdout (instead of update in-place)"
     group.add_argument("-s", "--stdout", action="store_true", help=msg)
