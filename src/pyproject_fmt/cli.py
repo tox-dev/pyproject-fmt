@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Sequence
 
 from ._version import __version__
-from pyproject_fmt.formatter.config import DEFAULT_INDENT, Config
+from .formatter.config import DEFAULT_INDENT, Config
 
 
 class PyProjectFmtNamespace(Namespace):
