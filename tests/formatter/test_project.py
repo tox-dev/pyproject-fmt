@@ -187,13 +187,35 @@ def test_classifier_lt(fmt: Fmt) -> None:
 def test_classifier_gt(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python = ">=3.7"
+    requires-python = ">3.6"
     """
     expected = """
     [project]
-    requires-python = ">=3.7"
+    requires-python = ">3.6"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
+    ]
+    """
+    fmt(fmt_project, start, expected)
+
+
+def test_classifier_gte(fmt: Fmt) -> None:
+    start = """
+    [project]
+    requires-python = ">=3.6"
+    """
+    expected = """
+    [project]
+    requires-python = ">=3.6"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.6",
       "Programming Language :: Python :: 3.7",
       "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.9",
