@@ -4,30 +4,42 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
-  - repo: https://github.com/psf/black
-    rev: 23.10.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.2
     hooks:
-      - id: black
+      - id: ruff-format
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        args: ["--ignore-words-list", "crate,releas", "--skip", "*.svg"]
+        additional_dependencies:
+          - tomli>=2.0.1
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: "1.3.1"
+    rev: 1.3.1
     hooks:
       - id: tox-ini-fmt
         args: ["-p", "fix"]
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "1.2.0"
+    rev: 1.2.0
     hooks:
       - id: pyproject-fmt
-        additional_dependencies: ["tox>=4.8"]
+        additional_dependencies: ["tox>=4.11.3"]
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.3"
+    rev: v3.0.3
     hooks:
       - id: prettier
         args: ["--print-width=120", "--prose-wrap=always"]
+  - repo: https://github.com/asottile/blacken-docs
+    rev: 1.16.0
+    hooks:
+      - id: blacken-docs
+        additional_dependencies: [black==23.10]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.1.1"
+    rev: v0.1.2
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix, --exit-non-zero-on-fix, --unsafe-fixes]
   - repo: meta
     hooks:
       - id: check-hooks-apply

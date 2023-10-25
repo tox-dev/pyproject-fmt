@@ -48,12 +48,7 @@ def _handle_one(config: Config, opts: PyProjectFmtNamespace) -> bool:
         name = str(config.pyproject_toml)
     diff: Iterable[str] = []
     if changed:
-        diff = difflib.unified_diff(
-            before.splitlines(),
-            formatted.splitlines(),
-            fromfile=name,
-            tofile=name,
-        )
+        diff = difflib.unified_diff(before.splitlines(), formatted.splitlines(), fromfile=name, tofile=name)
 
     if diff:
         diff = color_diff(diff)

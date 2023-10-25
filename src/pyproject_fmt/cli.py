@@ -26,10 +26,7 @@ class PyProjectFmtNamespace(Namespace):
     @property
     def configs(self) -> list[Config]:
         """:return: configurations"""
-        return [
-            Config(toml, toml.read_text(encoding="utf-8"), self.indent)
-            for toml in self.inputs
-        ]
+        return [Config(toml, toml.read_text(encoding="utf-8"), self.indent) for toml in self.inputs]
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:

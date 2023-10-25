@@ -32,19 +32,19 @@ dynamic = [
 ]
 dependencies = [
   "natsort>=8.4",
-  "packaging>=23.1",
+  "packaging>=23.2",
   "tomlkit>=0.12.1",
 ]
 optional-dependencies.docs = [
-  "furo>=2023.7.26",
-  "sphinx>=7.1.2",
+  "furo>=2023.9.10",
+  "sphinx>=7.2.6",
   "sphinx-argparse-cli>=1.11.1",
   "sphinx-autodoc-typehints>=1.24",
   "sphinx-copybutton>=0.5.2",
 ]
 optional-dependencies.test = [
   "covdefaults>=2.3",
-  "pytest>=7.4",
+  "pytest>=7.4.2",
   "pytest-cov>=4.1",
   "pytest-mock>=3.11.1",
 ]
@@ -66,7 +66,7 @@ line-length = 120
 target-version = "py38"
 isort = {known-first-party = ["pyproject_fmt"], required-imports = ["from __future__ import annotations"]}
 ignore = [
-  "ANN101",  # no typoe annotation for self
+  "ANN101",  # no type annotation for self
   "ANN401",  # allow Any as type annotation
   "D203",  # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
   "D212",  # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible

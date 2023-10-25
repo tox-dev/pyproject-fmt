@@ -37,6 +37,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "isort",
         "flake8",
         "pytest",
+        "pytest_env",
         "coverage",
         "mypy",
     ]
