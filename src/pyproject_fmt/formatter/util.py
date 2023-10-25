@@ -157,17 +157,9 @@ def ensure_newline_at_end(body: Table) -> None:
     """
     content: Table = body
     while True:
-        if (
-            isinstance(content, AoT)
-            and content.value
-            and isinstance(content[-1], (AoT, Table))
-        ):
+        if isinstance(content, AoT) and content.value and isinstance(content[-1], (AoT, Table)):
             content = content[-1]
-        elif (
-            isinstance(content, Table)
-            and content.value.body
-            and isinstance(content.value.body[-1][1], (AoT, Table))
-        ):
+        elif isinstance(content, Table) and content.value.body and isinstance(content.value.body[-1][1], (AoT, Table)):
             content = content.value.body[-1][1]  # type: ignore[assignment] # can be AoT temporarily
         else:
             break  # pragma: no cover # https://github.com/nedbat/coveragepy/issues/1480

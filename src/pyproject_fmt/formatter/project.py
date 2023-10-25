@@ -23,103 +23,6 @@ _PY_MIN_VERSION: int = 7
 _PY_MAX_VERSION: int = 12
 
 
-def _get_min_version_specifier(specifiers: SpecifierSet) -> int | None:
-    min_version: list[int] = []
-
-    for specifier in specifiers:
-        if specifier.operator == ">=":
-            min_version.append(Version(specifier.version).minor)
-        if specifier.operator == ">":
-            min_version.append(Version(specifier.version).minor + 1)
-
-    if min_version:
-        return min(min_version)
-
-    return None
-
-
-def _get_max_version_specifier(specifiers: SpecifierSet) -> int | None:
-    max_version: list[int] = []
-
-    for specifier in specifiers:
-        if specifier.operator == "<=":
-            max_version.append(Version(specifier.version).minor)
-        if specifier.operator == "<":
-            max_version.append(Version(specifier.version).minor - 1)
-
-    if max_version:
-        return max(max_version)
-
-    return None
-
-
-def _get_max_version_tox() -> int:
-    max_version = _PY_MAX_VERSION
-    tox = which("tox")
-    if tox is not None:  # pragma: no branch
-        try:
-            tox_environments = check_output(
-                [tox, "-aqq"],  # noqa: S603
-                encoding="utf-8",
-                text=True,
-            )
-        except (OSError, CalledProcessError):
-            return max_version
-        if not re.match(r"ROOT: No .* found, assuming empty", tox_environments):
-            found = set()
-            for env in tox_environments.split():
-                for part in env.split("-"):
-                    match = re.match(r"py(\d)(\d+)", part)
-                    if match:
-                        found.add(int(match.groups()[1]))
-            if found:
-                max_version = max(found)
-    return max_version
-
-
-def _add_py_classifiers(project: Table) -> None:
-    # update classifiers depending on requires
-    requires = project.get("requires-python", f">=3.{_PY_MIN_VERSION}")
-
-    specifiers = SpecifierSet(requires)
-
-    min_version = _get_min_version_specifier(specifiers)
-    max_version = _get_max_version_specifier(specifiers)
-    if not min_version:
-        min_version = _PY_MIN_VERSION
-    if not max_version:
-        max_version = _get_max_version_tox()
-
-    allowed_versions = list(
-        specifiers.filter(f"3.{v}" for v in range(min_version, max_version + 1)),
-    )
-
-    add = [f"Programming Language :: Python :: {v}" for v in allowed_versions]
-    add.append("Programming Language :: Python :: 3 :: Only")
-
-    if "classifiers" in project:
-        classifiers: Array = cast(Array, project["classifiers"])
-    else:
-        classifiers = Array([], Trivia(), multiline=False)
-        project["classifiers"] = classifiers
-
-    exist = set(classifiers.unwrap())
-    remove = [
-        e
-        for e in exist
-        if re.fullmatch(r"Programming Language :: Python :: \d.*", e) and e not in add
-    ]
-    deleted = 0
-    for at, item in enumerate(list(classifiers)):
-        if item in remove:
-            del classifiers[at - deleted]
-            deleted += 1
-
-    for entry in add:
-        if entry not in classifiers:
-            classifiers.insert(len(add), entry)
-
-
 def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     """
     Format the project table.
@@ -131,9 +34,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     if project is None:
         return
 
-    if (
-        "name" in project
-    ):  # normalize names to hyphen so sdist / wheel have the same prefix
+    if "name" in project:  # normalize names to hyphen so sdist / wheel have the same prefix
         name = project["name"]
         assert isinstance(name, str)  # noqa: S101
         project["name"] = canonicalize_name(name)
@@ -146,16 +47,9 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     if "requires-python" in project:
         _add_py_classifiers(project)
 
-    sorted_array(
-        cast(Optional[Array], project.get("classifiers")),
-        indent=conf.indent,
-        custom_sort="natsort",
-    )
+    sorted_array(cast(Optional[Array], project.get("classifiers")), indent=conf.indent, custom_sort="natsort")
 
-    normalize_pep508_array(
-        cast(Optional[Array], project.get("dependencies")),
-        conf.indent,
-    )
+    normalize_pep508_array(cast(Optional[Array], project.get("dependencies")), conf.indent)
     if "optional-dependencies" in project:
         opt_deps = cast(Table, project["optional-dependencies"])
         for value in opt_deps.values():
@@ -201,6 +95,76 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     )
     order_keys(project, key_order)
     ensure_newline_at_end(project)
+
+
+def _add_py_classifiers(project: Table) -> None:
+    specifiers = SpecifierSet(project.get("requires-python", f">=3.{_PY_MIN_VERSION}"))
+
+    min_version = _get_min_version_classifier(specifiers)
+    max_version = _get_max_version_classifier(specifiers)
+
+    allowed_versions = list(specifiers.filter(f"3.{v}" for v in range(min_version, max_version + 1)))
+
+    add = [f"Programming Language :: Python :: {v}" for v in allowed_versions]
+    add.append("Programming Language :: Python :: 3 :: Only")
+
+    if "classifiers" in project:
+        classifiers: Array = cast(Array, project["classifiers"])
+    else:
+        classifiers = Array([], Trivia(), multiline=False)
+        project["classifiers"] = classifiers
+
+    exist = set(classifiers.unwrap())
+    remove = [e for e in exist if re.fullmatch(r"Programming Language :: Python :: \d.*", e) and e not in add]
+    deleted = 0
+    for at, item in enumerate(list(classifiers)):
+        if item in remove:
+            del classifiers[at - deleted]
+            deleted += 1
+
+    for entry in add:
+        if entry not in classifiers:
+            classifiers.insert(len(add), entry)
+
+
+def _get_min_version_classifier(specifiers: SpecifierSet) -> int:
+    min_version: list[int] = []
+    for specifier in specifiers:
+        if specifier.operator == ">=":
+            min_version.append(Version(specifier.version).minor)
+        if specifier.operator == ">":
+            min_version.append(Version(specifier.version).minor + 1)
+    return min(min_version) if min_version else _PY_MIN_VERSION
+
+
+def _get_max_version_classifier(specifiers: SpecifierSet) -> int:
+    max_version: list[int] = []
+
+    for specifier in specifiers:
+        if specifier.operator == "<=":
+            max_version.append(Version(specifier.version).minor)
+        if specifier.operator == "<":
+            max_version.append(Version(specifier.version).minor - 1)
+    return max(max_version) if max_version else (_get_max_version_tox() or _PY_MAX_VERSION)
+
+
+def _get_max_version_tox() -> int | None:
+    tox = which("tox")
+    if tox is not None:  # pragma: no branch
+        try:
+            tox_environments = check_output([tox, "-aqq"], encoding="utf-8", text=True)  # noqa: S603
+        except (OSError, CalledProcessError):
+            tox_environments = ""
+        if not re.match(r"ROOT: No .* found, assuming empty", tox_environments):
+            found = set()
+            for env in tox_environments.split():
+                for part in env.split("-"):
+                    match = re.match(r"py(\d)(\d+)", part)
+                    if match:
+                        found.add(int(match.groups()[1]))
+            if found:
+                return max(found)
+    return None
 
 
 __all__ = [
