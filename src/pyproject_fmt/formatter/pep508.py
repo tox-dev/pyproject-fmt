@@ -29,19 +29,6 @@ def normalize_req(req: str) -> str:
     return str(parsed)
 
 
-def normalize_requires(raws: list[str]) -> list[str]:
-    """
-    Normalize a list of requirements.
-
-    :param raws: the raw values
-    :return: the normalized values
-    """
-    return sorted(
-        (normalize_req(req) for req in raws if req),
-        key=lambda req: (";" in req, Requirement(req).name, req),
-    )
-
-
 def _best_effort_string_repr(req: str) -> String:
     # Convert requirement to a TOML string, choosing the most appropriate representation (basic or literal).
     # This function will attempt to use literal strings to avoid escaping double-quotes ("), if the requirement value
@@ -70,7 +57,6 @@ def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
 
 
 __all__ = [
-    "normalize_requires",
     "normalize_req",
     "normalize_pep508_array",
 ]
