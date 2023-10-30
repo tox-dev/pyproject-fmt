@@ -96,3 +96,8 @@ run.plugins = ["covdefaults"]
 [tool.mypy]
 show_error_codes = true
 strict = true
+
+[[tool.mypy.overrides]]
+
+module = ["pytest_mock"]
+ignore_missing_imports = true
