@@ -7,7 +7,7 @@ import pytest
 from tomlkit import parse
 from tomlkit.items import Array
 
-from pyproject_fmt.formatter.pep508 import normalize_pep508_array
+from pyproject_fmt.formatter.pep508 import normalize_pep508_array, normalize_req
 
 
 @pytest.mark.parametrize(
