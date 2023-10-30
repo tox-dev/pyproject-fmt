@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-import pytest
+from textwrap import dedent
+from typing import cast
 
-from pyproject_fmt.formatter.pep508 import normalize_req
+import pytest
+from tomlkit import parse
+from tomlkit.items import Array
+
+from pyproject_fmt.formatter.pep508 import normalize_pep508_array, normalize_req
 
 
 @pytest.mark.parametrize(
@@ -38,3 +43,26 @@ def test_requires_fmt(value: str, result: str) -> None:
 def test_bad_syntax_requires(char: str) -> None:
     with pytest.raises(ValueError, match=f"[{char}]" if char.strip() else None):
         normalize_req(f"{char};")
+
+
+@pytest.mark.parametrize("indent", [0, 2, 4])
+def test_normalize_pep508_array(indent: int) -> None:
+    toml_document_string = """
+        requirements = [
+            "zzz>=1.1.1",
+            "pytest==6.0.0",
+        ]
+        """
+    parsed = parse(toml_document_string)
+    dependencies = parsed["requirements"]
+    normalize_pep508_array(requires_array=cast(Array, dependencies), indent=indent)
+    assert dependencies == ["zzz>=1.1.1", "pytest==6"]
+    expected_string = dedent(
+        f"""\
+        [
+        {" " * indent}"pytest==6",
+        {" " * indent}"zzz>=1.1.1",
+        ]
+        """,
+    ).strip()
+    assert dependencies.as_string() == expected_string
