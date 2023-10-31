@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+from textwrap import dedent
 from typing import TYPE_CHECKING
 
+import pytest
+
 from pyproject_fmt.formatter.build_system import fmt_build_system
+from pyproject_fmt.formatter.config import Config
 
 if TYPE_CHECKING:
     from tests import Fmt
@@ -72,3 +77,29 @@ def test_build_backend_order(fmt: Fmt) -> None:
     """
 
     fmt(fmt_build_system, txt, expected)
+
+
+@pytest.mark.parametrize("indent", [0, 2, 4])
+def test_indent(fmt: Fmt, indent: int) -> None:
+    txt = """
+    [build-system]
+    requires = [
+    "A",
+    "B",
+    ]
+    backend-path = [
+    "C",
+    ]
+    """
+    expected = f"""
+    [build-system]
+    requires = [
+    {" " * indent}"A",
+    {" " * indent}"B",
+    ]
+    backend-path = [
+    {" " * indent}"C",
+    ]
+    """
+    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=indent)
+    fmt(fmt_build_system, config, expected)
