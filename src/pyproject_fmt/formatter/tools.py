@@ -27,18 +27,31 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         table = tools[tool]
         ensure_newline_at_end(cast(Table, table))
     order = [
+        # Build backends
         "poetry",
         "setuptools",
+        "distutils",
         "setuptools_scm",
         "hatch",
+        "flit",
+        "scikit-build",
+        "meson-python",
+        # Builders
+        "cibuildwheel",
+        # Formatters and linters
         "autopep8",
         "black",
         "ruff",
         "isort",
         "flake8",
+        "pylint",
+        "repo-review",
+        "codespell",
+        # Testing
         "pytest",
         "pytest_env",
         "coverage",
+        # Type checking
         "mypy",
     ]
     order_keys(tools, to_pin=order)
