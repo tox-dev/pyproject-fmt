@@ -63,11 +63,9 @@ version.source = "vcs"
 [tool.ruff]
 line-length = 120
 src = ["src", ""]
-
-[tool.ruff.lint]
-select = ["ALL"]
-isort.required-imports = ["from __future__ import annotations"]
-ignore = [
+lint.select = ["ALL"]
+lint.isort.required-imports = ["from __future__ import annotations"]
+lint.ignore = [
   "ANN101",  # no type annotation for self
   "ANN401",  # allow Any as type annotation
   "D203",  # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
