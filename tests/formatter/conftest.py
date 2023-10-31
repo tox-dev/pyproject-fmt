@@ -20,11 +20,11 @@ if TYPE_CHECKING:
 def fmt(monkeypatch: pytest.MonkeyPatch, mocker: MockerFixture, tmp_path: Path) -> Fmt:
     def _func(
         formatter: Callable[[TOMLDocument, Config], None],
-        start: str,
+        start: str | Config,
         expected: str,
     ) -> None:
         mocker.patch("pyproject_fmt.formatter._perform", formatter)
-        opts = Config(pyproject_toml=Path(), toml=dedent(start))
+        opts = Config(pyproject_toml=Path(), toml=dedent(start)) if isinstance(start, str) else start
         monkeypatch.chdir(tmp_path)
         result = format_pyproject(opts)
 

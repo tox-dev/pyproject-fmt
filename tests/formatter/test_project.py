@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
 from subprocess import CalledProcessError
+from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
 
+from pyproject_fmt.formatter.config import Config
 from pyproject_fmt.formatter.project import fmt_project
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from pytest_mock import MockerFixture
 
     from tests import Fmt
@@ -460,3 +461,47 @@ def test_classifier_tox_exe_bad(
     ]
     """
     fmt(fmt_project, start, start)
+
+
+@pytest.mark.parametrize("indent", [0, 2, 4])
+def test_indent(fmt: Fmt, indent: int) -> None:
+    txt = """
+    [project]
+    keywords = [
+      "A",
+    ]
+    dynamic = [
+      "B",
+    ]
+    classifiers = [
+      "C",
+    ]
+    dependencies = [
+      "D",
+    ]
+    [project.optional-dependencies]
+    docs = [
+      "E",
+    ]
+    """
+    expected = f"""
+    [project]
+    keywords = [
+    {" " * indent}"A",
+    ]
+    classifiers = [
+    {" " * indent}"C",
+    ]
+    dynamic = [
+    {" " * indent}"B",
+    ]
+    dependencies = [
+    {" " * indent}"D",
+    ]
+    [project.optional-dependencies]
+    docs = [
+    {" " * indent}"E",
+    ]
+    """
+    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=indent)
+    fmt(fmt_project, config, expected)
