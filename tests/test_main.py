@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import difflib
+from textwrap import dedent
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -132,3 +133,26 @@ def test_main(  # noqa: PLR0913
         assert out == output
     else:
         assert out == outcome
+
+
+@pytest.mark.parametrize("indent", [0, 2, 4])
+def test_indent(tmp_path: Path, indent: int) -> None:
+    start = """\
+    [build-system]
+    requires = [
+        "A",
+    ]
+    """
+
+    expected = f"""\
+    [build-system]
+    requires = [
+    {" " * indent}"A",
+    ]
+    """
+    pyproject_toml = tmp_path / "pyproject.toml"
+    pyproject_toml.write_text(dedent(start))
+    args = [str(pyproject_toml), "--indent", str(indent)]
+    run(args)
+    output = pyproject_toml.read_text()
+    assert output == dedent(expected)
