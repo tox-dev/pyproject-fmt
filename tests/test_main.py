@@ -158,7 +158,7 @@ def test_indent(tmp_path: Path, indent: int) -> None:
     assert output == dedent(expected)
 
 
-def test_keep_full_version(tmp_path: Path) -> None:
+def test_keep_full_version_cli(tmp_path: Path) -> None:
     start = """\
     [build-system]
     requires = [
