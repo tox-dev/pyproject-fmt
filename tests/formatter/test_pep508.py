@@ -55,7 +55,11 @@ def test_normalize_pep508_array(indent: int) -> None:
         """
     parsed = parse(toml_document_string)
     dependencies = parsed["requirements"]
-    normalize_pep508_array(requires_array=cast(Array, dependencies), indent=indent)
+    normalize_pep508_array(
+        requires_array=cast(Array, dependencies),
+        indent=indent,
+        preserve_dependency_versions=False,
+    )
     assert dependencies == ["zzz>=1.1.1", "pytest==6"]
     expected_string = dedent(
         f"""\
@@ -66,3 +70,19 @@ def test_normalize_pep508_array(indent: int) -> None:
         """,
     ).strip()
     assert dependencies.as_string() == expected_string
+
+
+def test_normalize_pep508_array_preserve_versions() -> None:
+    toml_document_string = """
+        requirements = [
+            "pytest==6.0.0",
+        ]
+        """
+    parsed = parse(toml_document_string)
+    dependencies = parsed["requirements"]
+    normalize_pep508_array(
+        requires_array=cast(Array, dependencies),
+        indent=2,
+        preserve_dependency_versions=True,
+    )
+    assert dependencies == ["pytest==6.0.0"]

@@ -103,3 +103,31 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     """
     config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=indent)
     fmt(fmt_build_system, config, expected)
+
+
+def test_preserve_dependency_versions(fmt: Fmt) -> None:
+    txt = """
+    [build-system]
+    requires = [
+      "A==1.0.0",
+    ]
+    """
+    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, preserve_dependency_versions=True)
+    fmt(fmt_build_system, config, txt)
+
+
+def test_no_preserve_dependency_versions(fmt: Fmt) -> None:
+    txt = """
+    [build-system]
+    requires = [
+      "A==1.0.0",
+    ]
+    """
+    expected = """
+    [build-system]
+    requires = [
+      "A==1",
+    ]
+    """
+    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, preserve_dependency_versions=False)
+    fmt(fmt_build_system, config, expected)

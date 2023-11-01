@@ -22,11 +22,20 @@ class PyProjectFmtNamespace(Namespace):
     stdout: bool
     indent: int
     check: bool
+    preserve_dependency_versions: bool
 
     @property
     def configs(self) -> list[Config]:
         """:return: configurations"""
-        return [Config(toml, toml.read_text(encoding="utf-8"), self.indent) for toml in self.inputs]
+        return [
+            Config(
+                pyproject_toml=toml,
+                toml=toml.read_text(encoding="utf-8"),
+                indent=self.indent,
+                preserve_dependency_versions=self.preserve_dependency_versions,
+            )
+            for toml in self.inputs
+        ]
 
 
 def pyproject_toml_path_creator(argument: str) -> Path:
@@ -71,6 +80,8 @@ def _build_cli() -> ArgumentParser:
     group.add_argument("-s", "--stdout", action="store_true", help=msg)
     msg = "check and fail if any input would be formatted, printing any diffs"
     group.add_argument("--check", action="store_true", help=msg)
+    msg = "preserve dependency versions. For example do not change version 1.0.0 to 1"
+    group.add_argument("--preserve-dependency-versions", action="store_true", help=msg)
     parser.add_argument(
         "--indent",
         type=int,

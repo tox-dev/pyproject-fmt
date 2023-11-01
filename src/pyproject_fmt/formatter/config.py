@@ -19,6 +19,7 @@ class Config:
     pyproject_toml: Path
     toml: str  #: the text to format
     indent: int = DEFAULT_INDENT  #: indentation to apply
+    preserve_dependency_versions: bool = False
 
 
 __all__ = [
