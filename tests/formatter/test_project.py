@@ -507,7 +507,7 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     fmt(fmt_project, config, expected)
 
 
-def test_keep_full_version(fmt: Fmt) -> None:
+def test_keep_full_version_on(fmt: Fmt) -> None:
     txt = """
     [project]
     dependencies = [
@@ -522,7 +522,7 @@ def test_keep_full_version(fmt: Fmt) -> None:
     fmt(fmt_project, config, txt)
 
 
-def test_no_keep_full_version(fmt: Fmt) -> None:
+def test_keep_full_version_off(fmt: Fmt) -> None:
     txt = """
     [project]
     dependencies = [
