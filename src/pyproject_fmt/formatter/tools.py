@@ -47,6 +47,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "pylint",
         "repo-review",
         "codespell",
+        "docformatter",
         # Testing
         "pytest",
         "pytest_env",

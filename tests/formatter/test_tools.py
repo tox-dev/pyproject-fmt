@@ -16,6 +16,8 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
     [tool.poetry.scripts]
     version = "1"
+    [tool.scikit-build]
+    a = 0
     [tool.pytest]
     a = 0
     [tool.black]
@@ -29,9 +31,21 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
     [tool.setuptools]
     a.b = 0
+    [tool.docformatter]
+    c = 0
     [tool.autopep8]
     a = 0
-
+    [tool.distutils]
+    a = 0
+    [tool.codespell]
+    [tool.meson-python]
+    a = 0
+    [tool.cibuildwheel]
+    a = 0
+    [tool.pylint]
+    [tool.repo-review]
+    a = 0
+    [tool.flit]
     """
     expected = """
     [tool.poetry]
@@ -41,10 +55,24 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.setuptools]
     a.b = 0
 
+    [tool.distutils]
+    a = 0
+
     [tool.setuptools_scm]
     a = 0
 
     [tool.hatch]
+    a = 0
+
+    [tool.flit]
+
+    [tool.scikit-build]
+    a = 0
+
+    [tool.meson-python]
+    a = 0
+
+    [tool.cibuildwheel]
     a = 0
 
     [tool.autopep8]
@@ -57,6 +85,16 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
 
     [tool.flake8]
+
+    [tool.pylint]
+
+    [tool.repo-review]
+    a = 0
+
+    [tool.codespell]
+
+    [tool.docformatter]
+    c = 0
 
     [tool.pytest]
     a = 0
