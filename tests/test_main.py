@@ -156,3 +156,27 @@ def test_indent(tmp_path: Path, indent: int) -> None:
     run(args)
     output = pyproject_toml.read_text()
     assert output == dedent(expected)
+
+
+def test_keep_full_version_cli(tmp_path: Path) -> None:
+    start = """\
+    [build-system]
+    requires = [
+      "A==1.0.0",
+    ]
+
+    [project]
+    dependencies = [
+      "A==1.0.0",
+    ]
+    [project.optional-dependencies]
+    docs = [
+      "B==2.0.0",
+    ]
+    """
+    pyproject_toml = tmp_path / "pyproject.toml"
+    pyproject_toml.write_text(dedent(start))
+    args = [str(pyproject_toml), "--keep-full-version"]
+    run(args)
+    output = pyproject_toml.read_text()
+    assert output == dedent(start)

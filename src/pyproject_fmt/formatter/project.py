@@ -49,11 +49,19 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
 
     sorted_array(cast(Optional[Array], project.get("classifiers")), indent=conf.indent, custom_sort="natsort")
 
-    normalize_pep508_array(cast(Optional[Array], project.get("dependencies")), conf.indent)
+    normalize_pep508_array(
+        requires_array=cast(Optional[Array], project.get("dependencies")),
+        indent=conf.indent,
+        keep_full_version=conf.keep_full_version,
+    )
     if "optional-dependencies" in project:
         opt_deps = cast(Table, project["optional-dependencies"])
         for value in opt_deps.values():
-            normalize_pep508_array(cast(Array, value), conf.indent)
+            normalize_pep508_array(
+                requires_array=cast(Array, value),
+                indent=conf.indent,
+                keep_full_version=conf.keep_full_version,
+            )
         order_keys(opt_deps, (), sort_key=lambda k: k[0])  # pragma: no branch
 
     for of_type in ("scripts", "gui-scripts", "entry-points", "urls"):

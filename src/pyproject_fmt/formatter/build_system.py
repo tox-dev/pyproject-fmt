@@ -23,7 +23,11 @@ def fmt_build_system(parsed: TOMLDocument, conf: Config) -> None:
     """
     system = cast(Optional[Table], parsed.get("build-system"))
     if system is not None:
-        normalize_pep508_array(cast(Optional[Array], system.get("requires")), conf.indent)
+        normalize_pep508_array(
+            requires_array=cast(Optional[Array], system.get("requires")),
+            indent=conf.indent,
+            keep_full_version=conf.keep_full_version,
+        )
         sorted_array(cast(Optional[Array], system.get("backend-path")), indent=conf.indent)
         order_keys(system, ("build-backend", "requires", "backend-path"))
         ensure_newline_at_end(system)

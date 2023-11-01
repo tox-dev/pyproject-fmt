@@ -39,18 +39,21 @@ def _best_effort_string_repr(req: str) -> String:
         return toml_string(req)
 
 
-def normalize_pep508_array(requires_array: Array | None, indent: int) -> None:
+def normalize_pep508_array(requires_array: Array | None, indent: int, *, keep_full_version: bool) -> None:
     """
     Normalize a TOML array via PEP-508.
 
     :param requires_array: the input array
     :param indent: indentation level
+    :param keep_full_version: whether to preserve, and therefore not normalize, requirements
     """
     if requires_array is None:
         return
     # first normalize values
     for at in range(len(requires_array)):
-        normalized = _best_effort_string_repr(normalize_req(str(requires_array[at])))
+        initial_requirement_string = str(requires_array[at])
+        req_string = initial_requirement_string if keep_full_version else normalize_req(initial_requirement_string)
+        normalized = _best_effort_string_repr(req=req_string)
         requires_array[at] = normalized
     # then sort
     sorted_array(requires_array, indent, key=lambda e: Requirement(e.text).name.lower())
