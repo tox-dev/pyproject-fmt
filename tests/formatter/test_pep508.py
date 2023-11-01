@@ -58,7 +58,7 @@ def test_normalize_pep508_array(indent: int) -> None:
     normalize_pep508_array(
         requires_array=cast(Array, dependencies),
         indent=indent,
-        preserve_dependency_versions=False,
+        keep_full_version=False,
     )
     assert dependencies == ["zzz>=1.1.1", "pytest==6"]
     expected_string = dedent(
@@ -72,7 +72,7 @@ def test_normalize_pep508_array(indent: int) -> None:
     assert dependencies.as_string() == expected_string
 
 
-def test_normalize_pep508_array_preserve_versions() -> None:
+def test_normalize_pep508_array_keep_versions() -> None:
     toml_document_string = """
         requirements = [
             "pytest==6.0.0",
@@ -83,6 +83,6 @@ def test_normalize_pep508_array_preserve_versions() -> None:
     normalize_pep508_array(
         requires_array=cast(Array, dependencies),
         indent=2,
-        preserve_dependency_versions=True,
+        keep_full_version=True,
     )
     assert dependencies == ["pytest==6.0.0"]

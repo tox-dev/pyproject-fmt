@@ -507,7 +507,7 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     fmt(fmt_project, config, expected)
 
 
-def test_preserve_dependency_versions(fmt: Fmt) -> None:
+def test_keep_full_version(fmt: Fmt) -> None:
     txt = """
     [project]
     dependencies = [
@@ -518,11 +518,11 @@ def test_preserve_dependency_versions(fmt: Fmt) -> None:
       "B==2.0.0",
     ]
     """
-    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, preserve_dependency_versions=True)
+    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, keep_full_version=True)
     fmt(fmt_project, config, txt)
 
 
-def test_no_preserve_dependency_versions(fmt: Fmt) -> None:
+def test_no_keep_full_version(fmt: Fmt) -> None:
     txt = """
     [project]
     dependencies = [
@@ -543,5 +543,5 @@ def test_no_preserve_dependency_versions(fmt: Fmt) -> None:
       "B==2",
     ]
     """
-    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, preserve_dependency_versions=False)
+    config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, keep_full_version=False)
     fmt(fmt_project, config, expected)

@@ -26,7 +26,7 @@ def fmt_build_system(parsed: TOMLDocument, conf: Config) -> None:
         normalize_pep508_array(
             requires_array=cast(Optional[Array], system.get("requires")),
             indent=conf.indent,
-            preserve_dependency_versions=conf.preserve_dependency_versions,
+            keep_full_version=conf.keep_full_version,
         )
         sorted_array(cast(Optional[Array], system.get("backend-path")), indent=conf.indent)
         order_keys(system, ("build-backend", "requires", "backend-path"))

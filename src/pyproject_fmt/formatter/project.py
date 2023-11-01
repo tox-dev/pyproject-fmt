@@ -52,7 +52,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     normalize_pep508_array(
         requires_array=cast(Optional[Array], project.get("dependencies")),
         indent=conf.indent,
-        preserve_dependency_versions=conf.preserve_dependency_versions,
+        keep_full_version=conf.keep_full_version,
     )
     if "optional-dependencies" in project:
         opt_deps = cast(Table, project["optional-dependencies"])
@@ -60,7 +60,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
             normalize_pep508_array(
                 requires_array=cast(Array, value),
                 indent=conf.indent,
-                preserve_dependency_versions=conf.preserve_dependency_versions,
+                keep_full_version=conf.keep_full_version,
             )
         order_keys(opt_deps, (), sort_key=lambda k: k[0])  # pragma: no branch
 
