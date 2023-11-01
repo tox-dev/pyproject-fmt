@@ -52,11 +52,9 @@ def normalize_pep508_array(requires_array: Array | None, indent: int, *, keep_fu
     # first normalize values
     for at in range(len(requires_array)):
         initial_requirement_string = str(requires_array[at])
-        final_requirement_string = (
-            initial_requirement_string if keep_full_version else normalize_req(initial_requirement_string)
-        )
+        req_string = initial_requirement_string if keep_full_version else normalize_req(initial_requirement_string)
 
-        normalized = _best_effort_string_repr(req=final_requirement_string)
+        normalized = _best_effort_string_repr(req=req_string)
         requires_array[at] = normalized
     # then sort
     sorted_array(requires_array, indent, key=lambda e: Requirement(e.text).name.lower())
