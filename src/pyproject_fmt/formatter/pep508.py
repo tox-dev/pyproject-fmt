@@ -53,7 +53,6 @@ def normalize_pep508_array(requires_array: Array | None, indent: int, *, keep_fu
     for at in range(len(requires_array)):
         initial_requirement_string = str(requires_array[at])
         req_string = initial_requirement_string if keep_full_version else normalize_req(initial_requirement_string)
-
         normalized = _best_effort_string_repr(req=req_string)
         requires_array[at] = normalized
     # then sort
