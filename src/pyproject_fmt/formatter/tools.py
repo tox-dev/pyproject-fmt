@@ -29,6 +29,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
     order = [
         # Build backends
         "poetry",
+        "pdm",
         "setuptools",
         "distutils",
         "setuptools_scm",
@@ -36,6 +37,10 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "flit",
         "scikit-build",
         "meson-python",
+        "maturin",
+        "whey",
+        "py-build-cmake",
+        "sphinx-theme-builder",
         # Builders
         "cibuildwheel",
         # Formatters and linters
@@ -44,16 +49,35 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "ruff",
         "isort",
         "flake8",
+        "pycln",
+        "nbqa",
         "pylint",
         "repo-review",
         "codespell",
         "docformatter",
+        "pydoclint",
+        "tomlsort",
+        "check-manifest",
+        "check-sdist",
+        "check-wheel-contents",
         # Testing
         "pytest",
         "pytest_env",
+        "pytest-enabler",
         "coverage",
+        # Runners
+        "doit",
+        "spin",
+        "tox",
+        # Releasers/bumpers
+        "bumpversion",
+        "jupyter-releaser",
+        "tbump",
+        "towncrier",
+        "vendoring",
         # Type checking
         "mypy",
+        "pyright",
     ]
     order_keys(tools, to_pin=order)
 
