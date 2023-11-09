@@ -45,13 +45,39 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.pylint]
     [tool.repo-review]
     a = 0
+    [tool.bumpversion]
+    [tool.check-manifest]
+    [tool.check-sdist]
+    [tool.check-wheel-contents]
+    [tool.doit]
     [tool.flit]
+    [tool.jupyter-releaser]
+    [tool.maturin]
+    [tool.mypy]
+    [tool.nbqa]
+    [tool.pdm]
+    [tool.py-build-cmake]
+    [tool.pycln]
+    [tool.pydoclint]
+    [tool.pyright]
+    [tool.pytest-enabler]
+    [tool.pytest_env]
+    [tool.sphinx-theme-builder]
+    [tool.spin]
+    [tool.tbump]
+    [tool.tomlsort]
+    [tool.towncrier]
+    [tool.tox]
+    [tool.vendoring]
+    [tool.whey]
     """
     expected = """
     [tool.poetry]
     name = "a"
     [tool.poetry.scripts]
     version = "1"
+    [tool.pdm]
+
     [tool.setuptools]
     a.b = 0
 
@@ -72,6 +98,14 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.meson-python]
     a = 0
 
+    [tool.maturin]
+
+    [tool.whey]
+
+    [tool.py-build-cmake]
+
+    [tool.sphinx-theme-builder]
+
     [tool.cibuildwheel]
     a = 0
 
@@ -86,6 +120,10 @@ def test_tools_ordering(fmt: Fmt) -> None:
 
     [tool.flake8]
 
+    [tool.pycln]
+
+    [tool.nbqa]
+
     [tool.pylint]
 
     [tool.repo-review]
@@ -96,11 +134,45 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.docformatter]
     c = 0
 
+    [tool.pydoclint]
+
+    [tool.tomlsort]
+
+    [tool.check-manifest]
+
+    [tool.check-sdist]
+
+    [tool.check-wheel-contents]
+
     [tool.pytest]
     a = 0
 
+    [tool.pytest_env]
+
+    [tool.pytest-enabler]
+
     [tool.coverage]
     a = 0
+
+    [tool.doit]
+
+    [tool.spin]
+
+    [tool.tox]
+
+    [tool.bumpversion]
+
+    [tool.jupyter-releaser]
+
+    [tool.tbump]
+
+    [tool.towncrier]
+
+    [tool.vendoring]
+
+    [tool.mypy]
+
+    [tool.pyright]
         """
     fmt(fmt_tools, content, expected)
 
