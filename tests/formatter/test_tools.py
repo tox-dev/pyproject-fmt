@@ -22,6 +22,8 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
     [tool.black]
     a = 0
+    [tool.deptry]
+    a = 0
     [tool.isort]
     a = 0
     [tool.flake8]
@@ -143,6 +145,9 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.check-sdist]
 
     [tool.check-wheel-contents]
+
+    [tool.deptry]
+    a = 0
 
     [tool.pytest]
     a = 0

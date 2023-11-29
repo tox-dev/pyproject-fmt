@@ -60,6 +60,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "check-manifest",
         "check-sdist",
         "check-wheel-contents",
+        "deptry",
         # Testing
         "pytest",
         "pytest_env",
