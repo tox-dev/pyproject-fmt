@@ -29,6 +29,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
     order = [
         # Build backends
         "poetry",
+        "poetry-dynamic-versioning",
         "pdm",
         "setuptools",
         "distutils",

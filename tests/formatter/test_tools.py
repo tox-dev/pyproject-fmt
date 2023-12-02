@@ -44,6 +44,8 @@ def test_tools_ordering(fmt: Fmt) -> None:
     a = 0
     [tool.cibuildwheel]
     a = 0
+    [tool.poetry-dynamic-versioning]
+    a = 0
     [tool.pylint]
     [tool.repo-review]
     a = 0
@@ -78,6 +80,9 @@ def test_tools_ordering(fmt: Fmt) -> None:
     name = "a"
     [tool.poetry.scripts]
     version = "1"
+    [tool.poetry-dynamic-versioning]
+    a = 0
+
     [tool.pdm]
 
     [tool.setuptools]
