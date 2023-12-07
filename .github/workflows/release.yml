@@ -13,7 +13,8 @@ jobs:
       id-token: write
     steps:
       - name: Setup python to build package
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
+        cache: "pip"
         with:
           python-version: "3.11"
       - name: Install build
