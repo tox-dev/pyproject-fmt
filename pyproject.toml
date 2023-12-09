@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "hatchling.build"
 requires = [
-  "hatch-vcs>=0.3",
+  "hatch-vcs>=0.4",
   "hatchling>=1.18",
 ]
 
@@ -33,20 +33,20 @@ dynamic = [
 dependencies = [
   "natsort>=8.4",
   "packaging>=23.2",
-  "tomlkit>=0.12.1",
+  "tomlkit>=0.12.3",
 ]
 optional-dependencies.docs = [
   "furo>=2023.9.10",
   "sphinx>=7.2.6",
   "sphinx-argparse-cli>=1.11.1",
-  "sphinx-autodoc-typehints>=1.24",
+  "sphinx-autodoc-typehints>=1.25.2",
   "sphinx-copybutton>=0.5.2",
 ]
 optional-dependencies.test = [
   "covdefaults>=2.3",
-  "pytest>=7.4.2",
+  "pytest>=7.4.3",
   "pytest-cov>=4.1",
-  "pytest-mock>=3.11.1",
+  "pytest-mock>=3.12",
 ]
 urls."Bug Tracker" = "https://github.com/tox-dev/pyproject-fmt/issues"
 urls."Changelog" = "https://github.com/tox-dev/pyproject-fmt/releases"

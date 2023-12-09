@@ -20,19 +20,14 @@ repos:
     rev: 1.5.3
     hooks:
       - id: pyproject-fmt
-        additional_dependencies: ["tox>=4.11.3"]
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.3
-    hooks:
-      - id: prettier
-        args: ["--print-width=120", "--prose-wrap=always"]
+        additional_dependencies: ["tox>=4.11.4"]
   - repo: https://github.com/asottile/blacken-docs
     rev: 1.16.0
     hooks:
       - id: blacken-docs
-        additional_dependencies: [black==23.10]
+        additional_dependencies: [black==23.11]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+    rev: v0.1.7
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, --unsafe-fixes, --show-fixes]
