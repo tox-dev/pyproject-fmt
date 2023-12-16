@@ -20,6 +20,7 @@ class Config:
     toml: str  #: the text to format
     indent: int = DEFAULT_INDENT  #: indentation to apply
     keep_full_version: bool = False
+    max_supported_python_is_prerelease: bool = False
 
 
 __all__ = [

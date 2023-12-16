@@ -23,6 +23,7 @@ class PyProjectFmtNamespace(Namespace):
     indent: int
     check: bool
     keep_full_version: bool
+    max_supported_python_is_prerelease: bool
 
     @property
     def configs(self) -> list[Config]:
@@ -87,6 +88,11 @@ def _build_cli() -> ArgumentParser:
         type=int,
         default=DEFAULT_INDENT,
         help="number of spaces to indent",
+    )
+    parser.add_argument(
+        "--max-supported-python-is-prerelease",
+        action="store_true",
+        help="whether the max supported python version is the latest prerelease",
     )
     msg = "pyproject.toml file(s) to format"
     parser.add_argument("inputs", nargs="+", type=pyproject_toml_path_creator, help=msg)
