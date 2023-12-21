@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from shutil import which
 from subprocess import CalledProcessError, check_output
-from typing import TYPE_CHECKING, NamedTuple, Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 
 from packaging.specifiers import SpecifierSet
 from packaging.utils import canonicalize_name
@@ -19,19 +19,10 @@ if TYPE_CHECKING:
 
     from .config import Config
 
-
-class PyVersions(NamedTuple):
-    """Supported Python versions."""
-
-    min_version: int
-    max_version: int
-    prerelease: int
+_PY_MIN_VERSION: int = 7
 
 
-CURRENT_PY_VERSIONS = PyVersions(min_version=7, max_version=12, prerelease=13)
-
-
-def fmt_project(parsed: TOMLDocument, conf: Config, *, py_versions: PyVersions = CURRENT_PY_VERSIONS) -> None:  # noqa: C901
+def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     """
     Format the project table.
 
@@ -53,7 +44,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config, *, py_versions: PyVersions =
     sorted_array(cast(Optional[Array], project.get("dynamic")), indent=conf.indent)
 
     if "requires-python" in project:
-        _add_py_classifiers(project, py_versions=py_versions, prerelease=conf.max_supported_python_is_prerelease)
+        _add_py_classifiers(project, py_max_version=conf.max_supported_python)
 
     sorted_array(cast(Optional[Array], project.get("classifiers")), indent=conf.indent, custom_sort="natsort")
 
@@ -113,14 +104,11 @@ def fmt_project(parsed: TOMLDocument, conf: Config, *, py_versions: PyVersions =
     ensure_newline_at_end(project)
 
 
-def _add_py_classifiers(project: Table, *, py_versions: PyVersions, prerelease: bool) -> None:
-    specifiers = SpecifierSet(project.get("requires-python", f">=3.{py_versions.min_version}"))
+def _add_py_classifiers(project: Table, *, py_max_version: Version) -> None:
+    specifiers = SpecifierSet(project.get("requires-python", f">=3.{_PY_MIN_VERSION}"))
 
-    min_version = _get_min_version_classifier(specifiers, min_py_version=py_versions.min_version)
-    max_version = _get_max_version_classifier(
-        specifiers,
-        max_py_version=py_versions.prerelease if prerelease else py_versions.max_version,
-    )
+    min_version = _get_min_version_classifier(specifiers)
+    max_version = _get_max_version_classifier(specifiers, py_max_version=py_max_version)
 
     allowed_versions = list(specifiers.filter(f"3.{v}" for v in range(min_version, max_version + 1)))
 
@@ -146,17 +134,17 @@ def _add_py_classifiers(project: Table, *, py_versions: PyVersions, prerelease: 
             classifiers.insert(len(add), entry)
 
 
-def _get_min_version_classifier(specifiers: SpecifierSet, min_py_version: int) -> int:
+def _get_min_version_classifier(specifiers: SpecifierSet) -> int:
     min_version: list[int] = []
     for specifier in specifiers:
         if specifier.operator == ">=":
             min_version.append(Version(specifier.version).minor)
         if specifier.operator == ">":
             min_version.append(Version(specifier.version).minor + 1)
-    return min(min_version) if min_version else min_py_version
+    return min(min_version, default=_PY_MIN_VERSION)
 
 
-def _get_max_version_classifier(specifiers: SpecifierSet, max_py_version: int) -> int:
+def _get_max_version_classifier(specifiers: SpecifierSet, *, py_max_version: Version) -> int:
     max_version: list[int] = []
 
     for specifier in specifiers:
@@ -164,7 +152,8 @@ def _get_max_version_classifier(specifiers: SpecifierSet, max_py_version: int) -
             max_version.append(Version(specifier.version).minor)
         if specifier.operator == "<":
             max_version.append(Version(specifier.version).minor - 1)
-    return max(max_version) if max_version else (_get_max_version_tox() or max_py_version)
+
+    return max(max_version) if max_version else (_get_max_version_tox() or py_max_version.minor)
 
 
 def _get_max_version_tox() -> int | None:

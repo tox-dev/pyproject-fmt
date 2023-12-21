@@ -6,13 +6,13 @@ from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
+from packaging.version import Version
 
 from pyproject_fmt.formatter.config import Config
-from pyproject_fmt.formatter.project import PyVersions, fmt_project
+from pyproject_fmt.formatter.project import fmt_project
 
 if TYPE_CHECKING:
     from pytest_mock import MockerFixture
-    from tomlkit.toml_document import TOMLDocument
 
     from tests import Fmt
 
@@ -402,21 +402,10 @@ def test_classifier_prerelease(fmt: Fmt) -> None:
     config = Config(
         pyproject_toml=Path(),
         toml=dedent(txt),
-        max_supported_python_is_prerelease=True,
+        max_supported_python=Version("3.15"),
     )
 
-    def _fmt(parsed: TOMLDocument, conf: Config) -> None:
-        fmt_project(
-            parsed,
-            conf,
-            py_versions=PyVersions(
-                min_version=7,
-                max_version=14,
-                prerelease=15,
-            ),
-        )
-
-    fmt(_fmt, config, expected)
+    fmt(fmt_project, config, expected)
 
 
 def test_classifier_gt_tox(fmt: Fmt, tmp_path: Path) -> None:
