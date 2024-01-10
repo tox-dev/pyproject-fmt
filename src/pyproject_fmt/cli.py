@@ -11,8 +11,10 @@ from argparse import (
 from pathlib import Path
 from typing import Sequence
 
+from packaging.version import Version
+
 from ._version import __version__
-from .formatter.config import DEFAULT_INDENT, Config
+from .formatter.config import DEFAULT_INDENT, DEFAULT_MAX_SUPPORTED_PYTHON, Config
 
 
 class PyProjectFmtNamespace(Namespace):
@@ -23,6 +25,7 @@ class PyProjectFmtNamespace(Namespace):
     indent: int
     check: bool
     keep_full_version: bool
+    max_supported_python: Version
 
     @property
     def configs(self) -> list[Config]:
@@ -33,6 +36,7 @@ class PyProjectFmtNamespace(Namespace):
                 toml=toml.read_text(encoding="utf-8"),
                 indent=self.indent,
                 keep_full_version=self.keep_full_version,
+                max_supported_python=self.max_supported_python,
             )
             for toml in self.inputs
         ]
@@ -87,6 +91,12 @@ def _build_cli() -> ArgumentParser:
         type=int,
         default=DEFAULT_INDENT,
         help="number of spaces to indent",
+    )
+    parser.add_argument(
+        "--max-supported-python",
+        type=Version,
+        default=DEFAULT_MAX_SUPPORTED_PYTHON,
+        help="latest Python version the project supports (e.g. 3.13)",
     )
     msg = "pyproject.toml file(s) to format"
     parser.add_argument("inputs", nargs="+", type=pyproject_toml_path_creator, help=msg)

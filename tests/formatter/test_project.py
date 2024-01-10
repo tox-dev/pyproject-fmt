@@ -6,6 +6,7 @@ from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
+from packaging.version import Version
 
 from pyproject_fmt.formatter.config import Config
 from pyproject_fmt.formatter.project import fmt_project
@@ -371,6 +372,40 @@ def test_classifier_two_upper_bounds(fmt: Fmt) -> None:
     ]
     """
     fmt(fmt_project, start, expected)
+
+
+def test_classifier_prerelease(fmt: Fmt) -> None:
+    txt = """
+    [project]
+    requires-python = ">=3.10"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
+    ]
+    """
+    expected = """
+    [project]
+    requires-python = ">=3.10"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
+      "Programming Language :: Python :: 3.13",
+      "Programming Language :: Python :: 3.14",
+      "Programming Language :: Python :: 3.15",
+    ]
+    """
+    config = Config(
+        pyproject_toml=Path(),
+        toml=dedent(txt),
+        max_supported_python=Version("3.15"),
+    )
+
+    fmt(fmt_project, config, expected)
 
 
 def test_classifier_gt_tox(fmt: Fmt, tmp_path: Path) -> None:

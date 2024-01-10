@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from .config import Config
 
 _PY_MIN_VERSION: int = 7
-_PY_MAX_VERSION: int = 12
 
 
 def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
@@ -45,7 +44,7 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     sorted_array(cast(Optional[Array], project.get("dynamic")), indent=conf.indent)
 
     if "requires-python" in project:
-        _add_py_classifiers(project)
+        _add_py_classifiers(project, py_max_version=conf.max_supported_python)
 
     sorted_array(cast(Optional[Array], project.get("classifiers")), indent=conf.indent, custom_sort="natsort")
 
@@ -105,11 +104,11 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
     ensure_newline_at_end(project)
 
 
-def _add_py_classifiers(project: Table) -> None:
+def _add_py_classifiers(project: Table, *, py_max_version: Version) -> None:
     specifiers = SpecifierSet(project.get("requires-python", f">=3.{_PY_MIN_VERSION}"))
 
     min_version = _get_min_version_classifier(specifiers)
-    max_version = _get_max_version_classifier(specifiers)
+    max_version = _get_max_version_classifier(specifiers, py_max_version=py_max_version)
 
     allowed_versions = list(specifiers.filter(f"3.{v}" for v in range(min_version, max_version + 1)))
 
@@ -142,10 +141,10 @@ def _get_min_version_classifier(specifiers: SpecifierSet) -> int:
             min_version.append(Version(specifier.version).minor)
         if specifier.operator == ">":
             min_version.append(Version(specifier.version).minor + 1)
-    return min(min_version) if min_version else _PY_MIN_VERSION
+    return min(min_version, default=_PY_MIN_VERSION)
 
 
-def _get_max_version_classifier(specifiers: SpecifierSet) -> int:
+def _get_max_version_classifier(specifiers: SpecifierSet, *, py_max_version: Version) -> int:
     max_version: list[int] = []
 
     for specifier in specifiers:
@@ -153,7 +152,8 @@ def _get_max_version_classifier(specifiers: SpecifierSet) -> int:
             max_version.append(Version(specifier.version).minor)
         if specifier.operator == "<":
             max_version.append(Version(specifier.version).minor - 1)
-    return max(max_version) if max_version else (_get_max_version_tox() or _PY_MAX_VERSION)
+
+    return max(max_version) if max_version else (_get_max_version_tox() or py_max_version.minor)
 
 
 def _get_max_version_tox() -> int | None:
