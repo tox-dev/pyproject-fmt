@@ -580,3 +580,59 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
     """
     config = Config(pyproject_toml=Path(), toml=dedent(txt), indent=2, keep_full_version=False)
     fmt(fmt_project, config, expected)
+
+
+def test_pyproject_toml_config(fmt: Fmt) -> None:
+    txt = """
+    [project]
+    keywords = [
+      "A",
+    ]
+    requires-python=">=3.8"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+    ]
+    dynamic = [
+      "B",
+    ]
+    dependencies = [
+      "requests>=2.0",
+    ]
+
+    [tool.pyproject_fmt]
+    indent = 4
+    keep_full_version = false
+    max_supported_python = "3.10"
+    """
+    expected = """
+    [project]
+    keywords = [
+        "A",
+    ]
+    requires-python=">=3.8"
+    classifiers = [
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+    ]
+    dynamic = [
+        "B",
+    ]
+    dependencies = [
+        "requests>=2",
+    ]
+
+    [tool.pyproject_fmt]
+    indent = 4
+    keep_full_version = false
+    max_supported_python = "3.10"
+    """
+    config = Config(
+        pyproject_toml=Path(),
+        toml=dedent(txt),
+        indent=6,
+        keep_full_version=True,
+        max_supported_python=Version("3.9"),
+    )
+    fmt(fmt_project, config, expected)

@@ -29,6 +29,9 @@ def format_pyproject(conf: Config) -> str:
     :return: the formatted text
     """
     parsed: TOMLDocument = parse(conf.toml)
+    overrides = parsed.get("tool", {}).get("pyproject_fmt", {})
+    conf = conf.with_overrides(overrides) if overrides else conf
+
     _perform(parsed, conf)
     result = parsed.as_string().rstrip("\n")
     return f"{result}\n"
