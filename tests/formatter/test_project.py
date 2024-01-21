@@ -599,7 +599,7 @@ def test_pyproject_toml_config(fmt: Fmt) -> None:
       "requests>=2.0",
     ]
 
-    [tool.pyproject_fmt]
+    [tool.pyproject-fmt]
     indent = 4
     keep_full_version = false
     max_supported_python = "3.10"
@@ -623,7 +623,7 @@ def test_pyproject_toml_config(fmt: Fmt) -> None:
         "requests>=2",
     ]
 
-    [tool.pyproject_fmt]
+    [tool.pyproject-fmt]
     indent = 4
     keep_full_version = false
     max_supported_python = "3.10"

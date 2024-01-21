@@ -16,7 +16,7 @@ DEFAULT_MAX_SUPPORTED_PYTHON: Final[str] = "3.12"  #: default maximum supported 
 
 
 class PyProjectConfig(TypedDict):
-    """Configuration defined in the ``tool.pyproject_fmt`` table in ``pyproject.toml``."""
+    """Configuration defined in the ``tool.pyproject-fmt`` table in ``pyproject.toml``."""
 
     indent: int
     """Indentation level to apply."""

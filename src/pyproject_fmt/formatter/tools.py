@@ -62,7 +62,7 @@ def fmt_tools(parsed: TOMLDocument, conf: Config) -> None:  # noqa: ARG001
         "check-sdist",
         "check-wheel-contents",
         "deptry",
-        "pyproject_fmt",
+        "pyproject-fmt",
         # Testing
         "pytest",
         "pytest_env",

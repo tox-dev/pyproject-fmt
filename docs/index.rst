@@ -61,12 +61,12 @@ Command line interface
 Configuration file
 ------------------
 
-The ``tool.pyproject_fmt`` table is used when present in any of the ``pyproject.toml`` files
+The ``tool.pyproject-fmt`` table is used when present in any of the ``pyproject.toml`` files
 
 .. code-block:: toml
 
     # pyproject.toml
-    [tool.pyproject_fmt]
+    [tool.pyproject-fmt]
     indent = 4
     keep_full_version = false
     max_supported_python = "3.10"
