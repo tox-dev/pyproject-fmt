@@ -14,7 +14,7 @@ Apply a consistent format to `pyproject.toml` files.
 
 ```yaml
 - repo: https://github.com/tox-dev/pyproject-fmt
-  rev: "1.5.1"
+  rev: "1.7.0"
   hooks:
     - id: pyproject-fmt
 ```
