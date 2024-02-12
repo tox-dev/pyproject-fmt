@@ -1,4 +1,5 @@
 """Configuration for documentation build."""  # noqa: INP001
+
 from __future__ import annotations
 
 from datetime import datetime, timezone

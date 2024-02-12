@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError  # noqa: S404
 from textwrap import dedent
 from typing import TYPE_CHECKING
 

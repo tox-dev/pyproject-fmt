@@ -1,4 +1,5 @@
 """Main entry point for the formatter."""
+
 from __future__ import annotations
 
 import difflib

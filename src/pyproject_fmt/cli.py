@@ -1,4 +1,5 @@
 """CLI interface parser."""
+
 from __future__ import annotations
 
 import os
@@ -117,6 +118,6 @@ def cli_args(args: Sequence[str]) -> PyProjectFmtNamespace:
 
 
 __all__ = [
-    "cli_args",
     "PyProjectFmtNamespace",
+    "cli_args",
 ]

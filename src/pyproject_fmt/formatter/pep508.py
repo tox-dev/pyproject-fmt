@@ -1,4 +1,5 @@
 """Apply package name normalization."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -21,7 +22,7 @@ def normalize_req(req: str) -> str:
     """
     parsed = Requirement(req)
     for spec in parsed.specifier:
-        if spec.operator in (">=", "=="):
+        if spec.operator in {">=", "=="}:
             version = spec.version
             while version.endswith(".0"):
                 version = version[:-2]
@@ -60,6 +61,6 @@ def normalize_pep508_array(requires_array: Array | None, indent: int, *, keep_fu
 
 
 __all__ = [
-    "normalize_req",
     "normalize_pep508_array",
+    "normalize_req",
 ]

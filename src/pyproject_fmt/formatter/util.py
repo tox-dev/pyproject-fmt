@@ -1,4 +1,5 @@
 """Utility methods."""
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -18,18 +19,16 @@ from tomlkit.items import (
     Table,
     Trivia,
     Whitespace,
-    _ArrayItemGroup,
+    _ArrayItemGroup,  # noqa: PLC2701
 )
 
 
 class SupportsDunderLT(Protocol):
-    def __lt__(self, __other: Any) -> bool:
-        ...
+    def __lt__(self, __other: Any) -> bool: ...
 
 
 class SupportsDunderGT(Protocol):
-    def __gt__(self, __other: Any) -> bool:
-        ...
+    def __gt__(self, __other: Any) -> bool: ...
 
 
 T = TypeVar("T")
@@ -40,8 +39,7 @@ class SortingFunction(Protocol[T]):
         self,
         __seq: Iterable[T],
         key: Callable[[T], SupportsDunderLT],
-    ) -> list[T]:
-        ...
+    ) -> list[T]: ...
 
 
 def sort_inline_table(item: tuple[str, Any | Table]) -> str:
@@ -175,7 +173,7 @@ def ensure_newline_at_end(body: Table) -> None:
 
 __all__ = [
     "ArrayEntries",
-    "sorted_array",
-    "order_keys",
     "ensure_newline_at_end",
+    "order_keys",
+    "sorted_array",
 ]
