@@ -18,7 +18,7 @@ def test_cli_version(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as context:
         cli_args(["--version"])
     assert context.value.code == 0
-    out, err = capsys.readouterr()
+    out, _err = capsys.readouterr()
     assert out == f"pyproject-fmt ({__version__})\n"
 
 

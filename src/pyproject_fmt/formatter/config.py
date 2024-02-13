@@ -1,4 +1,5 @@
 """Defines configuration for the formatter."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -57,7 +58,7 @@ class Config:
 
 
 __all__ = [
-    "Config",
     "DEFAULT_INDENT",
     "DEFAULT_MAX_SUPPORTED_PYTHON",
+    "Config",
 ]

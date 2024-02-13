@@ -1,4 +1,5 @@
 """Logic related to formatting the build system."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, cast

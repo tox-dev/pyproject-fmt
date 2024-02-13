@@ -89,7 +89,7 @@ def no_color(diff: Any) -> Any:
         ),
     ],
 )
-def test_main(  # noqa: PLR0913
+def test_main(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     in_place: bool,

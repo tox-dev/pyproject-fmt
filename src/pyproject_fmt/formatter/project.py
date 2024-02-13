@@ -1,9 +1,10 @@
 """Format the project table."""
+
 from __future__ import annotations
 
 import re
 from shutil import which
-from subprocess import CalledProcessError, check_output
+from subprocess import CalledProcessError, check_output  # noqa: S404
 from typing import TYPE_CHECKING, Optional, cast
 
 from packaging.specifiers import SpecifierSet
