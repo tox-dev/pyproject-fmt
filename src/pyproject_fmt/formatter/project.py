@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import operator
 import re
 from shutil import which
 from subprocess import CalledProcessError, check_output  # noqa: S404
@@ -62,18 +63,18 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
                 indent=conf.indent,
                 keep_full_version=conf.keep_full_version,
             )
-        order_keys(opt_deps, (), sort_key=lambda k: k[0])  # pragma: no branch
+        order_keys(opt_deps, (), sort_key=operator.itemgetter(0))  # pragma: no branch
 
     for of_type in ("scripts", "gui-scripts", "entry-points", "urls"):
         if of_type in project:
             table = cast(Table, project[of_type])
-            order_keys(table, (), sort_key=lambda k: k[0])  # pragma: no branch
+            order_keys(table, (), sort_key=operator.itemgetter(0))  # pragma: no branch
 
     if "entry-points" in project:  # order entry points sub-table
         entry_points = cast(Table, project["entry-points"])
-        order_keys(entry_points, (), sort_key=lambda k: k[0])  # pragma: no branch
+        order_keys(entry_points, (), sort_key=operator.itemgetter(0))  # pragma: no branch
         for entry_point in entry_points.values():
-            order_keys(entry_point, (), sort_key=lambda k: k[0])  # pragma: no branch
+            order_keys(entry_point, (), sort_key=operator.itemgetter(0))  # pragma: no branch
 
     # order maintainers and authors table
     # handle readme table
