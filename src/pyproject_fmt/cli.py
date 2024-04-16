@@ -52,7 +52,7 @@ def pyproject_toml_path_creator(argument: str) -> Path:
     """
     path = Path(argument).absolute()
     if path.is_dir():
-        path = path / "pyproject.toml"
+        path /= "pyproject.toml"
     if not path.exists():
         msg = "path does not exist"
         raise ArgumentTypeError(msg)
