@@ -115,6 +115,19 @@ def test_project_description(fmt: Fmt) -> None:
     fmt(fmt_project, start, expected)
 
 
+def test_project_description_multiline(fmt: Fmt) -> None:
+    start = dedent('''\
+        [project]
+        description="""A multi-line
+                       description."""
+    ''')
+    expected = dedent("""\
+        [project]
+        description="A multi-line description."
+    """)
+    fmt(fmt_project, start, expected)
+
+
 def test_project_scripts(fmt: Fmt) -> None:
     start = """
     [project.scripts]

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from .config import Config
 
 _PY_MIN_VERSION: int = 7
+_ANY_WHITESPACE = re.compile(r"\s+")
 
 
 def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
@@ -40,7 +41,9 @@ def fmt_project(parsed: TOMLDocument, conf: Config) -> None:  # noqa: C901
         assert isinstance(name, str)  # noqa: S101
         project["name"] = canonicalize_name(name)
     if "description" in project:
-        project["description"] = String.from_raw(str(project["description"]).strip())
+        # Convert multiline description to a single line
+        _description = _ANY_WHITESPACE.sub(" ", str(project["description"]).strip())
+        project["description"] = String.from_raw(_description, escape=False)
 
     sorted_array(cast(Optional[Array], project.get("keywords")), indent=conf.indent)
     sorted_array(cast(Optional[Array], project.get("dynamic")), indent=conf.indent)
