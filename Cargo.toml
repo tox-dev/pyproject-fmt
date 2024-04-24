@@ -1,0 +1,19 @@
+[package]
+name = "pyproject-fmt"
+description = "Format pyproject.toml files"
+repository = "https://github.com/tox-dev/pyproject-fmt"
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+default-run = "pyproject-fmt"
+
+[[bin]]
+name = "pyproject-fmt"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5.4", features = ["unicode", "color", "help"] }
+clio = { version = "0.3.5", features = ["clap-parse"] }
+taplo = { version = "0.13.0" }
+
+[lints.clippy]
