@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::ops::Index;
 
 use taplo::rowan::{NodeOrToken, SyntaxElement};
-use taplo::syntax::{Lang, SyntaxNode};
 use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
+use taplo::syntax::{Lang, SyntaxNode};
 
 type Element = SyntaxElement<Lang>;
 
