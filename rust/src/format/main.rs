@@ -1,13 +1,21 @@
 use std::string::String;
 
+use pyo3::{Bound, pyfunction, pymodule, PyResult, wrap_pyfunction};
+use pyo3::prelude::PyModule;
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
 use crate::table_ordering::reorder_table;
 
-pub fn format_toml(content: String, width: usize, indent: usize) -> String {
+mod table_ordering;
+
+
+/// Format toml file
+#[pyfunction]
+pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
     let mut root_ast = parse(&content).into_syntax().clone_for_update();
     reorder_table(&mut root_ast);
+
     let options = Options {
         align_entries: false,         // do not align by =
         align_comments: true,         // align inline comments
@@ -18,7 +26,7 @@ pub fn format_toml(content: String, width: usize, indent: usize) -> String {
         compact_arrays: false,        // do not compact for easier diffs
         compact_inline_tables: false, // do not compact for easier diffs
         compact_entries: false,       // do not compact for easier diffs
-        column_width: width,
+        column_width: 1, // always expand arrays per https://github.com/tamasfe/taplo/issues/390
         indent_tables: false,
         indent_entries: false,
         inline_table_expand: true,
@@ -30,4 +38,11 @@ pub fn format_toml(content: String, width: usize, indent: usize) -> String {
         crlf: false,
     };
     format_syntax(root_ast, options)
+}
+
+#[pymodule]
+#[pyo3(name = "_lib")]
+fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(format_toml, m)?)?;
+    Ok(())
 }

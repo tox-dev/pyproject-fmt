@@ -1,5 +1,6 @@
 [package]
 name = "pyproject-fmt"
+version = "2.0.0"
 description = "Format pyproject.toml files"
 repository = "https://github.com/tox-dev/pyproject-fmt"
 readme = "README.md"
@@ -9,11 +10,17 @@ default-run = "pyproject-fmt"
 
 [[bin]]
 name = "pyproject-fmt"
-path = "src/main.rs"
+path = "rust/src/main.rs"
+
+[lib]
+name = "_lib"
+path = "rust/src/format/main.rs"
+crate-type = ["cdylib"]
 
 [dependencies]
 clap = { version = "4.5.4", features = ["unicode", "color", "help"] }
 clio = { version = "0.3.5", features = ["clap-parse"] }
 taplo = { version = "0.13.0" }
+pyo3 = { version = "0.21.2", features = ["extension-module"] }
 
 [lints.clippy]

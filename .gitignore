@@ -1,2 +1,8 @@
+*.egg-info/
+.tox/
+.*_cache
+__pycache__
+**.pyc
+dist
 /target
-/pyproject*.toml
+/pyproject-*.toml
