@@ -61,7 +61,6 @@ strip = true
 include = [
     "rust-toolchain.toml"
 ]
-#features = ["pyo3/extension-module"]
 
 [tool.ruff]
 line-length = 120

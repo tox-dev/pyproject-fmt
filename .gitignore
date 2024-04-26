@@ -4,6 +4,9 @@
 __pycache__
 **.pyc
 dist
+
 /target
 /pyproject-*.toml
 /src/pyproject_fmt/_lib.*
+/tarpaulin-report.html
+/build_rs_cov.profraw

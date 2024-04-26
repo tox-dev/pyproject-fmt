@@ -444,6 +444,7 @@ dependencies = [
 name = "pyproject-fmt"
 version = "2.0.0"
 dependencies = [
+ "indoc",
  "pyo3",
  "rstest",
  "taplo",

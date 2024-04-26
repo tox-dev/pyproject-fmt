@@ -13,10 +13,15 @@ path = "rust/src/main.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-taplo = { version = "0.13.0" }
-pyo3 = { version = "0.21.2", features = ["extension-module"] }
+taplo = { version = "0.13.0" } # formatter
+pyo3 = { version = "0.21.2" }  # integration with Python
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
 
 [lints.clippy]
 
 [dev-dependencies]
-rstest = { version = "0.19.0" }
+rstest = { version = "0.19.0" } # parametrized tests
+indoc = { version = "2.0.5" }   # dedented test cases for literal strings

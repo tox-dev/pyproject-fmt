@@ -1,7 +1,7 @@
 use std::string::String;
 
+use pyo3::{Bound, pyfunction, pymodule, PyResult, wrap_pyfunction};
 use pyo3::prelude::PyModule;
-use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
@@ -46,7 +46,58 @@ pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_
 
 #[pymodule]
 #[pyo3(name = "_lib")]
+#[cfg(not(tarpaulin_include))]
 fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(format_toml, m)?)?;
     Ok(())
+}
+
+
+#[cfg(test)]
+mod tests {
+    use indoc::indoc;
+    use rstest::rstest;
+
+    use crate::format_toml;
+
+    #[rstest]
+    #[case::simple(
+    indoc ! {r#"
+    # comment
+    a= "b"
+    [build-system]
+    requires=[" c >= 1.5.0", "d == 2.0.0"]
+    [tool.mypy]
+    mk="mv"
+    [tool.ruff.test]
+    mrt="vrt"
+    [extra]
+    ek = "ev"
+    [tool.ruff]
+    mr="vr"
+    "#},
+    indoc ! {r#"
+    # comment
+    a = "b"
+    [build-system]
+    requires = [
+      "c>=1.5.0",
+      "d==2.0.0",
+    ]
+    [extra]
+    ek = "ev"
+    [tool.ruff]
+    mr = "vr"
+    [tool.ruff.test]
+    mrt = "vrt"
+    [tool.mypy]
+    mk = "mv"
+    "#},
+    2,
+    true,
+    (3, 12),
+    )]
+    fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] indent: usize, #[case] keep_full_version: bool, #[case] max_supported_python: (u8, u8)) {
+        assert_eq!(expected, format_toml(start.parse().unwrap(), indent, keep_full_version, max_supported_python));
+    }
 }
