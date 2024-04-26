@@ -6,3 +6,4 @@ __pycache__
 dist
 /target
 /pyproject-*.toml
+/src/pyproject_fmt/_lib.*
