@@ -1,7 +1,7 @@
 use std::string::String;
 
-use pyo3::{Bound, pyfunction, pymodule, PyResult, wrap_pyfunction};
 use pyo3::prelude::PyModule;
+use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
@@ -52,7 +52,6 @@ fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
@@ -75,6 +74,8 @@ mod tests {
     ek = "ev"
     [tool.ruff]
     mr="vr"
+    [tool.pytest]
+    mk="mv"
     "#},
     indoc ! {r#"
     # comment
@@ -90,6 +91,8 @@ mod tests {
     mr = "vr"
     [tool.ruff.test]
     mrt = "vrt"
+    [tool.pytest]
+    mk = "mv"
     [tool.mypy]
     mk = "mv"
     "#},
@@ -97,7 +100,16 @@ mod tests {
     true,
     (3, 12),
     )]
-    fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] indent: usize, #[case] keep_full_version: bool, #[case] max_supported_python: (u8, u8)) {
-        assert_eq!(expected, format_toml(start.parse().unwrap(), indent, keep_full_version, max_supported_python));
+    fn test_format_toml(
+        #[case] start: &str,
+        #[case] expected: &str,
+        #[case] indent: usize,
+        #[case] keep_full_version: bool,
+        #[case] max_supported_python: (u8, u8),
+    ) {
+        assert_eq!(
+            expected,
+            format_toml(start.parse().unwrap(), indent, keep_full_version, max_supported_python)
+        );
     }
 }

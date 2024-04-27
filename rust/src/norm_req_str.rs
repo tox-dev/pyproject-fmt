@@ -36,7 +36,7 @@ fn normalize_array(table_value: SyntaxElement, keep_full_version: bool) {
             let mut to_insert = Vec::<SyntaxElement>::new();
             let node = entry.as_node().unwrap();
             for element in node.children_with_tokens() {
-                if element.kind() == SyntaxKind::STRING {
+                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
                     let found = entry.as_node().unwrap().text().to_string();
                     let found_str_value = &found[1..found.len() - 1];
                     let new_str_value = normalize_req_str(found_str_value, keep_full_version);
@@ -60,17 +60,18 @@ fn normalize_req_str(value: &str, keep_full_version: bool) -> String {
         let norm: String = PyModule::import_bound(py, "pyproject_fmt._pep508")?
             .getattr("normalize_req")?
             .call(
-                (value, ),
+                (value,),
                 Some(&[("keep_full_version", keep_full_version)].into_py_dict_bound(py)),
             )?
             .extract()?;
         Ok::<String, PyErr>(norm)
     })
-        .unwrap()
+    .unwrap()
 }
 
 fn create_string_node(element: SyntaxElement, text: String) -> SyntaxElement {
-    for root in parse(&format!("a = \"{}\"", text))
+    let expr = &format!("a = \"{}\"", text.replace('"', "\\\""));
+    for root in parse(expr)
         .into_syntax()
         .clone_for_update()
         .first_child()
@@ -85,7 +86,7 @@ fn create_string_node(element: SyntaxElement, text: String) -> SyntaxElement {
             }
         }
     }
-    element
+    panic!("Could not create string element for {:?}", element)
 }
 
 #[cfg(test)]
@@ -125,6 +126,45 @@ mod tests {
     requires = ["maturin>=1.5.0"]
     "#},
     true
+    )]
+    #[case::no_change(
+    indoc ! {r#"
+    [build-system]
+    requires = [
+    "maturin>=1.5.3",# comment here
+    # a comment afterwards
+    ]
+    "#},
+    indoc ! {r#"
+    [build-system]
+    requires = [
+      "maturin>=1.5.3", # comment here
+      # a comment afterwards
+    ]
+    "#},
+    false
+    )]
+    #[case::ignore_non_string(
+    indoc ! {r#"
+    [build-system]
+    requires=[{key="maturin>=1.5.0"}]
+    "#},
+    indoc ! {r#"
+    [build-system]
+    requires = [{ key = "maturin>=1.5.0" }]
+    "#},
+    false
+    )]
+    #[case::has_double_quote(
+    indoc ! {r#"
+    [project]
+    dependencies=['importlib-metadata>=7.0.0;python_version<"3.8"']
+    "#},
+    indoc ! {r#"
+    [project]
+    dependencies = ["importlib-metadata>=7; python_version < \"3.8\""]
+    "#},
+    false
     )]
     fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
         assert_eq!(expected, evaluate(start, keep_full_version));
