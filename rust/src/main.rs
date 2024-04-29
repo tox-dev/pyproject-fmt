@@ -4,21 +4,25 @@ use pyo3::prelude::PyModule;
 use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
+use taplo::syntax::{SyntaxKind, SyntaxNode};
 
-use crate::norm_req_str::normalize_requirements;
+use crate::build_system::fix_build_system;
+use crate::common::get_table_name;
+use crate::project::fix_project;
 use crate::table_ordering::reorder_table;
 
+mod build_system;
 mod common;
-mod norm_req_str;
+mod pep503;
+mod project;
 mod table_ordering;
 
 /// Format toml file
 #[pyfunction]
 pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
-    println!("max {:?}", max_supported_python);
     let mut root_ast = parse(&content).into_syntax().clone_for_update();
     reorder_table(&mut root_ast);
-    normalize_requirements(&mut root_ast, keep_full_version);
+    fix_entries(&mut root_ast, keep_full_version, max_supported_python);
 
     let options = Options {
         align_entries: false,         // do not align by =
@@ -44,6 +48,21 @@ pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_
     format_syntax(root_ast, options)
 }
 
+fn fix_entries(root_ast: &mut SyntaxNode, keep_full_version: bool, max_supported_python: (u8, u8)) {
+    let mut table_name = String::new();
+    for children in root_ast.children_with_tokens() {
+        if children.kind() == SyntaxKind::TABLE_HEADER {
+            table_name = get_table_name(&children);
+        } else if children.kind() == SyntaxKind::ENTRY {
+            if table_name == "build-system" {
+                fix_build_system(children, keep_full_version)
+            } else if table_name == "project" {
+                fix_project(children, keep_full_version, max_supported_python);
+            }
+        }
+    }
+}
+
 #[pymodule]
 #[pyo3(name = "_lib")]
 #[cfg(not(tarpaulin_include))]
@@ -55,6 +74,7 @@ fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
 
     use crate::format_toml;
@@ -64,40 +84,34 @@ mod tests {
     indoc ! {r#"
     # comment
     a= "b"
+    [project]
+    name="alpha"
+    dependencies=[" e >= 1.5.0"]
     [build-system]
+    build-backend="backend"
     requires=[" c >= 1.5.0", "d == 2.0.0"]
     [tool.mypy]
-    mk="mv"
-    [tool.ruff.test]
-    mrt="vrt"
-    [extra]
-    ek = "ev"
-    [tool.ruff]
-    mr="vr"
-    [tool.pytest]
     mk="mv"
     "#},
     indoc ! {r#"
     # comment
     a = "b"
     [build-system]
+    build-backend = "backend"
     requires = [
-      "c>=1.5.0",
-      "d==2.0.0",
+      "c>=1.5",
+      "d==2",
     ]
-    [extra]
-    ek = "ev"
-    [tool.ruff]
-    mr = "vr"
-    [tool.ruff.test]
-    mrt = "vrt"
-    [tool.pytest]
-    mk = "mv"
+    [project]
+    name = "alpha"
+    dependencies = [
+      "e>=1.5",
+    ]
     [tool.mypy]
     mk = "mv"
     "#},
     2,
-    true,
+    false,
     (3, 12),
     )]
     fn test_format_toml(
