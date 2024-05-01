@@ -47,7 +47,6 @@ fn normalize_req_str(value: &str, keep_full_version: bool) -> String {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
-    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;

@@ -21,7 +21,6 @@ pub fn fix_build_system(table: SyntaxElement, keep_full_version: bool) {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
-    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;

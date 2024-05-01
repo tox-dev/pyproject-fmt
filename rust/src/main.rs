@@ -74,7 +74,6 @@ fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
-    use pretty_assertions::assert_eq;
     use rstest::rstest;
 
     use crate::format_toml;
@@ -96,17 +95,20 @@ mod tests {
     indoc ! {r#"
     # comment
     a = "b"
+
     [build-system]
     build-backend = "backend"
     requires = [
       "c>=1.5",
       "d==2",
     ]
+
     [project]
     name = "alpha"
     dependencies = [
       "e>=1.5",
     ]
+
     [tool.mypy]
     mk = "mv"
     "#},

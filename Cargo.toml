@@ -25,4 +25,3 @@ default = ["extension-module"]
 [dev-dependencies]
 rstest = { version = "0.19.0" } # parametrized tests
 indoc = { version = "2.0.5" }   # dedented test cases for literal strings
-pretty_assertions = { version = "1.4.0" }

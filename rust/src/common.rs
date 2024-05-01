@@ -31,3 +31,12 @@ pub fn create_string_node(element: SyntaxElement, text: String) -> SyntaxElement
     }
     panic!("Could not create string element for {:?}", element)
 }
+
+pub fn create_empty_newline() -> SyntaxElement {
+    for root in parse("\n\n").into_syntax().clone_for_update().children_with_tokens() {
+        if root.kind() == SyntaxKind::NEWLINE {
+            return root;
+        }
+    }
+    panic!("Could not create newline");
+}

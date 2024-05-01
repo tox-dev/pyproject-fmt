@@ -76,5 +76,5 @@ def test_normalize_pep508_array(fmt: Fmt, indent: int) -> None:
         {" " * indent}"zzz>=1.1.1",
         ]
         """,
-    ).strip()
-    fmt(start, expected, indent=indent, keep_full_version=True)
+    )
+    fmt(start, expected, indent=indent, keep_full_version=False)

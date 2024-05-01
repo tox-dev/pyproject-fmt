@@ -73,11 +73,12 @@ def test_tools_ordering(fmt: Fmt) -> None:
     [tool.vendoring]
     [tool.whey]
     """
-    expected = """
+    expected = """\
     [tool.poetry]
     name = "a"
     [tool.poetry.scripts]
     version = "1"
+    
     [tool.poetry-dynamic-versioning]
     a = 0
 
@@ -194,7 +195,7 @@ def test_sub_table_newline(fmt: Fmt) -> None:
     [tool.something-else]
     b = 0
     """
-    expected = """
+    expected = """\
     [tool.mypy]
     a = 0
     [[tool.mypy.overrides]]
@@ -207,7 +208,7 @@ def test_sub_table_newline(fmt: Fmt) -> None:
 
 
 def test_sub_table_no_op(fmt: Fmt) -> None:
-    content = """
+    content = """\
     [tool.mypy]
     a = 0
 

@@ -1,25 +1,39 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::iter::zip;
 use std::ops::Index;
 
+use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
-use taplo::syntax::{SyntaxElement, SyntaxNode};
 
-use crate::common::get_table_name;
+use crate::common::{create_empty_newline, get_table_name};
 
 pub fn reorder_table(root_ast: &mut SyntaxNode) {
     let (header_to_pos, table_set) = load_tables(root_ast);
     let mut to_insert = Vec::<SyntaxElement>::new();
     let mut entry_count: usize = 0;
-    for key in calculate_order(&header_to_pos) {
-        let entries = table_set[key].clone();
+
+    let order = calculate_order(&header_to_pos);
+    let mut next = order.clone();
+    next.remove(0);
+    next.push(String::from(""));
+    for (name, next_name) in zip(order.iter(), next.iter()) {
+        let index = header_to_pos.index(name);
+        let mut entries = table_set[*index].clone();
         entry_count += entries.len();
+        let last = entries.last().unwrap();
+        if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && entries.len() == 1 {
+            continue;
+        }
+        if last.kind() == SyntaxKind::NEWLINE && get_key(name) != get_key(next_name) {
+            entries.splice(entries.len() - 1..entries.len(), [create_empty_newline()]);
+        }
         to_insert.extend(entries);
     }
     root_ast.splice_children(0..entry_count, to_insert);
 }
 
-fn calculate_order(header_to_pos: &HashMap<String, usize>) -> Vec<usize> {
+fn calculate_order(header_to_pos: &HashMap<String, usize>) -> Vec<String> {
     let ordering = [
         "",
         "build-system",
@@ -88,21 +102,16 @@ fn calculate_order(header_to_pos: &HashMap<String, usize>) -> Vec<usize> {
 
     let mut order: Vec<String> = header_to_pos.clone().into_keys().collect();
     order.sort_by_cached_key(|k| -> usize {
-        let parts: Vec<&str> = k.splitn(3, '.').collect();
-        let key = if parts.len() >= 2 {
-            parts[0..2].join(".")
-        } else {
-            k.clone()
-        };
+        let key = get_key(k);
         let pos = key_to_pos.get(&key.as_str());
         if pos.is_some() {
-            let offset = if parts.len() == 2 { 0 } else { 1 };
+            let offset = if key == *k { 0 } else { 1 };
             pos.unwrap() + offset
         } else {
             max_ordering + header_to_pos[k]
         }
     });
-    order.iter().map(|k| *header_to_pos.index(k)).collect::<Vec<usize>>()
+    order
 }
 
 fn load_tables(root_ast: &mut SyntaxNode) -> (HashMap<String, usize>, Vec<Vec<SyntaxElement>>) {
@@ -128,10 +137,21 @@ fn load_tables(root_ast: &mut SyntaxNode) -> (HashMap<String, usize>, Vec<Vec<Sy
     (header_to_pos, table_set)
 }
 
+fn get_key(k: &str) -> String {
+    let parts: Vec<&str> = k.splitn(3, '.').collect();
+    if !parts.is_empty() {
+        return if parts[0] == "tool" && parts.len() >= 2 {
+            parts[0..2].join(".")
+        } else {
+            String::from(parts[0])
+        };
+    }
+    String::from(k)
+}
+
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
-    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
@@ -139,7 +159,7 @@ mod tests {
     use crate::table_ordering::reorder_table;
 
     #[rstest]
-    #[case::simple(
+    #[case::reorder(
     indoc ! {r#"
     # comment
     a= "b"
@@ -167,24 +187,32 @@ mod tests {
     indoc ! {r#"
     # comment
     a = "b"
+
     [build-system]
     build-backend = "backend"
     requires = ["c", "d"]
+
     [project]
     name = "alpha"
     dependencies = ["e"]
+
     [tool.ruff]
     mr = "vr"
     [tool.ruff.test]
     mrt = "vrt"
+
     [tool.pytest]
     mk = "mv"
+
     [tool.mypy]
     mk = "mv"
+
     [extra]
     ek = "ev"
+
     [tool.undefined]
     mu = "mu"
+
     [demo]
     ed = "ed"
     "#},
