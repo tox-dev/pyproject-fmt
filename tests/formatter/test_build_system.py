@@ -60,7 +60,7 @@ def test_build_backend_order(fmt: Fmt) -> None:
     build-backend = "hatchling.build"
     """
 
-    expected = """
+    expected = """\
     [build-system]
     build-backend = "hatchling.build"
     requires = [
@@ -86,7 +86,7 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     "C",
     ]
     """
-    expected = f"""
+    expected = f"""\
     [build-system]
     requires = [
     {" " * indent}"A",
@@ -100,13 +100,13 @@ def test_indent(fmt: Fmt, indent: int) -> None:
 
 
 def test_keep_full_version_on(fmt: Fmt) -> None:
-    txt = """
+    txt = """\
     [build-system]
     requires = [
       "A==1.0.0",
     ]
     """
-    fmt(txt, txt)
+    fmt(txt, txt, keep_full_version=True)
 
 
 def test_keep_full_version_off(fmt: Fmt) -> None:
@@ -116,7 +116,7 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
       "A==1.0.0",
     ]
     """
-    expected = """
+    expected = """\
     [build-system]
     requires = [
       "A==1",

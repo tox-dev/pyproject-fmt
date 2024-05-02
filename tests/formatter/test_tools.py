@@ -78,7 +78,7 @@ def test_tools_ordering(fmt: Fmt) -> None:
     name = "a"
     [tool.poetry.scripts]
     version = "1"
-    
+
     [tool.poetry-dynamic-versioning]
     a = 0
 

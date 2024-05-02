@@ -1,25 +1,23 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::iter::zip;
-use std::ops::Index;
 
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
-use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
 
-use crate::common::{create_empty_newline, get_table_name};
+use crate::common::create_empty_newline;
+use crate::Tables;
 
-pub fn reorder_table(root_ast: &mut SyntaxNode) {
-    let (header_to_pos, table_set) = load_tables(root_ast);
+pub fn reorder_table(root_ast: &mut SyntaxNode, tables: &mut Tables) {
     let mut to_insert = Vec::<SyntaxElement>::new();
     let mut entry_count: usize = 0;
 
-    let order = calculate_order(&header_to_pos);
+    let order = calculate_order(&tables.header_to_pos);
     let mut next = order.clone();
-    next.remove(0);
+    if !next.is_empty() {
+        next.remove(0);
+    }
     next.push(String::from(""));
     for (name, next_name) in zip(order.iter(), next.iter()) {
-        let index = header_to_pos.index(name);
-        let mut entries = table_set[*index].clone();
+        let mut entries = tables.get(name).unwrap().clone();
         entry_count += entries.len();
         let last = entries.last().unwrap();
         if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && entries.len() == 1 {
@@ -114,29 +112,6 @@ fn calculate_order(header_to_pos: &HashMap<String, usize>) -> Vec<String> {
     order
 }
 
-fn load_tables(root_ast: &mut SyntaxNode) -> (HashMap<String, usize>, Vec<Vec<SyntaxElement>>) {
-    let mut header_to_pos = HashMap::<String, usize>::new();
-    let mut table_set = Vec::<Vec<SyntaxElement>>::new();
-    let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
-    let mut add_to_table_set = || {
-        let mut entry_set_borrow = entry_set.borrow_mut();
-        if !entry_set_borrow.is_empty() {
-            header_to_pos.insert(get_table_name(&entry_set_borrow[0]), table_set.len());
-            table_set.push(entry_set_borrow.clone());
-            entry_set_borrow.clear();
-        }
-    };
-    for c in root_ast.children_with_tokens() {
-        if [TABLE_ARRAY_HEADER, TABLE_HEADER].contains(&c.kind()) {
-            add_to_table_set();
-        }
-        entry_set.borrow_mut().push(c);
-    }
-    add_to_table_set();
-
-    (header_to_pos, table_set)
-}
-
 fn get_key(k: &str) -> String {
     let parts: Vec<&str> = k.splitn(3, '.').collect();
     if !parts.is_empty() {
@@ -219,7 +194,8 @@ mod tests {
     )]
     fn test_reorder_table(#[case] start: &str, #[case] expected: &str) {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
-        reorder_table(&mut root_ast);
+        let mut tables = crate::common::Tables::from_ast(&mut root_ast);
+        reorder_table(&mut root_ast, &mut tables);
         let got = format_syntax(root_ast, Options::default());
         assert_eq!(got, expected);
     }

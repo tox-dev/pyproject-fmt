@@ -42,7 +42,7 @@ def test_project_classifiers(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.11",
     ]
     """
-    expected = """
+    expected = """\
     [project]
     classifiers = [
       "License :: OSI Approved :: MIT License",
@@ -75,7 +75,7 @@ def test_project_dependencies_with_double_quotes(fmt: Fmt) -> None:
         "appdirs"
     ]
     """
-    expected = """
+    expected = """\
     [project]
     dependencies = [
       "appdirs",
@@ -94,7 +94,7 @@ def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
         "appdirs"
     ]
     """
-    expected = """
+    expected = """\
     [project]
     dependencies = [
       "appdirs",
@@ -130,7 +130,7 @@ def test_project_scripts(fmt: Fmt) -> None:
     c = "d"
     a = "b"
     """
-    expected = """
+    expected = """\
     [project.scripts]
     a = "b"
     c = "d"
@@ -145,7 +145,7 @@ def test_project_optional_dependencies(fmt: Fmt) -> None:
     docs = [ "C",
     "D"]
     """
-    expected = """
+    expected = """\
     [project.optional-dependencies]
     docs = [
       "C",
@@ -165,7 +165,7 @@ def test_entry_points(fmt: Fmt) -> None:
     beta = {C = "c", D = "d"}
     alpha = {B = "b", "A.A" = "a"}
     """
-    expected = """
+    expected = """\
     [project.entry-points]
     alpha = {"A.A" = "a",B = "b"}
     beta = {C = "c",D = "d"}
@@ -177,7 +177,7 @@ def test_classifier_none(fmt: Fmt) -> None:
     start = """
     [project]
     """
-    fmt(start, start)
+    fmt(start, "[project]\n")
 
 
 def test_classifier_lt(fmt: Fmt) -> None:
@@ -185,7 +185,7 @@ def test_classifier_lt(fmt: Fmt) -> None:
     [project]
     requires-python = "<3.7"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = "<3.7"
     classifiers = [
@@ -200,7 +200,7 @@ def test_classifier_gt(fmt: Fmt) -> None:
     [project]
     requires-python = ">3.6"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = ">3.6"
     classifiers = [
@@ -221,7 +221,7 @@ def test_classifier_gte(fmt: Fmt) -> None:
     [project]
     requires-python = ">=3.6"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = ">=3.6"
     classifiers = [
@@ -249,7 +249,7 @@ def test_classifier_eq(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.12",
     ]
     """
-    expected = """
+    expected = """\
     [project]
     requires-python="==3.12"
     classifiers = [
@@ -265,7 +265,7 @@ def test_classifier_neq(fmt: Fmt) -> None:
     [project]
     requires-python = "!=3.9"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = "!=3.9"
     classifiers = [
@@ -285,7 +285,7 @@ def test_classifier_range(fmt: Fmt) -> None:
     [project]
     requires-python=">=3.7,<3.13"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python=">=3.7,<3.13"
     classifiers = [
@@ -306,7 +306,7 @@ def test_classifier_range_neq(fmt: Fmt) -> None:
     [project]
     requires-python = "<=3.12,!=3.9,>=3.8"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = "<=3.12,!=3.9,>=3.8"
     classifiers = [
@@ -325,7 +325,7 @@ def test_classifier_high_range(fmt: Fmt) -> None:
     [project]
     requires-python = "<=3.13,>3.10"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = "<=3.13,>3.10"
     classifiers = [
@@ -349,7 +349,7 @@ def test_classifier_upper_bound(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.8",
     ]
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = "<3.8"
     classifiers = [
@@ -372,7 +372,7 @@ def test_classifier_two_upper_bounds(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.8",
     ]
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = "<3.8,<=3.10"
     classifiers = [
@@ -395,7 +395,7 @@ def test_classifier_prerelease(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3.12",
     ]
     """
-    expected = """
+    expected = """\
     [project]
     requires-python = ">=3.10"
     classifiers = [
@@ -417,7 +417,7 @@ def test_classifier_gt_tox(fmt: Fmt, tmp_path: Path) -> None:
     [project]
     requires-python=">=3.11"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python=">=3.11"
     classifiers = [
@@ -435,7 +435,7 @@ def test_classifier_gt_tox_no_py_ver(fmt: Fmt, tmp_path: Path) -> None:
     [project]
     requires-python=">=3.11"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python=">=3.11"
     classifiers = [
@@ -452,7 +452,7 @@ def test_classifier_gt_tox_conf_missing(fmt: Fmt) -> None:
     [project]
     requires-python=">=3.12"
     """
-    expected = """
+    expected = """\
     [project]
     requires-python=">=3.12"
     classifiers = [
@@ -522,7 +522,7 @@ def test_indent(fmt: Fmt, indent: int) -> None:
       "E",
     ]
     """
-    expected = f"""
+    expected = f"""\
     [project]
     keywords = [
     {" " * indent}"A",
@@ -555,7 +555,17 @@ def test_keep_full_version_on(fmt: Fmt) -> None:
       "B==2.0.0",
     ]
     """
-    fmt(txt, txt, indent=2, keep_full_version=True)
+    expected = """\
+    [project]
+    dependencies = [
+      "A==1.0.0",
+    ]
+    [project.optional-dependencies]
+    docs = [
+      "B==2.0.0",
+    ]
+    """
+    fmt(txt, expected, indent=2, keep_full_version=True)
 
 
 def test_keep_full_version_off(fmt: Fmt) -> None:
@@ -569,7 +579,7 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
       "B==2.0.0",
     ]
     """
-    expected = """
+    expected = """\
     [project]
     dependencies = [
       "A==1",
@@ -604,7 +614,7 @@ def test_pyproject_toml_config(fmt: Fmt) -> None:
     keep_full_version = false
     max_supported_python = "3.10"
     """
-    expected = """
+    expected = """\
     [project]
     keywords = [
         "A",

@@ -1,21 +1,14 @@
-use taplo::syntax::{SyntaxElement, SyntaxKind};
+use taplo::syntax::SyntaxElement;
 
-pub fn fix_build_system(table: SyntaxElement, keep_full_version: bool) {
-    let mut key = String::new();
-    for table_entry in table.as_node().unwrap().children_with_tokens() {
-        if table_entry.kind() == SyntaxKind::KEY {
-            key = table_entry.as_node().unwrap().text().to_string().trim().to_string();
-        } else if table_entry.kind() == SyntaxKind::VALUE {
-            if key == "requires" {
-                for table_value in table_entry.as_node().unwrap().children_with_tokens() {
-                    if table_value.kind() == SyntaxKind::ARRAY {
-                        crate::pep503::normalize_array(table_value, keep_full_version);
-                    }
-                }
-            } else if key == "build-backend" {
-            }
+use crate::common::{for_entries, reorder_table_keys};
+
+pub fn fix_build_system(table: &mut Vec<SyntaxElement>, keep_full_version: bool) {
+    for_entries(table, &mut |key, entry| {
+        if key == "requires" {
+            crate::pep503::normalize_array_entry(entry, keep_full_version);
         }
-    }
+    });
+    reorder_table_keys(table, &["", "build-backend", "requires", "backend-path"]);
 }
 
 #[cfg(test)]
@@ -24,21 +17,21 @@ mod tests {
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
-    use taplo::syntax::SyntaxKind;
+    use taplo::syntax::SyntaxElement;
 
     use crate::build_system::fix_build_system;
-    use crate::common::get_table_name;
 
     fn evaluate(start: &str, keep_full_version: bool) -> String {
-        let root_ast = parse(start).into_syntax().clone_for_update();
-        let mut table_name = String::new();
-        for children in root_ast.children_with_tokens() {
-            if children.kind() == SyntaxKind::TABLE_HEADER {
-                table_name = get_table_name(&children);
-            } else if children.kind() == SyntaxKind::ENTRY && table_name == "build-system" {
-                fix_build_system(children, keep_full_version);
+        let mut root_ast = parse(start).into_syntax().clone_for_update();
+        let mut tables = crate::common::Tables::from_ast(&mut root_ast);
+        match tables.get(&String::from("build-system")) {
+            None => {}
+            Some(t) => {
+                fix_build_system(t, keep_full_version);
             }
         }
+        let entries = tables.table_set.into_iter().flatten().collect::<Vec<SyntaxElement>>();
+        root_ast.splice_children(0..entries.len(), entries);
         format_syntax(root_ast, Options::default())
     }
 
@@ -67,6 +60,37 @@ mod tests {
     indoc ! {r#"
     [build-system]
     requires = ["a>=1.0.0", "b.c>=1.5.0"]
+    "#},
+    true
+    )]
+    #[case::build_system_order(
+    indoc ! {r#"
+    [build-system]
+    # more
+    more = true # more post
+    #  extra
+    extra = 1 # extra post
+    # path
+    backend-path = ['A'] # path post
+    # requires
+    requires = ["B"] # requires post
+    # backend
+    build-backend = "hatchling.build" # backend post
+    # post
+    "#},
+    indoc ! {r#"
+    [build-system]
+    # more
+    build-backend = "hatchling.build" # backend post
+    # post
+    requires = ["B"] # requires post
+    # backend
+    backend-path = ['A'] # path post
+    # requires
+    more = true # more post
+    #  extra
+    extra = 1 # extra post
+    # path
     "#},
     true
     )]

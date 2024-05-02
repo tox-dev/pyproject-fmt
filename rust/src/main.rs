@@ -4,10 +4,9 @@ use pyo3::prelude::PyModule;
 use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
-use taplo::syntax::{SyntaxKind, SyntaxNode};
 
 use crate::build_system::fix_build_system;
-use crate::common::get_table_name;
+use crate::common::Tables;
 use crate::project::fix_project;
 use crate::table_ordering::reorder_table;
 
@@ -21,8 +20,20 @@ mod table_ordering;
 #[pyfunction]
 pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
     let mut root_ast = parse(&content).into_syntax().clone_for_update();
-    reorder_table(&mut root_ast);
-    fix_entries(&mut root_ast, keep_full_version, max_supported_python);
+    let mut tables = crate::common::Tables::from_ast(&mut root_ast);
+    match tables.get(&String::from("build-system")) {
+        None => {}
+        Some(table) => {
+            fix_build_system(table, keep_full_version);
+        }
+    }
+    match tables.get(&String::from("project")) {
+        None => {}
+        Some(table) => {
+            fix_project(table, keep_full_version, max_supported_python);
+        }
+    }
+    reorder_table(&mut root_ast, &mut tables);
 
     let options = Options {
         align_entries: false,         // do not align by =
@@ -46,21 +57,6 @@ pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_
         crlf: false,
     };
     format_syntax(root_ast, options)
-}
-
-fn fix_entries(root_ast: &mut SyntaxNode, keep_full_version: bool, max_supported_python: (u8, u8)) {
-    let mut table_name = String::new();
-    for children in root_ast.children_with_tokens() {
-        if children.kind() == SyntaxKind::TABLE_HEADER {
-            table_name = get_table_name(&children);
-        } else if children.kind() == SyntaxKind::ENTRY {
-            if table_name == "build-system" {
-                fix_build_system(children, keep_full_version)
-            } else if table_name == "project" {
-                fix_project(children, keep_full_version, max_supported_python);
-            }
-        }
-    }
 }
 
 #[pymodule]
@@ -116,6 +112,13 @@ mod tests {
     false,
     (3, 12),
     )]
+    #[case::empty(
+    indoc ! {r#""#},
+    "\n",
+    2,
+    true,
+    (3, 12)
+    )]
     fn test_format_toml(
         #[case] start: &str,
         #[case] expected: &str,
@@ -123,9 +126,7 @@ mod tests {
         #[case] keep_full_version: bool,
         #[case] max_supported_python: (u8, u8),
     ) {
-        assert_eq!(
-            expected,
-            format_toml(start.parse().unwrap(), indent, keep_full_version, max_supported_python)
-        );
+        let got = format_toml(start.parse().unwrap(), indent, keep_full_version, max_supported_python);
+        assert_eq!(expected, got);
     }
 }

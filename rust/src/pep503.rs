@@ -1,30 +1,35 @@
 use pyo3::prelude::*;
 use pyo3::prepare_freethreaded_python;
 use pyo3::types::IntoPyDict;
-use taplo::syntax::{SyntaxElement, SyntaxKind};
+use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
 use crate::common::create_string_node;
 
-pub fn normalize_array(table_value: SyntaxElement, keep_full_version: bool) {
-    for entry in table_value.as_node().unwrap().children_with_tokens() {
-        if entry.kind() == SyntaxKind::VALUE {
-            let mut to_insert = Vec::<SyntaxElement>::new();
-            let node = entry.as_node().unwrap();
-            for element in node.children_with_tokens() {
-                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
-                    let found = entry.as_node().unwrap().text().to_string();
-                    let found_str_value = &found[1..found.len() - 1];
-                    let new_str_value = normalize_req_str(found_str_value, keep_full_version);
-                    if found_str_value != new_str_value {
-                        to_insert.push(create_string_node(element, new_str_value));
-                    } else {
+pub fn normalize_array_entry(node: &SyntaxNode, keep_full_version: bool) {
+    for array in node.children_with_tokens() {
+        if array.kind() == SyntaxKind::ARRAY {
+            for array_entry in array.as_node().unwrap().children_with_tokens() {
+                if array_entry.kind() == SyntaxKind::VALUE {
+                    let mut to_insert = Vec::<SyntaxElement>::new();
+                    let value_node = array_entry.as_node().unwrap();
+                    let mut changed = false;
+                    for mut element in value_node.children_with_tokens() {
+                        if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
+                            let found = array_entry.as_node().unwrap().text().to_string();
+                            let found_str_value = &found[1..found.len() - 1];
+                            let new_str_value = normalize_req_str(found_str_value, keep_full_version);
+                            if found_str_value != new_str_value {
+                                element = create_string_node(element, new_str_value);
+                                changed = true;
+                            }
+                        }
                         to_insert.push(element);
                     }
-                } else {
-                    to_insert.push(element);
+                    if changed {
+                        value_node.splice_children(0..to_insert.len(), to_insert);
+                    }
                 }
             }
-            node.splice_children(0..to_insert.len(), to_insert);
         }
     }
 }
@@ -52,7 +57,7 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxKind;
 
-    use crate::pep503::normalize_array;
+    use crate::pep503::normalize_array_entry;
 
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let root_ast = parse(start).into_syntax().clone_for_update();
@@ -60,11 +65,7 @@ mod tests {
             if children.kind() == SyntaxKind::ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
                     if entry.kind() == SyntaxKind::VALUE {
-                        for array in entry.as_node().unwrap().children_with_tokens() {
-                            if array.kind() == SyntaxKind::ARRAY {
-                                normalize_array(array, keep_full_version);
-                            }
-                        }
+                        normalize_array_entry(entry.as_node().unwrap(), keep_full_version);
                     }
                 }
             }
