@@ -15,7 +15,7 @@ pub fn normalize_array_entry(node: &SyntaxNode, keep_full_version: bool) {
                     let mut changed = false;
                     for mut element in value_node.children_with_tokens() {
                         if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
-                            let found = array_entry.as_node().unwrap().text().to_string();
+                            let found = element.as_token().unwrap().text().to_string();
                             let found_str_value = &found[1..found.len() - 1];
                             let new_str_value = normalize_req_str(found_str_value, keep_full_version);
                             if found_str_value != new_str_value {
