@@ -1,12 +1,13 @@
 use taplo::syntax::{SyntaxElement, SyntaxKind};
 
-use crate::common::{for_entries, reorder_table_keys};
+use crate::helpers::array::array_pep508_normalize;
+use crate::helpers::table::{for_entries, reorder_table_keys};
 
 pub fn fix_project(table: &mut Vec<SyntaxElement>, keep_full_version: bool, max_supported_python: (u8, u8)) {
     let min_supported_python = get_python_requires(table);
     for_entries(table, &mut |key, entry| {
         if key == "dependencies" {
-            crate::pep503::normalize_array_entry(entry, keep_full_version);
+            array_pep508_normalize(entry, keep_full_version);
         }
     });
     println!("{:?} {:?}", max_supported_python, min_supported_python);
@@ -74,11 +75,12 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxElement;
 
+    use crate::helpers::table::Tables;
     use crate::project::fix_project;
 
     fn evaluate(start: &str, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
-        let mut tables = crate::common::Tables::from_ast(&mut root_ast);
+        let mut tables = Tables::from_ast(&mut root_ast);
         match tables.get(&String::from("project")) {
             None => {}
             Some(t) => {

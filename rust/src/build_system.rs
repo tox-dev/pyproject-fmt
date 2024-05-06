@@ -1,11 +1,12 @@
 use taplo::syntax::SyntaxElement;
 
-use crate::common::{for_entries, reorder_table_keys};
+use crate::helpers::array::array_pep508_normalize;
+use crate::helpers::table::{for_entries, reorder_table_keys};
 
 pub fn fix_build_system(table: &mut Vec<SyntaxElement>, keep_full_version: bool) {
     for_entries(table, &mut |key, entry| {
         if key == "requires" {
-            crate::pep503::normalize_array_entry(entry, keep_full_version);
+            array_pep508_normalize(entry, keep_full_version);
         }
     });
     reorder_table_keys(table, &["", "build-backend", "requires", "backend-path"]);
@@ -20,10 +21,11 @@ mod tests {
     use taplo::syntax::SyntaxElement;
 
     use crate::build_system::fix_build_system;
+    use crate::helpers::table::Tables;
 
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
-        let mut tables = crate::common::Tables::from_ast(&mut root_ast);
+        let mut tables = Tables::from_ast(&mut root_ast);
         match tables.get(&String::from("build-system")) {
             None => {}
             Some(t) => {

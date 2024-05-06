@@ -40,7 +40,8 @@ def test_requires(fmt: Fmt) -> None:
         requires = [
           # start
           # two
-          "A>1", # c # d follow-up comment
+          "A>1", # c # d
+          # follow-up comment
           "A-B",
           "C", # magic
           "D", # a

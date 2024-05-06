@@ -1,11 +1,9 @@
-use pyo3::prelude::*;
-use pyo3::prepare_freethreaded_python;
-use pyo3::types::IntoPyDict;
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::common::create_string_node;
+use crate::helpers::create::create_string_node;
+use crate::helpers::pep508::normalize_req_str;
 
-pub fn normalize_array_entry(node: &SyntaxNode, keep_full_version: bool) {
+pub fn array_pep508_normalize(node: &SyntaxNode, keep_full_version: bool) {
     for array in node.children_with_tokens() {
         if array.kind() == SyntaxKind::ARRAY {
             for array_entry in array.as_node().unwrap().children_with_tokens() {
@@ -34,21 +32,6 @@ pub fn normalize_array_entry(node: &SyntaxNode, keep_full_version: bool) {
     }
 }
 
-fn normalize_req_str(value: &str, keep_full_version: bool) -> String {
-    prepare_freethreaded_python();
-    Python::with_gil(|py| {
-        let norm: String = PyModule::import_bound(py, "pyproject_fmt._pep508")?
-            .getattr("normalize_req")?
-            .call(
-                (value,),
-                Some(&[("keep_full_version", keep_full_version)].into_py_dict_bound(py)),
-            )?
-            .extract()?;
-        Ok::<String, PyErr>(norm)
-    })
-    .unwrap()
-}
-
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
@@ -57,7 +40,7 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxKind;
 
-    use crate::pep503::normalize_array_entry;
+    use crate::helpers::array::array_pep508_normalize;
 
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let root_ast = parse(start).into_syntax().clone_for_update();
@@ -65,7 +48,7 @@ mod tests {
             if children.kind() == SyntaxKind::ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
                     if entry.kind() == SyntaxKind::VALUE {
-                        normalize_array_entry(entry.as_node().unwrap(), keep_full_version);
+                        array_pep508_normalize(entry.as_node().unwrap(), keep_full_version);
                     }
                 }
             }

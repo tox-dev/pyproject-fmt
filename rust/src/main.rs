@@ -1,26 +1,26 @@
 use std::string::String;
 
+use pyo3::{Bound, pyfunction, pymodule, PyResult, wrap_pyfunction};
 use pyo3::prelude::PyModule;
-use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
 use crate::build_system::fix_build_system;
-use crate::common::Tables;
+use crate::global::reorder_tables;
+use crate::helpers::table::Tables;
 use crate::project::fix_project;
-use crate::table_ordering::reorder_table;
 
 mod build_system;
-mod common;
-mod pep503;
 mod project;
-mod table_ordering;
+
+mod helpers;
+mod global;
 
 /// Format toml file
 #[pyfunction]
 pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
     let mut root_ast = parse(&content).into_syntax().clone_for_update();
-    let mut tables = crate::common::Tables::from_ast(&mut root_ast);
+    let mut tables = Tables::from_ast(&mut root_ast);
     match tables.get(&String::from("build-system")) {
         None => {}
         Some(table) => {
@@ -33,7 +33,7 @@ pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_
             fix_project(table, keep_full_version, max_supported_python);
         }
     }
-    reorder_table(&mut root_ast, &mut tables);
+    reorder_tables(&mut root_ast, &mut tables);
 
     let options = Options {
         align_entries: false,         // do not align by =
