@@ -1,16 +1,18 @@
 use taplo::syntax::{SyntaxElement, SyntaxKind};
 
-use crate::helpers::array::array_pep508_normalize;
+use crate::helpers::array::{array_pep508_normalize, sort_array};
+use crate::helpers::pep508::req_name;
 use crate::helpers::table::{for_entries, reorder_table_keys};
 
 pub fn fix_project(table: &mut Vec<SyntaxElement>, keep_full_version: bool, max_supported_python: (u8, u8)) {
-    let min_supported_python = get_python_requires(table);
+    let (min_supported_py, max_supported_py) = get_python_requires(table, max_supported_python);
     for_entries(table, &mut |key, entry| {
         if key == "dependencies" {
             array_pep508_normalize(entry, keep_full_version);
+            sort_array(entry, |e| req_name(e.as_str()).to_lowercase());
         }
     });
-    println!("{:?} {:?}", max_supported_python, min_supported_python);
+    println!("{:?} {:?}", min_supported_py, max_supported_py);
     reorder_table_keys(
         table,
         &[
@@ -38,8 +40,9 @@ pub fn fix_project(table: &mut Vec<SyntaxElement>, keep_full_version: bool, max_
     );
 }
 
-fn get_python_requires(table: &mut Vec<SyntaxElement>) -> (u8, u8) {
-    let mut min_python_requires = 8;
+fn get_python_requires(table: &mut Vec<SyntaxElement>, max_supported_python: (u8, u8)) -> ((u8, u8), (u8, u8)) {
+    let mut min_py = (3, 8);
+    let mut max_py = max_supported_python;
     for_entries(table, &mut |key, entry| {
         if key == "requires-python" {
             for child in entry.children_with_tokens() {
@@ -47,24 +50,31 @@ fn get_python_requires(table: &mut Vec<SyntaxElement>) -> (u8, u8) {
                     let found = child.as_token().unwrap().text();
                     let found_str_value: String = found[1..found.len() - 1].split_whitespace().collect();
                     if found_str_value.starts_with(">3.") {
-                        min_python_requires = found_str_value
+                        min_py.1 = found_str_value
                             .strip_prefix(">3.")
                             .unwrap()
                             .parse::<u8>()
-                            .unwrap_or(min_python_requires - 1)
+                            .unwrap_or(min_py.1 - 1)
                             + 1;
                     } else if found_str_value.starts_with(">=3.") {
-                        min_python_requires = found_str_value
+                        min_py.1 = found_str_value
                             .strip_prefix(">=3.")
                             .unwrap()
                             .parse::<u8>()
-                            .unwrap_or(min_python_requires);
+                            .unwrap_or(min_py.1);
+                    } else if found_str_value.starts_with("==3.") {
+                        min_py.1 = found_str_value
+                            .strip_prefix("==3.")
+                            .unwrap()
+                            .parse::<u8>()
+                            .unwrap_or(min_py.1);
+                        max_py = min_py;
                     }
                 }
             }
         }
     });
-    (3, min_python_requires)
+    (min_py, max_py)
 }
 
 #[cfg(test)]
@@ -93,37 +103,37 @@ mod tests {
     }
 
     #[rstest]
-    // #[case::no_project(
-    // indoc ! {r#""#},
-    // "\n",
-    // false,
-    // (3, 12),
-    // )]
-    // #[case::project_requires_no_keep(
-    // indoc ! {r#"
-    // [project]
-    // dependencies=["a>=1.0.0", "b.c>=1.5.0"]
-    // "#},
-    // indoc ! {r#"
-    // [project]
-    // dependencies = ["a>=1", "b.c>=1.5"]
-    // "#},
-    // false,
-    // (3, 12),
-    // )]
-    // #[case::project_requires_keep(
-    // indoc ! {r#"
-    // [project]
-    // dependencies=["a>=1.0.0", "b.c>=1.5.0"]
-    // "#},
-    // indoc ! {r#"
-    // [project]
-    // dependencies = ["a>=1.0.0", "b.c>=1.5.0"]
-    // "#},
-    // true,
-    // (3, 12),
-    // )]
+    #[case::no_project(
+    indoc ! {r#""#},
+    "\n",
+    false,
+    (3, 12),
+    )]
+    #[case::project_requires_no_keep(
+    indoc ! {r#"
+    [project]
+    dependencies=["a>=1.0.0", "b.c>=1.5.0"]
+    "#},
+    indoc ! {r#"
+    [project]
+    dependencies = ["a>=1", "b.c>=1.5"]
+    "#},
+    false,
+    (3, 12),
+    )]
     #[case::project_requires_keep(
+    indoc ! {r#"
+    [project]
+    dependencies=["a>=1.0.0", "b.c>=1.5.0"]
+    "#},
+    indoc ! {r#"
+    [project]
+    dependencies = ["a>=1.0.0", "b.c>=1.5.0"]
+    "#},
+    true,
+    (3, 12),
+    )]
+    #[case::project_requires_ge(
     indoc ! {r#"
     [project]
     requires-python = " >= 3.7"
@@ -131,6 +141,30 @@ mod tests {
     indoc ! {r#"
     [project]
     requires-python = " >= 3.7"
+    "#},
+    true,
+    (3, 11),
+    )]
+    #[case::project_requires_gt(
+    indoc ! {r#"
+    [project]
+    requires-python = " > 3.7"
+    "#},
+    indoc ! {r#"
+    [project]
+    requires-python = " > 3.7"
+    "#},
+    true,
+    (3, 11),
+    )]
+    #[case::project_requires_eq(
+    indoc ! {r#"
+    [project]
+    requires-python = " == 3.12"
+    "#},
+    indoc ! {r#"
+    [project]
+    requires-python = " == 3.12"
     "#},
     true,
     (3, 11),

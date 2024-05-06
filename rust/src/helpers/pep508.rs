@@ -16,3 +16,15 @@ pub fn normalize_req_str(value: &str, keep_full_version: bool) -> String {
     })
     .unwrap()
 }
+
+pub fn req_name(value: &str) -> String {
+    prepare_freethreaded_python();
+    Python::with_gil(|py| {
+        let norm: String = PyModule::import_bound(py, "pyproject_fmt._pep508")?
+            .getattr("req_name")?
+            .call1((value,))?
+            .extract()?;
+        Ok::<String, PyErr>(norm)
+    })
+    .unwrap()
+}

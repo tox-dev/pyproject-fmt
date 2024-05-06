@@ -1,7 +1,7 @@
 use std::string::String;
 
-use pyo3::{Bound, pyfunction, pymodule, PyResult, wrap_pyfunction};
 use pyo3::prelude::PyModule;
+use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
@@ -13,8 +13,8 @@ use crate::project::fix_project;
 mod build_system;
 mod project;
 
-mod helpers;
 mod global;
+mod helpers;
 
 /// Format toml file
 #[pyfunction]

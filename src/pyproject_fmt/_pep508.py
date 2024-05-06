@@ -24,6 +24,16 @@ def normalize_req(req: str, *, keep_full_version: bool) -> str:
     return str(parsed)
 
 
+def req_name(req: str) -> str:
+    """
+    Normalize a python requirement name.
+
+    :param req: the raw requirement
+    :return: normalized name
+    """
+    return Requirement(req).name
+
+
 __all__ = [
     "normalize_req",
 ]

@@ -1,13 +1,19 @@
 use taplo::syntax::SyntaxElement;
 
-use crate::helpers::array::array_pep508_normalize;
+use crate::helpers::array::{array_pep508_normalize, sort_array};
+use crate::helpers::pep508::req_name;
 use crate::helpers::table::{for_entries, reorder_table_keys};
 
 pub fn fix_build_system(table: &mut Vec<SyntaxElement>, keep_full_version: bool) {
-    for_entries(table, &mut |key, entry| {
-        if key == "requires" {
+    for_entries(table, &mut |key, entry| match key.as_str() {
+        "requires" => {
             array_pep508_normalize(entry, keep_full_version);
+            sort_array(entry, |e| req_name(e.as_str()).to_lowercase());
         }
+        "backend-path" => {
+            sort_array(entry, |e| e.to_lowercase());
+        }
+        _ => {}
     });
     reorder_table_keys(table, &["", "build-backend", "requires", "backend-path"]);
 }

@@ -35,18 +35,20 @@ def test_requires(fmt: Fmt) -> None:
         ]
         """
 
-    expected = """
+    expected = """\
         [build-system]
         requires = [
+          "A>1", # c # d
           # start
           # two
-          "A>1", # c # d
-          # follow-up comment
           "A-B",
-          "C", # magic
+          # follow-up comment
+          "C",
+          # magic
           "D", # a
           "E", # b
-          "F", # comment ok
+          "F", # comment
+          # ok
         ]
         """
 
