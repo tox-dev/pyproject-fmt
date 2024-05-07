@@ -107,37 +107,37 @@ mod tests {
     indoc ! {r#"
     # comment
     a = "b"
-    
+
     [build-system]
     build-backend = "backend"
     requires = [
       "c",
       "d",
     ]
-    
+
     [project]
     name = "alpha"
     dependencies = [
       "e",
     ]
-    
+
     [tool.ruff]
     mr = "vr"
     [tool.ruff.test]
     mrt = "vrt"
-    
+
     [tool.pytest]
     mk = "mv"
-    
+
     [tool.mypy]
     mk = "mv"
-    
+
     [extra]
     ek = "ev"
-    
+
     [tool.undefined]
     mu = "mu"
-    
+
     [demo]
     ed = "ed"
     "#},

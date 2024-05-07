@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+use lexical_sort::{natural_lexical_cmp, StringSort};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
 use crate::helpers::create::{create_comma, create_newline, create_string_node};
@@ -20,7 +21,7 @@ pub fn array_pep508_normalize(node: &SyntaxNode, keep_full_version: bool) {
                             let found_str_value = &found[1..found.len() - 1];
                             let new_str_value = normalize_req_str(found_str_value, keep_full_version);
                             if found_str_value != new_str_value {
-                                element = create_string_node(element, new_str_value);
+                                element = create_string_node(new_str_value);
                                 changed = true;
                             }
                         }
@@ -125,7 +126,7 @@ pub fn sort_array(node: &SyntaxNode, transform: fn(String) -> String) {
             }
 
             let mut order: Vec<String> = key_to_pos.clone().into_keys().collect();
-            order.sort();
+            order.string_sort_unstable(natural_lexical_cmp);
             let end = entries.split_off(2);
             for key in order {
                 entries.extend(value_set[key_to_pos[&key]].clone());
@@ -148,55 +149,55 @@ mod tests {
 
     #[rstest]
     #[case::strip_micro_no_keep(
-    indoc ! {r#"
+        indoc ! {r#"
     a=["maturin >= 1.5.0"]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = ["maturin>=1.5"]
     "#},
-    false
+        false
     )]
     #[case::strip_micro_keep(
-    indoc ! {r#"
+        indoc ! {r#"
     a=["maturin >= 1.5.0"]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = ["maturin>=1.5.0"]
     "#},
-    true
+        true
     )]
     #[case::no_change(
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
     "maturin>=1.5.3",# comment here
     # a comment afterwards
     ]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
       "maturin>=1.5.3", # comment here
       # a comment afterwards
     ]
     "#},
-    false
+        false
     )]
     #[case::ignore_non_string(
-    indoc ! {r#"
+        indoc ! {r#"
     a=[{key="maturin>=1.5.0"}]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [{ key = "maturin>=1.5.0" }]
     "#},
-    false
+        false
     )]
     #[case::has_double_quote(
-    indoc ! {r#"
+        indoc ! {r#"
     a=['importlib-metadata>=7.0.0;python_version<"3.8"']
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = ["importlib-metadata>=7; python_version < \"3.8\""]
     "#},
-    false
+        false
     )]
     fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
         let root_ast = parse(start).into_syntax().clone_for_update();
@@ -215,43 +216,43 @@ mod tests {
 
     #[rstest]
     #[case::empty(
-    indoc ! {r#"
+        indoc ! {r#"
     a = []
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
     ]
     "#}
     )]
     #[case::single(
-    indoc ! {r#"
+        indoc ! {r#"
     a = ["A"]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
       "A",
     ]
     "#}
     )]
     #[case::newline_single(
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
       "A"
     ]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
       "A",
     ]
     "#}
     )]
     #[case::newline_single_comment(
-    indoc ! {r#"
+        indoc ! {r#"
     a = [ # comment
       "A"
     ]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
       # comment
       "A",
@@ -259,7 +260,7 @@ mod tests {
     "#}
     )]
     #[case::increasing(
-    indoc ! {r#"
+        indoc ! {r#"
     a=["B", "D",
        # C comment
        "C", # C trailing
@@ -268,7 +269,7 @@ mod tests {
       # extra
     ] # array comment
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     a = [
       # A comment
       "A", # A trailing

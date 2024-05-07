@@ -168,6 +168,10 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     ]
 
     [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
     dependencies = [
       "a==1.0.0",
     ]
@@ -178,7 +182,7 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     """
     pyproject_toml = tmp_path / "pyproject.toml"
     pyproject_toml.write_text(dedent(start))
-    args = [str(pyproject_toml), "--keep-full-version"]
+    args = [str(pyproject_toml), "--keep-full-version", "--max-supported-python", "3.8"]
     run(args)
     output = pyproject_toml.read_text()
     assert output == dedent(start)

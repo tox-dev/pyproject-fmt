@@ -17,7 +17,15 @@ if TYPE_CHECKING:
     ],
 )
 def test_project_name(fmt: Fmt, value: str) -> None:
-    fmt(value, '[project]\nname = "a-b"\n')
+    txt = """\
+    [project]
+    name = "a-b"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    """
+    fmt(value, txt, max_supported_python=(3, 8))
 
 
 def test_project_classifiers(fmt: Fmt) -> None:
@@ -41,11 +49,9 @@ def test_project_classifiers(fmt: Fmt) -> None:
     [project]
     classifiers = [
       "License :: OSI Approved :: MIT License",
-      "License :: OSI Approved :: MIT License",
       "Operating System :: OS Independent",
       "Programming Language :: Python",
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.7",
       "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
@@ -58,8 +64,18 @@ def test_project_classifiers(fmt: Fmt) -> None:
 
 def test_project_dependencies(fmt: Fmt) -> None:
     start = '[project]\ndependencies=["pytest","pytest-cov",]'
-    expected = '[project]\ndependencies = [\n  "pytest",\n  "pytest-cov",\n]\n'
-    fmt(start, expected)
+    expected = """\
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    dependencies = [
+      "pytest",
+      "pytest-cov",
+    ]
+    """
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_project_dependencies_with_double_quotes(fmt: Fmt) -> None:
@@ -72,12 +88,16 @@ def test_project_dependencies_with_double_quotes(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
     dependencies = [
       "appdirs",
       'packaging>=20; python_version > "3.4"',
     ]
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
@@ -91,19 +111,30 @@ def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
     dependencies = [
       "appdirs",
       "foobar@ git+https://weird-vcs/w/index.php?param=org'repo ; python_version == \\"2.7\\"",
       'packaging>=20; python_version > "3.4" and python_version != "3.5"',
     ]
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_project_description(fmt: Fmt) -> None:
     start = '[project]\ndescription=" Magical stuff\t"'
-    expected = '[project]\ndescription="Magical stuff"\n'
-    fmt(start, expected)
+    expected = """\
+        [project]
+        description="Magical stuff"
+        classifiers = [
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.8",
+        ]
+    """
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_project_description_multiline(fmt: Fmt) -> None:
@@ -115,8 +146,12 @@ def test_project_description_multiline(fmt: Fmt) -> None:
     expected = """\
         [project]
         description="A multi-line description."
+        classifiers = [
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.8",
+        ]
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_project_scripts(fmt: Fmt) -> None:
@@ -130,7 +165,7 @@ def test_project_scripts(fmt: Fmt) -> None:
     a = "b"
     c = "d"
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_project_optional_dependencies(fmt: Fmt) -> None:
@@ -151,7 +186,7 @@ def test_project_optional_dependencies(fmt: Fmt) -> None:
       "B",
     ]
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_entry_points(fmt: Fmt) -> None:
@@ -165,14 +200,21 @@ def test_entry_points(fmt: Fmt) -> None:
     alpha = {"A.A" = "a",B = "b"}
     beta = {C = "c",D = "d"}
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_classifier_none(fmt: Fmt) -> None:
     start = """
     [project]
     """
-    fmt(start, "[project]\n")
+    expected = """\
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    """
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_classifier_lt(fmt: Fmt) -> None:
@@ -187,7 +229,7 @@ def test_classifier_lt(fmt: Fmt) -> None:
       "Programming Language :: Python :: 3 :: Only",
     ]
     """
-    fmt(start, expected)
+    fmt(start, expected, max_supported_python=(3, 8))
 
 
 def test_classifier_gt(fmt: Fmt) -> None:
@@ -246,7 +288,7 @@ def test_classifier_eq(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
-    requires-python="==3.12"
+    requires-python = "==3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.12",
@@ -265,7 +307,6 @@ def test_classifier_neq(fmt: Fmt) -> None:
     requires-python = "!=3.9"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.7",
       "Programming Language :: Python :: 3.8",
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
@@ -282,7 +323,7 @@ def test_classifier_range(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
-    requires-python=">=3.7,<3.13"
+    requires-python = ">=3.7,<3.13"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.7",
@@ -336,7 +377,7 @@ def test_classifier_high_range(fmt: Fmt) -> None:
 def test_classifier_upper_bound(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python = "<3.8"
+    requires-python = "<3.9"
     classifiers = [
       "Programming Language :: Python :: 3.5",
       "Programming Language :: Python :: 3.6",
@@ -346,10 +387,10 @@ def test_classifier_upper_bound(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
-    requires-python = "<3.8"
+    requires-python = "<3.9"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
     ]
     """
     fmt(start, expected)
@@ -358,7 +399,7 @@ def test_classifier_upper_bound(fmt: Fmt) -> None:
 def test_classifier_two_upper_bounds(fmt: Fmt) -> None:
     start = """
     [project]
-    requires-python = "<3.8,<=3.10"
+    requires-python = "<3.9,<=3.10"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.5",
@@ -369,10 +410,10 @@ def test_classifier_two_upper_bounds(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
-    requires-python = "<3.8,<=3.10"
+    requires-python = "<3.9,<=3.10"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.7",
+      "Programming Language :: Python :: 3.8",
     ]
     """
     fmt(start, expected)
@@ -434,6 +475,12 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     ]
     classifiers = [
     {" " * indent}"C",
+    {" " * indent}"Programming Language :: Python :: 3 :: Only",
+    {" " * indent}"Programming Language :: Python :: 3.8",
+    {" " * indent}"Programming Language :: Python :: 3.9",
+    {" " * indent}"Programming Language :: Python :: 3.10",
+    {" " * indent}"Programming Language :: Python :: 3.11",
+    {" " * indent}"Programming Language :: Python :: 3.12",
     ]
     dynamic = [
     {" " * indent}"B",
@@ -462,6 +509,10 @@ def test_keep_full_version_on(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
     dependencies = [
       "a==1.0.0",
     ]
@@ -470,7 +521,7 @@ def test_keep_full_version_on(fmt: Fmt) -> None:
       "B==2.0.0",
     ]
     """
-    fmt(txt, expected, indent=2, keep_full_version=True)
+    fmt(txt, expected, indent=2, keep_full_version=True, max_supported_python=(3, 8))
 
 
 def test_keep_full_version_off(fmt: Fmt) -> None:
@@ -486,6 +537,10 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
     """
     expected = """\
     [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
     dependencies = [
       "a==1",
     ]
@@ -494,7 +549,7 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
       "B==2",
     ]
     """
-    fmt(txt, expected, indent=2, keep_full_version=False)
+    fmt(txt, expected, indent=2, keep_full_version=False, max_supported_python=(3, 8))
 
 
 def test_pyproject_toml_config(fmt: Fmt) -> None:
@@ -543,4 +598,4 @@ def test_pyproject_toml_config(fmt: Fmt) -> None:
     keep_full_version = false
     max_supported_python = "3.10"
     """
-    fmt(txt, expected, indent=6, keep_full_version=True, max_supported_python=(3, 9))
+    fmt(txt, expected, indent=6, keep_full_version=True, max_supported_python=(3, 10))

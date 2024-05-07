@@ -72,10 +72,14 @@ def test_normalize_pep508_array(fmt: Fmt, indent: int) -> None:
     expected = dedent(
         f"""\
         [project]
+        classifiers = [
+        {" " * indent}"Programming Language :: Python :: 3 :: Only",
+        {" " * indent}"Programming Language :: Python :: 3.8",
+        ]
         dependencies = [
         {" " * indent}"pytest==6",
         {" " * indent}"zzz>=1.1.1",
         ]
         """,
     )
-    fmt(start, expected, indent=indent, keep_full_version=False)
+    fmt(start, expected, indent=indent, keep_full_version=False, max_supported_python=(3, 8))

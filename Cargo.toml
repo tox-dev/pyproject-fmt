@@ -10,15 +10,23 @@ edition = "2021"
 [lib]
 name = "_lib"
 path = "rust/src/main.rs"
-crate-type = ["cdylib"]
+crate-type = [
+  "cdylib",
+]
 
 [dependencies]
-taplo = { version = "0.13.0" } # formatter
-pyo3 = { version = "0.21.2" }  # integration with Python
+taplo = { version = "0.13.0" }       # formatter
+pyo3 = { version = "0.21.2" }        # integration with Python
+lexical-sort = { version = "0.3.1" }
+regex = { version = "1.10.4" }
 
 [features]
-extension-module = ["pyo3/extension-module"]
-default = ["extension-module"]
+extension-module = [
+  "pyo3/extension-module",
+]
+default = [
+  "extension-module",
+]
 
 [lints.clippy]
 

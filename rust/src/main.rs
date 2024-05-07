@@ -52,8 +52,8 @@ pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_
         trailing_newline: true,
         allowed_blank_lines: 1, // one blank line to separate
         indent_string: " ".repeat(indent),
-        reorder_keys: false,  // respect custom order
-        reorder_arrays: true, // stable order in arrays
+        reorder_keys: false,   // respect custom order
+        reorder_arrays: false, // for natural sorting we need to this ourselves
         crlf: false,
     };
     format_syntax(root_ast, options)
@@ -76,7 +76,7 @@ mod tests {
 
     #[rstest]
     #[case::simple(
-    indoc ! {r#"
+        indoc ! {r#"
     # comment
     a= "b"
     [project]
@@ -88,7 +88,7 @@ mod tests {
     [tool.mypy]
     mk="mv"
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     # comment
     a = "b"
 
@@ -101,6 +101,14 @@ mod tests {
 
     [project]
     name = "alpha"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
+      "Programming Language :: Python :: 3.10",
+      "Programming Language :: Python :: 3.11",
+      "Programming Language :: Python :: 3.12",
+    ]
     dependencies = [
       "e>=1.5",
     ]
@@ -108,16 +116,16 @@ mod tests {
     [tool.mypy]
     mk = "mv"
     "#},
-    2,
-    false,
-    (3, 12),
+        2,
+        false,
+        (3, 12),
     )]
     #[case::empty(
-    indoc ! {r#""#},
-    "\n",
-    2,
-    true,
-    (3, 12)
+        indoc ! {r#""#},
+        "\n",
+        2,
+        true,
+        (3, 12)
     )]
     fn test_format_toml(
         #[case] start: &str,
