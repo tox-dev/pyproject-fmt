@@ -1,12 +1,24 @@
 use taplo::syntax::{SyntaxElement, SyntaxKind};
 
 use crate::helpers::array::{array_pep508_normalize, sort_array};
+use crate::helpers::create::create_string_node;
 use crate::helpers::pep508::req_name;
 use crate::helpers::table::{for_entries, reorder_table_keys};
 
 pub fn fix_project(table: &mut Vec<SyntaxElement>, keep_full_version: bool, max_supported_python: (u8, u8)) {
     let (min_supported_py, max_supported_py) = get_python_requires(table, max_supported_python);
     for_entries(table, &mut |key, entry| match key.as_str() {
+        "name" => {
+            let mut to_insert = Vec::<SyntaxElement>::new();
+            for mut element in entry.children_with_tokens() {
+                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
+                    let found = element.as_token().unwrap().text().to_string();
+                    element = create_string_node(element, req_name(&found[1..found.len() - 1]));
+                    to_insert.push(element);
+                }
+            }
+            entry.splice_children(0..to_insert.len(), to_insert);
+        }
         "dependencies" => {
             array_pep508_normalize(entry, keep_full_version);
             sort_array(entry, |e| req_name(e.as_str()).to_lowercase());
@@ -196,6 +208,47 @@ mod tests {
       "a-c",
       "b",
     ]
+    "#},
+    true,
+    (3, 11),
+    )]
+    #[case::project_sort_dynamic(
+    indoc ! {r#"
+    [project]
+    dynamic = ["b", "A", "a-c", " c"]
+    "#},
+    indoc ! {r#"
+    [project]
+    dynamic = [
+      " c",
+      "A",
+      "a-c",
+      "b",
+    ]
+    "#},
+    true,
+    (3, 11),
+    )]
+    #[case::project_name_norm(
+    indoc ! {r#"
+    [project]
+    name = "a.b.c"
+    "#},
+    indoc ! {r#"
+    [project]
+    name = "a-b-c"
+    "#},
+    true,
+    (3, 11),
+    )]
+    #[case::project_name_literal(
+    indoc ! {r#"
+    [project]
+    name = 'a.b.c'
+    "#},
+    indoc ! {r#"
+    [project]
+    name = "a-b-c"
     "#},
     true,
     (3, 11),

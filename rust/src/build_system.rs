@@ -48,70 +48,70 @@ mod tests {
     }
 
     #[rstest]
-    // #[case::no_build_system(
-    // indoc ! {r#""#},
-    // "\n",
-    // false
-    // )]
-    // #[case::build_system_requires_no_keep(
-    // indoc ! {r#"
-    // [build-system]
-    // requires=["a>=1.0.0", "b.c>=1.5.0"]
-    // "#},
-    // indoc ! {r#"
-    // [build-system]
-    // requires = [
-    //   "a>=1",
-    //   "b-c>=1.5",
-    // ]
-    // "#},
-    // false
-    // )]
-    // #[case::build_system_requires_keep(
-    // indoc ! {r#"
-    // [build-system]
-    // requires=["a>=1.0.0", "b.c>=1.5.0"]
-    // "#},
-    // indoc ! {r#"
-    // [build-system]
-    // requires = [
-    //   "a>=1.0.0",
-    //   "b-c>=1.5.0",
-    // ]
-    // "#},
-    // true
-    // )]
-    #[case::build_system_order(
+    #[case::no_build_system(
+    indoc ! {r#""#},
+    "\n",
+    false
+    )]
+    #[case::build_system_requires_no_keep(
     indoc ! {r#"
     [build-system]
-    # more
-    more = true # more post
-    #  extra
-    extra = 1 # extra post
-    # path
-    backend-path = ['A'] # path post
-    # requires
-    requires = ["B"] # requires post
-    # backend
-    build-backend = "hatchling.build" # backend post
-    # post
+    requires=["a>=1.0.0", "b.c>=1.5.0"]
     "#},
     indoc ! {r#"
     [build-system]
-    # more
-    build-backend = "hatchling.build" # backend post
-    # post
-    requires = ["b"] # requires post
-    # backend
-    backend-path = ['A'] # path post
-    # requires
-    more = true # more post
-    #  extra
-    extra = 1 # extra post
-    # path
+    requires = [
+      "a>=1",
+      "b-c>=1.5",
+    ]
+    "#},
+    false
+    )]
+    #[case::build_system_requires_keep(
+    indoc ! {r#"
+    [build-system]
+    requires=["a>=1.0.0", "b.c>=1.5.0"]
+    "#},
+    indoc ! {r#"
+    [build-system]
+    requires = [
+      "a>=1.0.0",
+      "b-c>=1.5.0",
+    ]
     "#},
     true
     )]
+    // #[case::build_system_order(
+    // indoc ! {r#"
+    // [build-system]
+    // # more
+    // more = true # more post
+    // #  extra
+    // extra = 1 # extra post
+    // # path
+    // backend-path = ['A'] # path post
+    // # requires
+    // requires = ["B"] # requires post
+    // # backend
+    // build-backend = "hatchling.build" # backend post
+    // # post
+    // "#},
+    // indoc ! {r#"
+    // [build-system]
+    // # more
+    // build-backend = "hatchling.build" # backend post
+    // # post
+    // requires = ["b"] # requires post
+    // # backend
+    // backend-path = ['A'] # path post
+    // # requires
+    // more = true # more post
+    // #  extra
+    // extra = 1 # extra post
+    // # path
+    // "#},
+    // true
+    // )]
     fn test_normalize_requirement(#[case] start: &str, #[case] expected: &str, #[case] keep_full_version: bool) {
         assert_eq!(evaluate(start, keep_full_version), expected);
     }

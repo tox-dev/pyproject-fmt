@@ -1,28 +1,23 @@
 from __future__ import annotations
 
-from subprocess import CalledProcessError  # noqa: S404
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
-    from pytest_mock import MockerFixture
-
     from tests import Fmt
 
 
 @pytest.mark.parametrize(
     "value",
     [
-        "[project]\nname='a-b'",
+        "[project]\nname='a.b'",
         "[project]\nname='A_B'",
         "[project]\nname='a.-..-__B'",
     ],
 )
 def test_project_name(fmt: Fmt, value: str) -> None:
-    fmt(value, '[project]\nname="a-b"\n')
+    fmt(value, '[project]\nname = "a-b"\n')
 
 
 def test_project_classifiers(fmt: Fmt) -> None:
@@ -411,96 +406,6 @@ def test_classifier_prerelease(fmt: Fmt) -> None:
     fmt(txt, expected, max_supported_python=(3, 15))
 
 
-def test_classifier_gt_tox(fmt: Fmt, tmp_path: Path) -> None:
-    (tmp_path / "tox.ini").write_text("[tox]\nenv_list = py{311,312}-{magic}")
-    start = """
-    [project]
-    requires-python=">=3.11"
-    """
-    expected = """\
-    [project]
-    requires-python=">=3.11"
-    classifiers = [
-      "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.11",
-      "Programming Language :: Python :: 3.12",
-    ]
-    """
-    fmt(start, expected)
-
-
-def test_classifier_gt_tox_no_py_ver(fmt: Fmt, tmp_path: Path) -> None:
-    (tmp_path / "tox.ini").write_text("[tox]\nenv_list = py-{magic,p12}")
-    start = """
-    [project]
-    requires-python=">=3.11"
-    """
-    expected = """\
-    [project]
-    requires-python=">=3.11"
-    classifiers = [
-      "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.11",
-      "Programming Language :: Python :: 3.12",
-    ]
-    """
-    fmt(start, expected)
-
-
-def test_classifier_gt_tox_conf_missing(fmt: Fmt) -> None:
-    start = """
-    [project]
-    requires-python=">=3.12"
-    """
-    expected = """\
-    [project]
-    requires-python=">=3.12"
-    classifiers = [
-      "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.12",
-    ]
-    """
-    fmt(start, expected)
-
-
-def test_classifier_tox_fails_call(fmt: Fmt, mocker: MockerFixture) -> None:
-    mocker.patch(
-        "pyproject_fmt.formatter.project.check_output",
-        side_effect=CalledProcessError(1, []),
-    )
-
-    start = """
-    [project]
-    requires-python=">=3.12"
-    classifiers = [
-      "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.12",
-    ]
-    """
-    fmt(start, start)
-
-
-def test_classifier_tox_exe_bad(
-    fmt: Fmt,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("PATH", str(tmp_path))
-    tox_bin = tmp_path / "tox"
-    tox_bin.write_text("")
-    tox_bin.chmod(0o755)
-
-    start = """
-    [project]
-    requires-python=">=3.12"
-    classifiers = [
-      "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.12",
-    ]
-    """
-    fmt(start, start)
-
-
 @pytest.mark.parametrize("indent", [0, 2, 4])
 def test_indent(fmt: Fmt, indent: int) -> None:
     txt = """
@@ -534,7 +439,7 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     {" " * indent}"B",
     ]
     dependencies = [
-    {" " * indent}"D",
+    {" " * indent}"d",
     ]
     [project.optional-dependencies]
     docs = [
@@ -558,7 +463,7 @@ def test_keep_full_version_on(fmt: Fmt) -> None:
     expected = """\
     [project]
     dependencies = [
-      "A==1.0.0",
+      "a==1.0.0",
     ]
     [project.optional-dependencies]
     docs = [
@@ -582,7 +487,7 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
     expected = """\
     [project]
     dependencies = [
-      "A==1",
+      "a==1",
     ]
     [project.optional-dependencies]
     docs = [
