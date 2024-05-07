@@ -149,7 +149,7 @@ def test_indent(tmp_path: Path, indent: int) -> None:
     expected = f"""\
     [build-system]
     requires = [
-    {" " * indent}"A",
+    {" " * indent}"a",
     ]
     """
     pyproject_toml = tmp_path / "pyproject.toml"
@@ -164,16 +164,16 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     start = """\
     [build-system]
     requires = [
-      "A==1.0.0",
+      "a==1.0.0",
     ]
 
     [project]
     dependencies = [
-      "A==1.0.0",
+      "a==1.0.0",
     ]
     [project.optional-dependencies]
     docs = [
-      "B==2.0.0",
+      "b==2.0.0",
     ]
     """
     pyproject_toml = tmp_path / "pyproject.toml"

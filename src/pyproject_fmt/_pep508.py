@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from packaging.requirements import Requirement
+from packaging.requirements import Requirement, canonicalize_name
 
 
 def normalize_req(req: str, *, keep_full_version: bool) -> str:
@@ -21,6 +21,7 @@ def normalize_req(req: str, *, keep_full_version: bool) -> str:
                 while version.endswith(".0"):
                     version = version[:-2]
                 spec._spec = (spec._spec[0], version)  # noqa: SLF001
+    parsed.name = canonicalize_name(parsed.name)
     return str(parsed)
 
 
@@ -31,7 +32,7 @@ def req_name(req: str) -> str:
     :param req: the raw requirement
     :return: normalized name
     """
-    return Requirement(req).name
+    return canonicalize_name(Requirement(req).name)
 
 
 __all__ = [

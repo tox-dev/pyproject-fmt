@@ -6,11 +6,15 @@ use crate::helpers::table::{for_entries, reorder_table_keys};
 
 pub fn fix_project(table: &mut Vec<SyntaxElement>, keep_full_version: bool, max_supported_python: (u8, u8)) {
     let (min_supported_py, max_supported_py) = get_python_requires(table, max_supported_python);
-    for_entries(table, &mut |key, entry| {
-        if key == "dependencies" {
+    for_entries(table, &mut |key, entry| match key.as_str() {
+        "dependencies" => {
             array_pep508_normalize(entry, keep_full_version);
             sort_array(entry, |e| req_name(e.as_str()).to_lowercase());
         }
+        "dynamic" | "keywords" => {
+            sort_array(entry, |e| e.to_lowercase());
+        }
+        _ => {}
     });
     println!("{:?} {:?}", min_supported_py, max_supported_py);
     reorder_table_keys(
@@ -99,7 +103,11 @@ mod tests {
         }
         let entries = tables.table_set.into_iter().flatten().collect::<Vec<SyntaxElement>>();
         root_ast.splice_children(0..entries.len(), entries);
-        format_syntax(root_ast, Options::default())
+        let opt = Options {
+            column_width: 1,
+            ..Options::default()
+        };
+        format_syntax(root_ast, opt)
     }
 
     #[rstest]
@@ -116,7 +124,10 @@ mod tests {
     "#},
     indoc ! {r#"
     [project]
-    dependencies = ["a>=1", "b.c>=1.5"]
+    dependencies = [
+      "a>=1",
+      "b-c>=1.5",
+    ]
     "#},
     false,
     (3, 12),
@@ -128,7 +139,10 @@ mod tests {
     "#},
     indoc ! {r#"
     [project]
-    dependencies = ["a>=1.0.0", "b.c>=1.5.0"]
+    dependencies = [
+      "a>=1.0.0",
+      "b-c>=1.5.0",
+    ]
     "#},
     true,
     (3, 12),
@@ -165,6 +179,23 @@ mod tests {
     indoc ! {r#"
     [project]
     requires-python = " == 3.12"
+    "#},
+    true,
+    (3, 11),
+    )]
+    #[case::project_sort_keywords(
+    indoc ! {r#"
+    [project]
+    keywords = ["b", "A", "a-c", " c"]
+    "#},
+    indoc ! {r#"
+    [project]
+    keywords = [
+      " c",
+      "A",
+      "a-c",
+      "b",
+    ]
     "#},
     true,
     (3, 11),

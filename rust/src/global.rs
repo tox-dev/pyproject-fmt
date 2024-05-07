@@ -107,32 +107,37 @@ mod tests {
     indoc ! {r#"
     # comment
     a = "b"
-
+    
     [build-system]
     build-backend = "backend"
-    requires = ["c", "d"]
-
+    requires = [
+      "c",
+      "d",
+    ]
+    
     [project]
     name = "alpha"
-    dependencies = ["e"]
-
+    dependencies = [
+      "e",
+    ]
+    
     [tool.ruff]
     mr = "vr"
     [tool.ruff.test]
     mrt = "vrt"
-
+    
     [tool.pytest]
     mk = "mv"
-
+    
     [tool.mypy]
     mk = "mv"
-
+    
     [extra]
     ek = "ev"
-
+    
     [tool.undefined]
     mu = "mu"
-
+    
     [demo]
     ed = "ed"
     "#},
@@ -141,7 +146,11 @@ mod tests {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
         let mut tables = Tables::from_ast(&mut root_ast);
         reorder_tables(&mut root_ast, &mut tables);
-        let got = format_syntax(root_ast, Options::default());
+        let opt = Options {
+            column_width: 1,
+            ..Options::default()
+        };
+        let got = format_syntax(root_ast, opt);
         assert_eq!(got, expected);
     }
 }

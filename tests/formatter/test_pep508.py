@@ -33,6 +33,7 @@ if TYPE_CHECKING:
         ("pytest>=6.0.0", "pytest>=6"),
         ("pytest==6.0.0", "pytest==6"),
         ("pytest~=6.0.0", "pytest~=6.0.0"),
+        ("a.b.c==6.0.0", "a-b-c==6"),
     ],
 )
 def test_requires_fmt(value: str, result: str) -> None:

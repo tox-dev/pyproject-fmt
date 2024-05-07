@@ -291,13 +291,11 @@ mod tests {
                 }
             }
         }
-        let res = format_syntax(
-            root_ast,
-            Options {
-                column_width: 1,
-                ..Options::default()
-            },
-        );
+        let opt = Options {
+            column_width: 1,
+            ..Options::default()
+        };
+        let res = format_syntax(root_ast, opt);
         assert_eq!(res, expected);
     }
 }
