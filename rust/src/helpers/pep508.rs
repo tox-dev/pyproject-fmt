@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use pyo3::prepare_freethreaded_python;
 use pyo3::types::IntoPyDict;
 
-pub fn normalize_req_str(value: &str, keep_full_version: bool) -> String {
+pub fn format_requirement(value: &str, keep_full_version: bool) -> String {
     prepare_freethreaded_python();
     Python::with_gil(|py| {
         let norm: String = PyModule::import_bound(py, "pyproject_fmt._pep508")?
@@ -17,7 +17,7 @@ pub fn normalize_req_str(value: &str, keep_full_version: bool) -> String {
     .unwrap()
 }
 
-pub fn req_name(value: &str) -> String {
+pub fn get_canonic_requirement_name(value: &str) -> String {
     prepare_freethreaded_python();
     Python::with_gil(|py| {
         let norm: String = PyModule::import_bound(py, "pyproject_fmt._pep508")?
@@ -41,7 +41,7 @@ mod tests {
 
     #[rstest]
     #[case::reorder(
-    indoc ! {r#"
+        indoc ! {r#"
     # comment
     a= "b"
     [project]
@@ -65,7 +65,7 @@ mod tests {
     [tool.pytest]
     mk="mv"
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     # comment
     a = "b"
 

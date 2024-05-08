@@ -114,8 +114,16 @@ pub fn reorder_table_keys(table: &mut Vec<SyntaxElement>, order: &[&str]) {
     let mut to_insert = Vec::<SyntaxElement>::new();
     let mut handled = HashSet::<usize>::new();
     for key in order {
-        if key_to_pos.contains_key(*key) {
-            let pos = key_to_pos[*key];
+        let mut parts = key_to_pos
+            .keys()
+            .filter(|k| {
+                key == k || (k.starts_with(key) && k.len() > key.len() && k.chars().nth(key.len()).unwrap() == '.')
+            })
+            .clone()
+            .collect::<Vec<&String>>();
+        parts.sort_by_key(|s| s.to_lowercase());
+        for element in parts {
+            let pos = key_to_pos[element];
             to_insert.extend(key_set[pos].clone());
             handled.insert(pos);
         }

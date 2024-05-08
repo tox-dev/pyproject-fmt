@@ -4,39 +4,28 @@ use std::collections::HashMap;
 use lexical_sort::{natural_lexical_cmp, StringSort};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::{create_comma, create_newline, create_string_node};
-use crate::helpers::pep508::normalize_req_str;
+use crate::helpers::create::{create_comma, create_newline};
+use crate::helpers::string::{load_text, update_string};
 
-pub fn array_pep508_normalize(node: &SyntaxNode, keep_full_version: bool) {
+pub fn transform_array<F>(node: &SyntaxNode, transform: &F)
+where
+    F: Fn(&str) -> String,
+{
     for array in node.children_with_tokens() {
         if array.kind() == SyntaxKind::ARRAY {
             for array_entry in array.as_node().unwrap().children_with_tokens() {
                 if array_entry.kind() == SyntaxKind::VALUE {
-                    let mut to_insert = Vec::<SyntaxElement>::new();
-                    let value_node = array_entry.as_node().unwrap();
-                    let mut changed = false;
-                    for mut element in value_node.children_with_tokens() {
-                        if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
-                            let found = element.as_token().unwrap().text().to_string();
-                            let found_str_value = &found[1..found.len() - 1];
-                            let new_str_value = normalize_req_str(found_str_value, keep_full_version);
-                            if found_str_value != new_str_value {
-                                element = create_string_node(new_str_value);
-                                changed = true;
-                            }
-                        }
-                        to_insert.push(element);
-                    }
-                    if changed {
-                        value_node.splice_children(0..to_insert.len(), to_insert);
-                    }
+                    update_string(array_entry.as_node().unwrap(), transform);
                 }
             }
         }
     }
 }
 
-pub fn sort_array(node: &SyntaxNode, transform: fn(String) -> String) {
+pub fn sort_array<F>(node: &SyntaxNode, transform: F)
+where
+    F: Fn(&str) -> String,
+{
     for array in node.children_with_tokens() {
         if array.kind() == SyntaxKind::ARRAY {
             let array_node = array.as_node().unwrap();
@@ -95,17 +84,18 @@ pub fn sort_array(node: &SyntaxNode, transform: fn(String) -> String) {
                             add_to_value_set(entry_value.clone());
                         }
                         has_value = true;
-                        let mut has_string_value = false;
-                        for e in entry.as_node().unwrap().children_with_tokens() {
-                            if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&e.kind()) {
-                                has_string_value = true;
-                                let found = e.as_token().unwrap().text().to_string();
-                                let got = found[1..found.len() - 1].to_string();
-                                entry_value = transform(got);
+                        let value_node = entry.as_node().unwrap();
+                        let mut found_string = false;
+                        for child in value_node.children_with_tokens() {
+                            let kind = child.kind();
+                            if kind == SyntaxKind::STRING {
+                                entry_value =
+                                    transform(load_text(child.as_token().unwrap().text(), SyntaxKind::STRING).as_str());
+                                found_string = true;
                                 break;
                             }
                         }
-                        if !has_string_value {
+                        if !found_string {
                             // abort if not correct types
                             return;
                         }
@@ -145,7 +135,8 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxKind;
 
-    use crate::helpers::array::{array_pep508_normalize, sort_array};
+    use crate::helpers::array::{sort_array, transform_array};
+    use crate::helpers::pep508::format_requirement;
 
     #[rstest]
     #[case::strip_micro_no_keep(
@@ -205,7 +196,7 @@ mod tests {
             if children.kind() == SyntaxKind::ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
                     if entry.kind() == SyntaxKind::VALUE {
-                        array_pep508_normalize(entry.as_node().unwrap(), keep_full_version);
+                        transform_array(entry.as_node().unwrap(), &|s| format_requirement(s, keep_full_version));
                     }
                 }
             }

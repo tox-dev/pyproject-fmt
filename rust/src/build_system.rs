@@ -1,14 +1,17 @@
-use taplo::syntax::SyntaxElement;
+use crate::helpers::array::{sort_array, transform_array};
+use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
+use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
 
-use crate::helpers::array::{array_pep508_normalize, sort_array};
-use crate::helpers::pep508::req_name;
-use crate::helpers::table::{for_entries, reorder_table_keys};
-
-pub fn fix_build_system(table: &mut Vec<SyntaxElement>, keep_full_version: bool) {
+pub fn fix_build_system(tables: &mut Tables, keep_full_version: bool) {
+    let table_element = tables.get(&String::from("build-system"));
+    if table_element.is_none() {
+        return;
+    }
+    let table = table_element.unwrap();
     for_entries(table, &mut |key, entry| match key.as_str() {
         "requires" => {
-            array_pep508_normalize(entry, keep_full_version);
-            sort_array(entry, |e| req_name(e.as_str()).to_lowercase());
+            transform_array(entry, &|s| format_requirement(s, keep_full_version));
+            sort_array(entry, |e| get_canonic_requirement_name(e).to_lowercase());
         }
         "backend-path" => {
             sort_array(entry, |e| e.to_lowercase());
@@ -32,12 +35,7 @@ mod tests {
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
         let mut tables = Tables::from_ast(&mut root_ast);
-        match tables.get(&String::from("build-system")) {
-            None => {}
-            Some(t) => {
-                fix_build_system(t, keep_full_version);
-            }
-        }
+        fix_build_system(&mut tables, keep_full_version);
         let entries = tables.table_set.into_iter().flatten().collect::<Vec<SyntaxElement>>();
         root_ast.splice_children(0..entries.len(), entries);
         let opt = Options {
@@ -49,37 +47,37 @@ mod tests {
 
     #[rstest]
     #[case::no_build_system(
-    indoc ! {r#""#},
-    "\n",
-    false
+        indoc ! {r#""#},
+        "\n",
+        false
     )]
     #[case::build_system_requires_no_keep(
-    indoc ! {r#"
+        indoc ! {r#"
     [build-system]
     requires=["a>=1.0.0", "b.c>=1.5.0"]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     [build-system]
     requires = [
       "a>=1",
       "b-c>=1.5",
     ]
     "#},
-    false
+        false
     )]
     #[case::build_system_requires_keep(
-    indoc ! {r#"
+        indoc ! {r#"
     [build-system]
     requires=["a>=1.0.0", "b.c>=1.5.0"]
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     [build-system]
     requires = [
       "a>=1.0.0",
       "b-c>=1.5.0",
     ]
     "#},
-    true
+        true
     )]
     // #[case::build_system_order(
     // indoc ! {r#"

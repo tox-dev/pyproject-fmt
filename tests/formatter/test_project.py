@@ -94,7 +94,7 @@ def test_project_dependencies_with_double_quotes(fmt: Fmt) -> None:
     ]
     dependencies = [
       "appdirs",
-      'packaging>=20; python_version > "3.4"',
+      "packaging>=20; python_version > \\"3.4\\"",
     ]
     """
     fmt(start, expected, max_supported_python=(3, 8))
@@ -118,7 +118,7 @@ def test_project_dependencies_with_mixed_quotes(fmt: Fmt) -> None:
     dependencies = [
       "appdirs",
       "foobar@ git+https://weird-vcs/w/index.php?param=org'repo ; python_version == \\"2.7\\"",
-      'packaging>=20; python_version > "3.4" and python_version != "3.5"',
+      "packaging>=20; python_version > \\"3.4\\" and python_version != \\"3.5\\"",
     ]
     """
     fmt(start, expected, max_supported_python=(3, 8))
@@ -128,7 +128,7 @@ def test_project_description(fmt: Fmt) -> None:
     start = '[project]\ndescription=" Magical stuff\t"'
     expected = """\
         [project]
-        description="Magical stuff"
+        description = "Magical stuff"
         classifiers = [
           "Programming Language :: Python :: 3 :: Only",
           "Programming Language :: Python :: 3.8",
@@ -145,7 +145,7 @@ def test_project_description_multiline(fmt: Fmt) -> None:
     '''
     expected = """\
         [project]
-        description="A multi-line description."
+        description = "A multi-line description."
         classifiers = [
           "Programming Language :: Python :: 3 :: Only",
           "Programming Language :: Python :: 3.8",

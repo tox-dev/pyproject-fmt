@@ -2,36 +2,64 @@ use regex::Regex;
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::HashSet;
 
-use crate::helpers::array::{array_pep508_normalize, sort_array};
-use crate::helpers::create::{create_array, create_array_entry, create_comma, create_string_node};
-use crate::helpers::pep508::req_name;
-use crate::helpers::table::{for_entries, reorder_table_keys};
+use crate::helpers::array::{sort_array, transform_array};
+use crate::helpers::create::{create_array, create_array_entry, create_comma};
+use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
+use crate::helpers::string::{load_text, update_string};
+use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
 
-pub fn fix_project(table: &mut Vec<SyntaxElement>, keep_full_version: bool, max_supported_python: (u8, u8)) {
-    generate_classifiers(table, max_supported_python);
-    for_entries(table, &mut |key, entry| match key.as_str() {
+pub fn fix_project(tables: &mut Tables, keep_full_version: bool, max_supported_python: (u8, u8)) {
+    let table_element = tables.get(&String::from("project"));
+    if table_element.is_none() {
+        return;
+    }
+    let table = table_element.unwrap();
+    for_entries(table, &mut |key, entry| match key.split('.').next().unwrap() {
         "name" => {
-            let mut to_insert = Vec::<SyntaxElement>::new();
-            for mut element in entry.children_with_tokens() {
-                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&element.kind()) {
-                    let found = element.as_token().unwrap().text().to_string();
-                    element = create_string_node(req_name(&found[1..found.len() - 1]));
-                    to_insert.push(element);
-                }
-            }
-            entry.splice_children(0..to_insert.len(), to_insert);
+            update_string(entry, get_canonic_requirement_name);
         }
-        "dependencies" => {
-            array_pep508_normalize(entry, keep_full_version);
-            sort_array(entry, |e| req_name(e.as_str()).to_lowercase());
+        "version" | "readme" | "license" | "license-files" => {
+            update_string(entry, |s| String::from(s));
+        }
+        "description" => {
+            update_string(entry, |s| {
+                s.trim()
+                    .lines()
+                    .map(|part| {
+                        part.trim()
+                            .split(char::is_whitespace)
+                            .filter(|part| !part.trim().is_empty())
+                            .collect::<Vec<&str>>()
+                            .join(" ")
+                            .replace(" .", ".")
+                    })
+                    .collect::<Vec<String>>()
+                    .join(" ")
+            });
+        }
+        "requires-python" => {
+            update_string(entry, |s| s.split_whitespace().collect());
+        }
+        "dependencies" | "optional-dependencies" => {
+            transform_array(entry, &|s| format_requirement(s, keep_full_version));
+            sort_array(entry, |e| get_canonic_requirement_name(e).to_lowercase());
         }
         "dynamic" | "keywords" => {
+            transform_array(entry, &|s| String::from(s));
             sort_array(entry, |e| e.to_lowercase());
         }
         "classifiers" => {
-            sort_array(entry, |e| e.as_str().to_lowercase());
+            transform_array(entry, &|s| String::from(s));
+            sort_array(entry, |e| e.to_lowercase());
         }
         _ => {}
+    });
+
+    generate_classifiers(table, max_supported_python);
+    for_entries(table, &mut |key, entry| {
+        if key.as_str() == "classifiers" {
+            sort_array(entry, |e| e.to_lowercase());
+        }
     });
     reorder_table_keys(
         table,
@@ -116,7 +144,6 @@ fn generate_classifiers_to_entry(
                         .filter(|e| e.starts_with("Programming Language :: Python :: ") && !must_have.contains(*e))
                         .collect::<HashSet<&String>>();
                     let mut to_insert = Vec::<SyntaxElement>::new();
-
                     let mut delete_mode = false;
                     for array_entry in root_value.as_node().unwrap().children_with_tokens() {
                         count += 1;
@@ -128,11 +155,10 @@ fn generate_classifiers_to_entry(
                             }
                         } else if kind == SyntaxKind::VALUE {
                             for array_entry_value in array_entry.as_node().unwrap().children_with_tokens() {
-                                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&array_entry_value.kind())
-                                {
-                                    let found = array_entry_value.as_token().unwrap().text().to_string();
-                                    let txt = &found[1..found.len() - 1];
-                                    delete_mode = delete.contains(&String::from(txt));
+                                if array_entry_value.kind() == SyntaxKind::STRING {
+                                    let txt =
+                                        load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::STRING);
+                                    delete_mode = delete.contains(&txt);
                                     if delete_mode {
                                         // delete from previous comma/start until next newline
                                         let mut remove_count = to_insert.len();
@@ -209,9 +235,8 @@ fn get_python_requires_with_classifier(
     for_entries(table, &mut |key, entry| {
         if key == "requires-python" {
             for child in entry.children_with_tokens() {
-                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&child.kind()) {
-                    let found_text = child.as_token().unwrap().text();
-                    let found_str_value: String = found_text[1..found_text.len() - 1].split_whitespace().collect();
+                if child.kind() == SyntaxKind::STRING {
+                    let found_str_value = load_text(child.as_token().unwrap().text(), SyntaxKind::STRING);
                     let re = Regex::new(r"^(?<op><|<=|==|!=|>=|>)3[.](?<minor>\d+)").unwrap();
                     for part in found_str_value.split(',') {
                         let capture = re.captures(part);
@@ -251,7 +276,7 @@ fn get_python_requires_with_classifier(
                     for array in child.as_node().unwrap().children_with_tokens() {
                         if array.kind() == SyntaxKind::VALUE {
                             for value in array.as_node().unwrap().children_with_tokens() {
-                                if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&value.kind()) {
+                                if value.kind() == SyntaxKind::STRING {
                                     let found = value.as_token().unwrap().text();
                                     let found_str_value: String = String::from(&found[1..found.len() - 1]);
                                     found_elements.insert(found_str_value);
@@ -283,12 +308,7 @@ mod tests {
     fn evaluate(start: &str, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
         let mut tables = Tables::from_ast(&mut root_ast);
-        match tables.get(&String::from("project")) {
-            None => {}
-            Some(t) => {
-                fix_project(t, keep_full_version, max_supported_python);
-            }
-        }
+        fix_project(&mut tables, keep_full_version, max_supported_python);
         let entries = tables.table_set.into_iter().flatten().collect::<Vec<SyntaxElement>>();
         root_ast.splice_children(0..entries.len(), entries);
         let opt = Options {
@@ -363,7 +383,7 @@ mod tests {
     "#},
         indoc ! {r#"
     [project]
-    requires-python = " >= 3.8"
+    requires-python = ">=3.8"
     classifiers = [
       # comment license inline 1
       # comment license inline 2
@@ -388,7 +408,7 @@ mod tests {
     "#},
         indoc ! {r#"
     [project]
-    requires-python = " > 3.7"
+    requires-python = ">3.7"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.8",
@@ -404,7 +424,7 @@ mod tests {
     "#},
         indoc ! {r#"
     [project]
-    requires-python = " == 3.12"
+    requires-python = "==3.12"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.12",
@@ -496,7 +516,7 @@ mod tests {
     "#},
         indoc ! {r#"
     [project]
-    requires-python = " > 3.6"
+    requires-python = ">3.6"
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
       "Programming Language :: Python :: 3.7",
@@ -562,7 +582,127 @@ mod tests {
         true,
         (3, 12),
     )]
-    fn test_normalize_requirement(
+    #[case::project_description_whitespace(
+        "[project]\ndescription = ' A  magic stuff \t is great\t\t.\r\n  Like  really  .\t\'\nrequires-python = '==3.12'",
+        indoc ! {r#"
+    [project]
+    description = "A magic stuff is great. Like really."
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    "#},
+        true,
+        (3, 12),
+    )]
+    #[case::project_description_multiline(
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    description = """
+    A magic stuff is great.
+        Like really.
+    """
+    "#},
+        indoc ! {r#"
+    [project]
+    description = "A magic stuff is great. Like really."
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    "#},
+        true,
+        (3, 12),
+    )]
+    #[case::project_dependencies_with_double_quotes(
+        indoc ! {r#"
+    [project]
+    dependencies = [
+        'packaging>=20.0;python_version>"3.4"',
+        "appdirs"
+    ]
+    requires-python = "==3.12"
+    "#},
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    dependencies = [
+      "appdirs",
+      "packaging>=20.0; python_version > \"3.4\"",
+    ]
+    "#},
+        true,
+        (3, 12),
+    )]
+    #[case::project_opt_inline_dependencies(
+        indoc ! {r#"
+    [project]
+    dependencies = ["packaging>=24"]
+    optional-dependencies.test = ["pytest>=8.1.1",  "covdefaults>=2.3"]
+    optional-dependencies.docs = ["sphinx-argparse-cli>=1.15", "Sphinx>=7.3.7"]
+    requires-python = "==3.12"
+    "#},
+        indoc ! {r#"
+    [project]
+    requires-python = "==3.12"
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.12",
+    ]
+    dependencies = [
+      "packaging>=24",
+    ]
+    optional-dependencies.docs = [
+      "sphinx>=7.3.7",
+      "sphinx-argparse-cli>=1.15",
+    ]
+    optional-dependencies.test = [
+      "covdefaults>=2.3",
+      "pytest>=8.1.1",
+    ]
+    "#},
+        true,
+        (3, 12),
+    )]
+    // #[case::project_opt_dependencies(
+    //     indoc ! {r#"
+    // [project]
+    // dependencies = ["packaging>=24"]
+    // requires-python = "==3.12"
+    // [project.optional-dependencies]
+    // test = ["pytest>=8.1.1",  "covdefaults>=2.3"]
+    // docs = ["sphinx-argparse-cli>=1.15", "Sphinx>=7.3.7"]
+    // "#},
+    //     indoc ! {r#"
+    // [project]
+    // requires-python = "==3.12"
+    // classifiers = [
+    //   "Programming Language :: Python :: 3 :: Only",
+    //   "Programming Language :: Python :: 3.12",
+    // ]
+    // dependencies = [
+    //   "packaging>=24",
+    // ]
+    // optional-dependencies.docs = [
+    //   "sphinx>=7.3.7",
+    //   "sphinx-argparse-cli>=1.15",
+    // ]
+    // optional-dependencies.test = [
+    //   "covdefaults>=2.3",
+    //   "pytest>=8.1.1",
+    // ]
+    // "#},
+    //     true,
+    //     (3, 12),
+    // )]
+    fn test_format_project(
         #[case] start: &str,
         #[case] expected: &str,
         #[case] keep_full_version: bool,
