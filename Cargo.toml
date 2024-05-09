@@ -11,7 +11,7 @@ edition = "2021"
 name = "_lib"
 path = "rust/src/main.rs"
 crate-type = [
-  "cdylib",
+    "cdylib",
 ]
 
 [dependencies]
@@ -22,13 +22,16 @@ regex = { version = "1.10.4" }
 
 [features]
 extension-module = [
-  "pyo3/extension-module",
+    "pyo3/extension-module",
 ]
 default = [
-  "extension-module",
+    "extension-module",
 ]
 
 [lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
 
 [dev-dependencies]
 rstest = { version = "0.19.0" } # parametrized tests
