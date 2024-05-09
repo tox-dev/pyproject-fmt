@@ -6,7 +6,7 @@ use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::HashSet;
 
-use crate::helpers::create::{create_empty_newline, create_key, create_newline, create_table_entry};
+use crate::helpers::create::{make_empty_newline, make_key, make_newline, make_table_entry};
 use crate::helpers::string::load_text;
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ impl Tables {
         }
     }
 
-    pub fn from_ast(root_ast: &mut SyntaxNode) -> Tables {
+    pub fn from_ast(root_ast: &SyntaxNode) -> Self {
         let mut header_to_pos = HashMap::<String, usize>::new();
         let mut table_set = Vec::<RefCell<Vec<SyntaxElement>>>::new();
         let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
@@ -44,13 +44,13 @@ impl Tables {
         }
         add_to_table_set();
 
-        Tables {
+        Self {
             header_to_pos,
             table_set,
         }
     }
 
-    pub fn reorder(&mut self, root_ast: &mut SyntaxNode, order: &[&str]) {
+    pub fn reorder(&mut self, root_ast: &SyntaxNode, order: &[&str]) {
         let mut to_insert = Vec::<SyntaxElement>::new();
         let mut entry_count: usize = 0;
 
@@ -59,7 +59,7 @@ impl Tables {
         if !next.is_empty() {
             next.remove(0);
         }
-        next.push(String::from(""));
+        next.push(String::new());
         for (name, next_name) in zip(order.iter(), next.iter()) {
             let mut entries = self.get(name).unwrap().borrow().clone();
             if entries.is_empty() {
@@ -71,7 +71,7 @@ impl Tables {
                 continue;
             }
             if last.kind() == SyntaxKind::NEWLINE && get_key(name) != get_key(next_name) {
-                entries.splice(entries.len() - 1..entries.len(), [create_empty_newline()]);
+                entries.splice(entries.len() - 1..entries.len(), [make_empty_newline()]);
             }
             to_insert.extend(entries);
         }
@@ -92,7 +92,7 @@ fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) ->
         let key = get_key(k);
         let pos = key_to_pos.get(&key.as_str());
         if pos.is_some() {
-            let offset = if key == *k { 0 } else { 1 };
+            let offset = usize::from(key != *k);
             pos.unwrap() + offset
         } else {
             max_ordering + header_to_pos[k]
@@ -153,7 +153,7 @@ fn load_keys(table: &RefMut<Vec<SyntaxElement>>) -> (HashMap<String, usize>, Vec
             entry_set_borrow.clear();
         }
     };
-    let mut key = String::from("");
+    let mut key = String::new();
     for c in table.iter() {
         if c.kind() == SyntaxKind::ENTRY {
             add_to_key_set(key.clone());
@@ -166,7 +166,7 @@ fn load_keys(table: &RefMut<Vec<SyntaxElement>>) -> (HashMap<String, usize>, Vec
         }
         entry_set.borrow_mut().push(c.clone());
     }
-    add_to_key_set(key.clone());
+    add_to_key_set(key);
     (key_to_pos, key_set)
 }
 
@@ -201,14 +201,14 @@ where
 
 pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
     let h2p = tables.header_to_pos.clone();
-    let sub_name_prefix = format!("{}.", name);
+    let sub_name_prefix = format!("{name}.");
     let sub_table_keys: Vec<&String> = h2p.keys().filter(|s| s.starts_with(sub_name_prefix.as_str())).collect();
     if sub_table_keys.is_empty() {
         return;
     }
     if !tables.header_to_pos.contains_key(name) {
         tables.header_to_pos.insert(String::from(name), tables.table_set.len());
-        tables.table_set.push(RefCell::new(create_table_entry(name)));
+        tables.table_set.push(RefCell::new(make_table_entry(name)));
     }
     let mut main = tables.table_set[tables.header_to_pos[name]].borrow_mut();
     for key in sub_table_keys {
@@ -232,7 +232,7 @@ pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
                         for array_entry_value in entry.as_node().unwrap().children_with_tokens() {
                             if array_entry_value.kind() == SyntaxKind::IDENT {
                                 let txt = load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::IDENT);
-                                entry = create_key(format!("{}.{}", sub_name, txt));
+                                entry = make_key(format!("{sub_name}.{txt}").as_str());
                                 break;
                             }
                         }
@@ -242,7 +242,7 @@ pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
                 child_node.splice_children(0..to_insert.len(), to_insert);
             }
             if main.last().unwrap().kind() != SyntaxKind::NEWLINE {
-                main.push(create_newline());
+                main.push(make_newline());
             }
             main.push(child.clone());
         }

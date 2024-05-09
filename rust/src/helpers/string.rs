@@ -1,6 +1,6 @@
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::create_string_node;
+use crate::helpers::create::make_string_node;
 
 pub fn load_text(value: &str, kind: SyntaxKind) -> String {
     let mut chars = value.chars();
@@ -24,7 +24,7 @@ pub fn load_text(value: &str, kind: SyntaxKind) -> String {
     res
 }
 
-pub fn update_string<F>(entry: &SyntaxNode, transform: F)
+pub fn update_content<F>(entry: &SyntaxNode, transform: F)
 where
     F: Fn(&str) -> String,
 {
@@ -46,7 +46,7 @@ where
 
             changed = output != found_str_value || kind != SyntaxKind::STRING;
             if changed {
-                child = create_string_node(output);
+                child = make_string_node(output.as_str());
             }
         }
         to_insert.push(child);

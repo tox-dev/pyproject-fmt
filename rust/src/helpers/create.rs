@@ -1,7 +1,7 @@
 use taplo::parser::parse;
 use taplo::syntax::{SyntaxElement, SyntaxKind};
 
-pub fn create_string_node(text: String) -> SyntaxElement {
+pub fn make_string_node(text: &str) -> SyntaxElement {
     let expr = &format!("a = \"{}\"", text.replace('"', "\\\""));
     for root in parse(expr)
         .into_syntax()
@@ -18,10 +18,10 @@ pub fn create_string_node(text: String) -> SyntaxElement {
             }
         }
     }
-    panic!("Could not create string element for {:?}", text)
+    panic!("Could not create string element for {text:?}")
 }
 
-pub fn create_empty_newline() -> SyntaxElement {
+pub fn make_empty_newline() -> SyntaxElement {
     for root in parse("\n\n").into_syntax().clone_for_update().children_with_tokens() {
         if root.kind() == SyntaxKind::NEWLINE {
             return root;
@@ -30,7 +30,7 @@ pub fn create_empty_newline() -> SyntaxElement {
     panic!("Could not create empty newline");
 }
 
-pub fn create_newline() -> SyntaxElement {
+pub fn make_newline() -> SyntaxElement {
     for root in parse("\n").into_syntax().clone_for_update().children_with_tokens() {
         if root.kind() == SyntaxKind::NEWLINE {
             return root;
@@ -39,7 +39,7 @@ pub fn create_newline() -> SyntaxElement {
     panic!("Could not create newline");
 }
 
-pub fn create_comma() -> SyntaxElement {
+pub fn make_comma() -> SyntaxElement {
     for root in parse("a=[1,2]").into_syntax().clone_for_update().children_with_tokens() {
         if root.kind() == SyntaxKind::ENTRY {
             for value in root.as_node().unwrap().children_with_tokens() {
@@ -60,8 +60,8 @@ pub fn create_comma() -> SyntaxElement {
     panic!("Could not create comma");
 }
 
-pub fn create_key(text: String) -> SyntaxElement {
-    for root in parse(format!("{}=1", text).as_str())
+pub fn make_key(text: &str) -> SyntaxElement {
+    for root in parse(format!("{text}=1").as_str())
         .into_syntax()
         .clone_for_update()
         .children_with_tokens()
@@ -74,11 +74,11 @@ pub fn create_key(text: String) -> SyntaxElement {
             }
         }
     }
-    panic!("Could not create key {}", text);
+    panic!("Could not create key {text}");
 }
 
-pub fn create_array(key: &str) -> SyntaxElement {
-    let txt = format!("{} = []", key);
+pub fn make_array(key: &str) -> SyntaxElement {
+    let txt = format!("{key} = []");
     for root in parse(txt.as_str())
         .into_syntax()
         .clone_for_update()
@@ -91,8 +91,8 @@ pub fn create_array(key: &str) -> SyntaxElement {
     panic!("Could not create array");
 }
 
-pub fn create_array_entry(key: String) -> SyntaxElement {
-    let txt = format!("a = [\"{}\"]", key);
+pub fn make_array_entry(key: &str) -> SyntaxElement {
+    let txt = format!("a = [\"{key}\"]");
     for root in parse(txt.as_str())
         .into_syntax()
         .clone_for_update()
@@ -117,8 +117,8 @@ pub fn create_array_entry(key: String) -> SyntaxElement {
     panic!("Could not create array");
 }
 
-pub fn create_entry_of_string(key: &String, value: &String) -> SyntaxElement {
-    let txt = format!("{} = \"{}\"\n", key, value);
+pub fn make_entry_of_string(key: &String, value: &String) -> SyntaxElement {
+    let txt = format!("{key} = \"{value}\"\n");
     for root in parse(txt.as_str())
         .into_syntax()
         .clone_for_update()
@@ -131,8 +131,8 @@ pub fn create_entry_of_string(key: &String, value: &String) -> SyntaxElement {
     panic!("Could not create entry of string");
 }
 
-pub fn create_table_entry(key: &str) -> Vec<SyntaxElement> {
-    let txt = format!("[{}]\n", key);
+pub fn make_table_entry(key: &str) -> Vec<SyntaxElement> {
+    let txt = format!("[{key}]\n");
     let mut res = Vec::<SyntaxElement>::new();
     for root in parse(txt.as_str())
         .into_syntax()

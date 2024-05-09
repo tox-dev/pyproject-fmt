@@ -99,9 +99,9 @@ mod tests {
     "#},
     )]
     fn test_reorder_table(#[case] start: &str, #[case] expected: &str) {
-        let mut root_ast = parse(start).into_syntax().clone_for_update();
-        let mut tables = Tables::from_ast(&mut root_ast);
-        reorder_tables(&mut root_ast, &mut tables);
+        let root_ast = parse(start).into_syntax().clone_for_update();
+        let mut tables = Tables::from_ast(&root_ast);
+        reorder_tables(&root_ast, &mut tables);
         let got = format_syntax(root_ast, Options::default());
         assert_eq!(got, expected);
     }

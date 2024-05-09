@@ -5,10 +5,10 @@ use pyo3::{pyfunction, pymodule, wrap_pyfunction, Bound, PyResult};
 use taplo::formatter::{format_syntax, Options};
 use taplo::parser::parse;
 
-use crate::build_system::fix_build_system;
+use crate::build_system::fix_build;
 use crate::global::reorder_tables;
 use crate::helpers::table::Tables;
-use crate::project::fix_project;
+use crate::project::fix_project_table;
 
 mod build_system;
 mod project;
@@ -18,24 +18,25 @@ mod helpers;
 
 /// Format toml file
 #[pyfunction]
+#[must_use]
 pub fn format_toml(
-    content: String,
+    content: &str,
     indent: usize,
     keep_full_version: bool,
     max_supported_python: (u8, u8),
     min_supported_python: (u8, u8),
 ) -> String {
-    let mut root_ast = parse(&content).into_syntax().clone_for_update();
-    let mut tables = Tables::from_ast(&mut root_ast);
+    let root_ast = parse(content).into_syntax().clone_for_update();
+    let mut tables = Tables::from_ast(&root_ast);
 
-    fix_build_system(&mut tables, keep_full_version);
-    fix_project(
+    fix_build(&mut tables, keep_full_version);
+    fix_project_table(
         &mut tables,
         keep_full_version,
         max_supported_python,
         min_supported_python,
     );
-    reorder_tables(&mut root_ast, &mut tables);
+    reorder_tables(&root_ast, &mut tables);
 
     let options = Options {
         align_entries: false,         // do not align by =
@@ -123,7 +124,7 @@ mod tests {
         (3, 12),
     )]
     #[case::empty(
-        indoc ! {r#""#},
+        indoc ! {r""},
         "\n",
         2,
         true,
@@ -155,13 +156,7 @@ mod tests {
         #[case] keep_full_version: bool,
         #[case] max_supported_python: (u8, u8),
     ) {
-        let got = format_toml(
-            start.parse().unwrap(),
-            indent,
-            keep_full_version,
-            max_supported_python,
-            (3, 8),
-        );
+        let got = format_toml(start, indent, keep_full_version, max_supported_python, (3, 8));
         assert_eq!(got, expected);
     }
 }

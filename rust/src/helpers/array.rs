@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use lexical_sort::{natural_lexical_cmp, StringSort};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 
-use crate::helpers::create::{create_comma, create_newline};
-use crate::helpers::string::{load_text, update_string};
+use crate::helpers::create::{make_comma, make_newline};
+use crate::helpers::string::{load_text, update_content};
 
-pub fn transform_array<F>(node: &SyntaxNode, transform: &F)
+pub fn transform<F>(node: &SyntaxNode, transform: &F)
 where
     F: Fn(&str) -> String,
 {
@@ -15,14 +15,14 @@ where
         if array.kind() == SyntaxKind::ARRAY {
             for array_entry in array.as_node().unwrap().children_with_tokens() {
                 if array_entry.kind() == SyntaxKind::VALUE {
-                    update_string(array_entry.as_node().unwrap(), transform);
+                    update_content(array_entry.as_node().unwrap(), transform);
                 }
             }
         }
     }
 }
 
-pub fn sort_array<F>(node: &SyntaxNode, transform: F)
+pub fn sort<F>(node: &SyntaxNode, transform: F)
 where
     F: Fn(&str) -> String,
 {
@@ -36,7 +36,7 @@ where
             let mut add_to_value_set = |entry: String| {
                 let mut entry_set_borrow = entry_set.borrow_mut();
                 if !entry_set_borrow.is_empty() {
-                    key_to_pos.insert(entry.clone(), value_set.len());
+                    key_to_pos.insert(entry, value_set.len());
                     value_set.push(entry_set_borrow.clone());
                     entry_set_borrow.clear();
                 }
@@ -45,7 +45,7 @@ where
             let mut has_value = false;
             let mut previous_is_value = false;
             let mut previous_is_bracket_open = false;
-            let mut entry_value = String::from("");
+            let mut entry_value = String::new();
             let mut count = 0;
 
             for entry in array_node.children_with_tokens() {
@@ -54,7 +54,7 @@ where
                     // make sure ends with trailing comma
                     previous_is_value = false;
                     if entry.kind() != SyntaxKind::COMMA {
-                        entry_set.borrow_mut().push(create_comma());
+                        entry_set.borrow_mut().push(make_comma());
                     }
                 }
                 if previous_is_bracket_open {
@@ -67,7 +67,7 @@ where
                 match &entry.kind() {
                     SyntaxKind::BRACKET_START => {
                         entries.push(entry);
-                        entries.push(create_newline());
+                        entries.push(make_newline());
                         previous_is_bracket_open = true;
                     }
                     SyntaxKind::BRACKET_END => {
@@ -80,7 +80,7 @@ where
                     }
                     SyntaxKind::VALUE => {
                         if has_value {
-                            entry_set.borrow_mut().push(create_newline());
+                            entry_set.borrow_mut().push(make_newline());
                             add_to_value_set(entry_value.clone());
                         }
                         has_value = true;
@@ -135,7 +135,7 @@ mod tests {
     use taplo::parser::parse;
     use taplo::syntax::SyntaxKind;
 
-    use crate::helpers::array::{sort_array, transform_array};
+    use crate::helpers::array::{sort, transform};
     use crate::helpers::pep508::format_requirement;
 
     #[rstest]
@@ -196,7 +196,7 @@ mod tests {
             if children.kind() == SyntaxKind::ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
                     if entry.kind() == SyntaxKind::VALUE {
-                        transform_array(entry.as_node().unwrap(), &|s| format_requirement(s, keep_full_version));
+                        transform(entry.as_node().unwrap(), &|s| format_requirement(s, keep_full_version));
                     }
                 }
             }
@@ -207,13 +207,13 @@ mod tests {
 
     #[rstest]
     #[case::empty(
-        indoc ! {r#"
+        indoc ! {r"
     a = []
-    "#},
-        indoc ! {r#"
+    "},
+        indoc ! {r"
     a = [
     ]
-    "#}
+    "}
     )]
     #[case::single(
         indoc ! {r#"
@@ -278,7 +278,7 @@ mod tests {
             if children.kind() == SyntaxKind::ENTRY {
                 for entry in children.as_node().unwrap().children_with_tokens() {
                     if entry.kind() == SyntaxKind::VALUE {
-                        sort_array(entry.as_node().unwrap(), |e| e.to_lowercase());
+                        sort(entry.as_node().unwrap(), str::to_lowercase);
                     }
                 }
             }

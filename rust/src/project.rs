@@ -5,13 +5,13 @@ use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::util::StrExt;
 use taplo::HashSet;
 
-use crate::helpers::array::{sort_array, transform_array};
-use crate::helpers::create::{create_array, create_array_entry, create_comma, create_entry_of_string, create_newline};
+use crate::helpers::array::{sort, transform};
+use crate::helpers::create::{make_array, make_array_entry, make_comma, make_entry_of_string, make_newline};
 use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
-use crate::helpers::string::{load_text, update_string};
+use crate::helpers::string::{load_text, update_content};
 use crate::helpers::table::{collapse_sub_tables, for_entries, reorder_table_keys, Tables};
 
-pub fn fix_project(
+pub fn fix_project_table(
     tables: &mut Tables,
     keep_full_version: bool,
     max_supported_python: (u8, u8),
@@ -26,15 +26,13 @@ pub fn fix_project(
     expand_entry_points_inline_tables(table);
     for_entries(table, &mut |key, entry| match key.split('.').next().unwrap() {
         "name" => {
-            update_string(entry, get_canonic_requirement_name);
+            update_content(entry, get_canonic_requirement_name);
         }
         "version" | "readme" | "license-files" | "scripts" | "entry-points" | "gui-scripts" => {
-            update_string(entry, |s| String::from(s));
+            update_content(entry, |s| String::from(s));
         }
-        "authors" | "maintainers" => {}
-        "license" => {}
         "description" => {
-            update_string(entry, |s| {
+            update_content(entry, |s| {
                 s.trim()
                     .lines()
                     .map(|part| {
@@ -50,19 +48,19 @@ pub fn fix_project(
             });
         }
         "requires-python" => {
-            update_string(entry, |s| s.split_whitespace().collect());
+            update_content(entry, |s| s.split_whitespace().collect());
         }
         "dependencies" | "optional-dependencies" => {
-            transform_array(entry, &|s| format_requirement(s, keep_full_version));
-            sort_array(entry, |e| get_canonic_requirement_name(e).to_lowercase());
+            transform(entry, &|s| format_requirement(s, keep_full_version));
+            sort(entry, |e| get_canonic_requirement_name(e).to_lowercase());
         }
         "dynamic" | "keywords" => {
-            transform_array(entry, &|s| String::from(s));
-            sort_array(entry, |e| e.to_lowercase());
+            transform(entry, &|s| String::from(s));
+            sort(entry, str::to_lowercase);
         }
         "classifiers" => {
-            transform_array(entry, &|s| String::from(s));
-            sort_array(entry, |e| e.to_lowercase());
+            transform(entry, &|s| String::from(s));
+            sort(entry, str::to_lowercase);
         }
         _ => {}
     });
@@ -70,7 +68,7 @@ pub fn fix_project(
     generate_classifiers(table, max_supported_python, min_supported_python);
     for_entries(table, &mut |key, entry| {
         if key.as_str() == "classifiers" {
-            sort_array(entry, |e| e.to_lowercase());
+            sort(entry, str::to_lowercase);
         }
     });
     reorder_table_keys(
@@ -101,7 +99,7 @@ pub fn fix_project(
 }
 
 fn expand_entry_points_inline_tables(table: &mut RefMut<Vec<SyntaxElement>>) {
-    let (mut to_insert, mut count, mut key) = (Vec::<SyntaxElement>::new(), 0, String::from(""));
+    let (mut to_insert, mut count, mut key) = (Vec::<SyntaxElement>::new(), 0, String::new());
     for s_table_entry in table.iter() {
         count += 1;
         if s_table_entry.kind() == SyntaxKind::ENTRY {
@@ -115,7 +113,7 @@ fn expand_entry_points_inline_tables(table: &mut RefMut<Vec<SyntaxElement>>) {
                             has_inline_table = true;
                             for s_in_inline_table in s_in_value.as_node().unwrap().children_with_tokens() {
                                 if s_in_inline_table.kind() == SyntaxKind::ENTRY {
-                                    let mut with_key = String::from("");
+                                    let mut with_key = String::new();
                                     for s_in_entry in s_in_inline_table.as_node().unwrap().children_with_tokens() {
                                         if s_in_entry.kind() == SyntaxKind::KEY {
                                             for s_in_key in s_in_entry.as_node().unwrap().children_with_tokens() {
@@ -136,10 +134,10 @@ fn expand_entry_points_inline_tables(table: &mut RefMut<Vec<SyntaxElement>>) {
                                                         SyntaxKind::STRING,
                                                     );
                                                     if to_insert.last().unwrap().kind() != SyntaxKind::NEWLINE {
-                                                        to_insert.push(create_newline());
+                                                        to_insert.push(make_newline());
                                                     }
-                                                    let new_key = format!("{}.{}", key, with_key);
-                                                    let got = create_entry_of_string(&new_key, &value);
+                                                    let new_key = format!("{key}.{with_key}");
+                                                    let got = make_entry_of_string(&new_key, &value);
                                                     to_insert.push(got);
                                                     break;
                                                 }
@@ -171,8 +169,8 @@ fn generate_classifiers(
         get_python_requires_with_classifier(table, max_supported_python, min_supported_python);
     match classifiers {
         None => {
-            let entry = create_array("classifiers");
-            generate_classifiers_to_entry(entry.as_node().unwrap(), min, max, omit, HashSet::new());
+            let entry = make_array("classifiers");
+            generate_classifiers_to_entry(entry.as_node().unwrap(), min, max, &omit, &HashSet::new());
             table.push(entry);
         }
         Some(c) => {
@@ -183,13 +181,7 @@ fn generate_classifiers(
                         if entry.kind() == SyntaxKind::KEY {
                             key_value = entry.as_node().unwrap().text().to_string().trim().to_string();
                         } else if entry.kind() == SyntaxKind::VALUE && key_value == "classifiers" {
-                            generate_classifiers_to_entry(
-                                table_row.as_node().unwrap(),
-                                min,
-                                max,
-                                omit.clone(),
-                                c.clone(),
-                            );
+                            generate_classifiers_to_entry(table_row.as_node().unwrap(), min, max, &omit, &c);
                         }
                     }
                 }
@@ -202,8 +194,8 @@ fn generate_classifiers_to_entry(
     node: &SyntaxNode,
     min: (u8, u8),
     max: (u8, u8),
-    omit: Vec<u8>,
-    existing: HashSet<String>,
+    omit: &[u8],
+    existing: &HashSet<String>,
 ) {
     for array in node.children_with_tokens() {
         if array.kind() == SyntaxKind::VALUE {
@@ -212,9 +204,9 @@ fn generate_classifiers_to_entry(
                     let mut must_have: HashSet<String> = HashSet::new();
                     must_have.insert(String::from("Programming Language :: Python :: 3 :: Only"));
                     must_have.extend(
-                        (min.1..max.1 + 1)
+                        (min.1..=max.1)
                             .filter(|i| !omit.contains(i))
-                            .map(|i| format!("Programming Language :: Python :: 3.{}", i)),
+                            .map(|i| format!("Programming Language :: Python :: 3.{i}")),
                     );
 
                     let mut count = 0;
@@ -263,7 +255,7 @@ fn generate_classifiers_to_entry(
                             to_insert.push(array_entry);
                         }
                     }
-                    let to_add: HashSet<_> = must_have.difference(&existing).collect();
+                    let to_add: HashSet<_> = must_have.difference(existing).collect();
                     if !to_add.is_empty() {
                         // make sure we have a comma
                         let mut trail_at = 0;
@@ -280,15 +272,15 @@ fn generate_classifiers_to_entry(
                             } else if v.kind() == SyntaxKind::BRACKET_START {
                                 break;
                             } else if v.kind() == SyntaxKind::VALUE {
-                                to_insert.insert(trail_at, create_comma());
+                                to_insert.insert(trail_at, make_comma());
                                 trail_at += 1;
                                 break;
                             }
                         }
                         let trail = to_insert.split_off(trail_at);
                         for add in to_add {
-                            to_insert.push(create_array_entry(add.clone()));
-                            to_insert.push(create_comma());
+                            to_insert.push(make_array_entry(add));
+                            to_insert.push(make_comma());
                         }
                         to_insert.extend(trail);
                     }
@@ -384,13 +376,13 @@ mod tests {
     use taplo::syntax::SyntaxElement;
 
     use crate::helpers::table::Tables;
-    use crate::project::fix_project;
+    use crate::project::fix_project_table;
 
     fn evaluate(start: &str, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
-        let mut root_ast = parse(start).into_syntax().clone_for_update();
+        let root_ast = parse(start).into_syntax().clone_for_update();
         let count = root_ast.children_with_tokens().count();
-        let mut tables = Tables::from_ast(&mut root_ast);
-        fix_project(&mut tables, keep_full_version, max_supported_python, (3, 8));
+        let mut tables = Tables::from_ast(&root_ast);
+        fix_project_table(&mut tables, keep_full_version, max_supported_python, (3, 8));
         let entries = tables
             .table_set
             .iter()
@@ -406,7 +398,7 @@ mod tests {
 
     #[rstest]
     #[case::no_project(
-        indoc ! {r#""#},
+        indoc ! {r""},
         "\n",
         false,
         (3, 8),
@@ -580,10 +572,10 @@ mod tests {
         (3, 8),
     )]
     #[case::project_name_literal(
-        indoc ! {r#"
+        indoc ! {r"
     [project]
     name = 'a.b.c'
-    "#},
+    "},
         indoc ! {r#"
     [project]
     name = "a-b-c"

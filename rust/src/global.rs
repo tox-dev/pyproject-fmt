@@ -3,7 +3,7 @@ use taplo::syntax::Lang;
 
 use crate::helpers::table::Tables;
 
-pub fn reorder_tables(root_ast: &mut SyntaxNode<Lang>, tables: &mut Tables) {
+pub fn reorder_tables(root_ast: &SyntaxNode<Lang>, tables: &mut Tables) {
     tables.reorder(
         root_ast,
         &[
@@ -80,7 +80,7 @@ mod tests {
 
     #[rstest]
     #[case::reorder(
-    indoc ! {r#"
+        indoc ! {r#"
     # comment
     a= "b"
     [project]
@@ -104,7 +104,7 @@ mod tests {
     [tool.pytest]
     mk="mv"
     "#},
-    indoc ! {r#"
+        indoc ! {r#"
     # comment
     a = "b"
 
@@ -143,9 +143,9 @@ mod tests {
     "#},
     )]
     fn test_reorder_table(#[case] start: &str, #[case] expected: &str) {
-        let mut root_ast = parse(start).into_syntax().clone_for_update();
-        let mut tables = Tables::from_ast(&mut root_ast);
-        reorder_tables(&mut root_ast, &mut tables);
+        let root_ast = parse(start).into_syntax().clone_for_update();
+        let mut tables = Tables::from_ast(&root_ast);
+        reorder_tables(&root_ast, &mut tables);
         let opt = Options {
             column_width: 1,
             ..Options::default()
