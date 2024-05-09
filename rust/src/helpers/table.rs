@@ -6,7 +6,8 @@ use taplo::syntax::SyntaxKind::{TABLE_ARRAY_HEADER, TABLE_HEADER};
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::HashSet;
 
-use crate::helpers::create::create_empty_newline;
+use crate::helpers::create::{create_empty_newline, create_key, create_newline, create_table_entry};
+use crate::helpers::string::load_text;
 
 #[derive(Debug)]
 pub struct Tables {
@@ -76,14 +77,6 @@ impl Tables {
         }
         root_ast.splice_children(0..entry_count, to_insert);
     }
-    #[allow(dead_code)] // used by tests
-    pub(crate) fn entries(&self) -> Vec<SyntaxElement> {
-        let mut res = Vec::<SyntaxElement>::new();
-        for e in self.table_set.iter() {
-            res.extend(e.borrow().clone());
-        }
-        res
-    }
 }
 
 fn calculate_order(header_to_pos: &HashMap<String, usize>, ordering: &[&str]) -> Vec<String> {
@@ -133,7 +126,7 @@ pub fn reorder_table_keys(table: &mut RefMut<Vec<SyntaxElement>>, order: &[&str]
             })
             .clone()
             .collect::<Vec<&String>>();
-        parts.sort_by_key(|s| s.to_lowercase());
+        parts.sort_by_key(|s| s.to_lowercase().replace('"', ""));
         for element in parts {
             let pos = key_to_pos[element];
             to_insert.extend(key_set[pos].clone());
@@ -203,5 +196,56 @@ where
                 }
             }
         }
+    }
+}
+
+pub fn collapse_sub_tables(tables: &mut Tables, name: &str) {
+    let h2p = tables.header_to_pos.clone();
+    let sub_name_prefix = format!("{}.", name);
+    let sub_table_keys: Vec<&String> = h2p.keys().filter(|s| s.starts_with(sub_name_prefix.as_str())).collect();
+    if sub_table_keys.is_empty() {
+        return;
+    }
+    if !tables.header_to_pos.contains_key(name) {
+        tables.header_to_pos.insert(String::from(name), tables.table_set.len());
+        tables.table_set.push(RefCell::new(create_table_entry(name)));
+    }
+    let mut main = tables.table_set[tables.header_to_pos[name]].borrow_mut();
+    for key in sub_table_keys {
+        let mut sub = tables.table_set[tables.header_to_pos[key]].borrow_mut();
+        let sub_name = key.strip_prefix(sub_name_prefix.as_str()).unwrap();
+        let mut header = false;
+        for child in sub.iter() {
+            let kind = child.kind();
+            if kind == SyntaxKind::TABLE_HEADER {
+                header = true;
+                continue;
+            }
+            if header && kind == SyntaxKind::NEWLINE {
+                continue;
+            }
+            if kind == SyntaxKind::ENTRY {
+                let mut to_insert = Vec::<SyntaxElement>::new();
+                let child_node = child.as_node().unwrap();
+                for mut entry in child_node.children_with_tokens() {
+                    if entry.kind() == SyntaxKind::KEY {
+                        for array_entry_value in entry.as_node().unwrap().children_with_tokens() {
+                            if array_entry_value.kind() == SyntaxKind::IDENT {
+                                let txt = load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::IDENT);
+                                entry = create_key(format!("{}.{}", sub_name, txt));
+                                break;
+                            }
+                        }
+                    }
+                    to_insert.push(entry);
+                }
+                child_node.splice_children(0..to_insert.len(), to_insert);
+            }
+            if main.last().unwrap().kind() != SyntaxKind::NEWLINE {
+                main.push(create_newline());
+            }
+            main.push(child.clone());
+        }
+        sub.clear();
     }
 }

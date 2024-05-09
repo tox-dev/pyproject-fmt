@@ -37,8 +37,9 @@ def _handle_one(config: Config, opts: PyProjectFmtNamespace) -> bool:
     formatted = format_toml(
         config.toml,
         indent=config.indent,
-        keep_full_version=opts.keep_full_version,
-        max_supported_python=(opts.max_supported_python.major, opts.max_supported_python.minor),
+        keep_full_version=config.keep_full_version,
+        max_supported_python=(config.max_supported_python.major, config.max_supported_python.minor),
+        min_supported_python=(config.min_supported_python.major, config.min_supported_python.minor),
     )
     before = config.toml
     changed = before != formatted

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from packaging.requirements import Requirement, canonicalize_name
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 
 
 def normalize_req(req: str, *, keep_full_version: bool) -> str:

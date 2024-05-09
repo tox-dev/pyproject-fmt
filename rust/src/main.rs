@@ -18,12 +18,23 @@ mod helpers;
 
 /// Format toml file
 #[pyfunction]
-pub fn format_toml(content: String, indent: usize, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
+pub fn format_toml(
+    content: String,
+    indent: usize,
+    keep_full_version: bool,
+    max_supported_python: (u8, u8),
+    min_supported_python: (u8, u8),
+) -> String {
     let mut root_ast = parse(&content).into_syntax().clone_for_update();
     let mut tables = Tables::from_ast(&mut root_ast);
 
     fix_build_system(&mut tables, keep_full_version);
-    fix_project(&mut tables, keep_full_version, max_supported_python);
+    fix_project(
+        &mut tables,
+        keep_full_version,
+        max_supported_python,
+        min_supported_python,
+    );
     reorder_tables(&mut root_ast, &mut tables);
 
     let options = Options {
@@ -82,14 +93,14 @@ mod tests {
         indoc ! {r#"
     # comment
     a = "b"
-    
+
     [build-system]
     build-backend = "backend"
     requires = [
       "c>=1.5",
       "d==2",
     ]
-    
+
     [project]
     name = "alpha"
     classifiers = [
@@ -103,7 +114,7 @@ mod tests {
     dependencies = [
       "e>=1.5",
     ]
-    
+
     [tool.mypy]
     mk = "mv"
     "#},
@@ -144,7 +155,13 @@ mod tests {
         #[case] keep_full_version: bool,
         #[case] max_supported_python: (u8, u8),
     ) {
-        let got = format_toml(start.parse().unwrap(), indent, keep_full_version, max_supported_python);
+        let got = format_toml(
+            start.parse().unwrap(),
+            indent,
+            keep_full_version,
+            max_supported_python,
+            (3, 8),
+        );
         assert_eq!(got, expected);
     }
 }

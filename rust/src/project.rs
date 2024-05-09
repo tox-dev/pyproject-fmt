@@ -1,29 +1,38 @@
-use std::cell::{RefCell, RefMut};
+use std::cell::RefMut;
 
 use regex::Regex;
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
+use taplo::util::StrExt;
 use taplo::HashSet;
 
 use crate::helpers::array::{sort_array, transform_array};
-use crate::helpers::create::{create_array, create_array_entry, create_comma, create_key, create_table_entry};
+use crate::helpers::create::{create_array, create_array_entry, create_comma, create_entry_of_string, create_newline};
 use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::string::{load_text, update_string};
-use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
+use crate::helpers::table::{collapse_sub_tables, for_entries, reorder_table_keys, Tables};
 
-pub fn fix_project(tables: &mut Tables, keep_full_version: bool, max_supported_python: (u8, u8)) {
-    collapse_sub_tables(tables);
+pub fn fix_project(
+    tables: &mut Tables,
+    keep_full_version: bool,
+    max_supported_python: (u8, u8),
+    min_supported_python: (u8, u8),
+) {
+    collapse_sub_tables(tables, "project");
     let table_element = tables.get(&String::from("project"));
     if table_element.is_none() {
         return;
     }
     let table = &mut table_element.unwrap().borrow_mut();
+    expand_entry_points_inline_tables(table);
     for_entries(table, &mut |key, entry| match key.split('.').next().unwrap() {
         "name" => {
             update_string(entry, get_canonic_requirement_name);
         }
-        "version" | "readme" | "license" | "license-files" | "scripts" => {
+        "version" | "readme" | "license-files" | "scripts" | "entry-points" | "gui-scripts" => {
             update_string(entry, |s| String::from(s));
         }
+        "authors" | "maintainers" => {}
+        "license" => {}
         "description" => {
             update_string(entry, |s| {
                 s.trim()
@@ -58,7 +67,7 @@ pub fn fix_project(tables: &mut Tables, keep_full_version: bool, max_supported_p
         _ => {}
     });
 
-    generate_classifiers(table, max_supported_python);
+    generate_classifiers(table, max_supported_python, min_supported_python);
     for_entries(table, &mut |key, entry| {
         if key.as_str() == "classifiers" {
             sort_array(entry, |e| e.to_lowercase());
@@ -91,58 +100,75 @@ pub fn fix_project(tables: &mut Tables, keep_full_version: bool, max_supported_p
     );
 }
 
-fn collapse_sub_tables(tables: &mut Tables) {
-    let h2p = tables.header_to_pos.clone();
-    let extra: Vec<&String> = h2p.keys().filter(|s| s.starts_with("project.")).collect();
-    if extra.is_empty() {
-        return;
-    }
-    let project_key = "project";
-    if !tables.header_to_pos.contains_key(project_key) {
-        tables
-            .header_to_pos
-            .insert(String::from(project_key), tables.table_set.len());
-        tables.table_set.push(RefCell::new(create_table_entry(project_key)));
-    }
-    let mut project = tables.table_set[tables.header_to_pos[project_key]].borrow_mut();
-    for key in extra {
-        let mut sub_table = tables.table_set[tables.header_to_pos[key]].borrow_mut();
-        let sub_name = key.strip_prefix("project.").unwrap();
-        let mut header = false;
-        for child in sub_table.iter() {
-            let kind = child.kind();
-            if kind == SyntaxKind::TABLE_HEADER {
-                header = true;
-                continue;
-            }
-            if header && kind == SyntaxKind::NEWLINE {
-                continue;
-            }
-            if kind == SyntaxKind::ENTRY {
-                let mut to_insert = Vec::<SyntaxElement>::new();
-                let node = child.as_node().unwrap();
-                for mut e in node.children_with_tokens() {
-                    if e.kind() == SyntaxKind::KEY {
-                        for array_entry_value in e.as_node().unwrap().children_with_tokens() {
-                            if array_entry_value.kind() == SyntaxKind::IDENT {
-                                let txt = load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::IDENT);
-                                e = create_key(format!("{}.{}", sub_name, txt));
-                                break;
+fn expand_entry_points_inline_tables(table: &mut RefMut<Vec<SyntaxElement>>) {
+    let (mut to_insert, mut count, mut key) = (Vec::<SyntaxElement>::new(), 0, String::from(""));
+    for s_table_entry in table.iter() {
+        count += 1;
+        if s_table_entry.kind() == SyntaxKind::ENTRY {
+            let mut has_inline_table = false;
+            for s_in_table in s_table_entry.as_node().unwrap().children_with_tokens() {
+                if s_in_table.kind() == SyntaxKind::KEY {
+                    key = s_in_table.as_node().unwrap().text().to_string().trim().to_string();
+                } else if key.starts_with("entry-points.") && s_in_table.kind() == SyntaxKind::VALUE {
+                    for s_in_value in s_in_table.as_node().unwrap().children_with_tokens() {
+                        if s_in_value.kind() == SyntaxKind::INLINE_TABLE {
+                            has_inline_table = true;
+                            for s_in_inline_table in s_in_value.as_node().unwrap().children_with_tokens() {
+                                if s_in_inline_table.kind() == SyntaxKind::ENTRY {
+                                    let mut with_key = String::from("");
+                                    for s_in_entry in s_in_inline_table.as_node().unwrap().children_with_tokens() {
+                                        if s_in_entry.kind() == SyntaxKind::KEY {
+                                            for s_in_key in s_in_entry.as_node().unwrap().children_with_tokens() {
+                                                if s_in_key.kind() == SyntaxKind::IDENT {
+                                                    with_key = load_text(
+                                                        s_in_key.as_token().unwrap().text(),
+                                                        SyntaxKind::IDENT,
+                                                    );
+                                                    with_key = String::from(with_key.strip_quotes());
+                                                    break;
+                                                }
+                                            }
+                                        } else if s_in_entry.kind() == SyntaxKind::VALUE {
+                                            for s_in_b_value in s_in_entry.as_node().unwrap().children_with_tokens() {
+                                                if s_in_b_value.kind() == SyntaxKind::STRING {
+                                                    let value = load_text(
+                                                        s_in_b_value.as_token().unwrap().text(),
+                                                        SyntaxKind::STRING,
+                                                    );
+                                                    if to_insert.last().unwrap().kind() != SyntaxKind::NEWLINE {
+                                                        to_insert.push(create_newline());
+                                                    }
+                                                    let new_key = format!("{}.{}", key, with_key);
+                                                    let got = create_entry_of_string(&new_key, &value);
+                                                    to_insert.push(got);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                    to_insert.push(e);
                 }
-                node.splice_children(0..to_insert.len(), to_insert);
             }
-            project.push(child.clone());
+            if !has_inline_table {
+                to_insert.push(s_table_entry.clone());
+            }
+        } else {
+            to_insert.push(s_table_entry.clone());
         }
-        sub_table.clear();
     }
+    table.splice(0..count, to_insert);
 }
 
-fn generate_classifiers(table: &mut RefMut<Vec<SyntaxElement>>, max_supported_python: (u8, u8)) {
-    let (min, max, omit, classifiers) = get_python_requires_with_classifier(table, max_supported_python);
+fn generate_classifiers(
+    table: &mut RefMut<Vec<SyntaxElement>>,
+    max_supported_python: (u8, u8),
+    min_supported_python: (u8, u8),
+) {
+    let (min, max, omit, classifiers) =
+        get_python_requires_with_classifier(table, max_supported_python, min_supported_python);
     match classifiers {
         None => {
             let entry = create_array("classifiers");
@@ -278,12 +304,14 @@ type MaxMinPythonWithClassifier = ((u8, u8), (u8, u8), Vec<u8>, Option<HashSet<S
 fn get_python_requires_with_classifier(
     table: &RefMut<Vec<SyntaxElement>>,
     max_supported_python: (u8, u8),
+    min_supported_python: (u8, u8),
 ) -> MaxMinPythonWithClassifier {
     let mut classifiers: Option<HashSet<String>> = None;
     let mut mins: Vec<u8> = vec![];
     let mut maxs: Vec<u8> = vec![];
     let mut omit: Vec<u8> = vec![];
     assert_eq!(max_supported_python.0, 3, "for now only Python 3 supported");
+    assert_eq!(min_supported_python.0, 3, "for now only Python 3 supported");
 
     for_entries(table, &mut |key, entry| {
         if key == "requires-python" {
@@ -342,7 +370,7 @@ fn get_python_requires_with_classifier(
             }
         }
     });
-    let min_py = (3, *mins.iter().max().unwrap_or(&8));
+    let min_py = (3, *mins.iter().max().unwrap_or(&min_supported_python.1));
     let max_py = (3, *maxs.iter().min().unwrap_or(&max_supported_python.1));
     (min_py, max_py, omit, classifiers)
 }
@@ -353,16 +381,22 @@ mod tests {
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
+    use taplo::syntax::SyntaxElement;
 
     use crate::helpers::table::Tables;
     use crate::project::fix_project;
 
     fn evaluate(start: &str, keep_full_version: bool, max_supported_python: (u8, u8)) -> String {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
+        let count = root_ast.children_with_tokens().count();
         let mut tables = Tables::from_ast(&mut root_ast);
-        fix_project(&mut tables, keep_full_version, max_supported_python);
-        let entries = tables.entries();
-        root_ast.splice_children(0..entries.len(), entries);
+        fix_project(&mut tables, keep_full_version, max_supported_python, (3, 8));
+        let entries = tables
+            .table_set
+            .iter()
+            .flat_map(|e| e.borrow().clone())
+            .collect::<Vec<SyntaxElement>>();
+        root_ast.splice_children(0..count, entries);
         let opt = Options {
             column_width: 1,
             ..Options::default()
@@ -761,6 +795,43 @@ mod tests {
     ]
     scripts.a = "b"
     scripts.c = "d"
+    "#},
+        true,
+        (3, 8),
+    )]
+    #[case::project_entry_points_collapse(
+        indoc ! {r#"
+    [project]
+    entry-points.tox = {"tox-uv" = "tox_uv.plugin", "tox" = "tox.plugin"}
+    [project.scripts]
+    virtualenv = "virtualenv.__main__:run_with_catch"
+    [project.gui-scripts]
+    hello-world = "timmins:hello_world"
+    [project.entry-points."virtualenv.activate"]
+    bash = "virtualenv.activation.bash:BashActivator"
+    [project.entry-points]
+    B = {base = "vehicle_crash_prevention.main:VehicleBase"}
+    [project.entry-points."no_crashes.vehicle"]
+    base = "vehicle_crash_prevention.main:VehicleBase"
+    [project.entry-points.plugin-namespace]
+    plugin-name1 = "pkg.subpkg1"
+    plugin-name2 = "pkg.subpkg2:func"
+    "#},
+        indoc ! {r#"
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    scripts.virtualenv = "virtualenv.__main__:run_with_catch"
+    gui-scripts.hello-world = "timmins:hello_world"
+    entry-points.B.base = "vehicle_crash_prevention.main:VehicleBase"
+    entry-points."no_crashes.vehicle".base = "vehicle_crash_prevention.main:VehicleBase"
+    entry-points.plugin-namespace.plugin-name1 = "pkg.subpkg1"
+    entry-points.plugin-namespace.plugin-name2 = "pkg.subpkg2:func"
+    entry-points.tox.tox = "tox.plugin"
+    entry-points.tox.tox-uv = "tox_uv.plugin"
+    entry-points."virtualenv.activate".bash = "virtualenv.activation.bash:BashActivator"
     "#},
         true,
         (3, 8),

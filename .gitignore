@@ -7,6 +7,5 @@ dist
 
 /target
 /pyproject-*.toml
-/src/pyproject_fmt/_lib.*
+/src/pyproject_fmt/_lib.cpython-*
 /tarpaulin-report.html
-/build_rs_cov.profraw

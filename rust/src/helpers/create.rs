@@ -117,6 +117,20 @@ pub fn create_array_entry(key: String) -> SyntaxElement {
     panic!("Could not create array");
 }
 
+pub fn create_entry_of_string(key: &String, value: &String) -> SyntaxElement {
+    let txt = format!("{} = \"{}\"\n", key, value);
+    for root in parse(txt.as_str())
+        .into_syntax()
+        .clone_for_update()
+        .children_with_tokens()
+    {
+        if root.kind() == SyntaxKind::ENTRY {
+            return root;
+        }
+    }
+    panic!("Could not create entry of string");
+}
+
 pub fn create_table_entry(key: &str) -> Vec<SyntaxElement> {
     let txt = format!("[{}]\n", key);
     let mut res = Vec::<SyntaxElement>::new();

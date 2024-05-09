@@ -15,7 +15,7 @@ from typing import Sequence
 
 from packaging.version import Version
 
-from .config import DEFAULT_INDENT, DEFAULT_MAX_SUPPORTED_PYTHON, Config
+from .config import DEFAULT_INDENT, DEFAULT_MAX_SUPPORTED_PYTHON, DEFAULT_MIN_SUPPORTED_PYTHON, Config
 
 
 class PyProjectFmtNamespace(Namespace):
@@ -23,21 +23,22 @@ class PyProjectFmtNamespace(Namespace):
 
     inputs: list[Path]
     stdout: bool
-    indent: int
     check: bool
+    indent: int
     keep_full_version: bool
     max_supported_python: Version
+    min_supported_python: Version
 
     @property
     def configs(self) -> list[Config]:
         """:return: configurations"""
         return [
-            Config(
-                pyproject_toml=toml,
-                toml=toml.read_text(encoding="utf-8"),
+            Config.from_file(
+                filename=toml,
                 indent=self.indent,
                 keep_full_version=self.keep_full_version,
                 max_supported_python=self.max_supported_python,
+                min_supported_python=self.min_supported_python,
             )
             for toml in self.inputs
         ]
@@ -92,6 +93,12 @@ def _build_cli() -> ArgumentParser:
         type=int,
         default=DEFAULT_INDENT,
         help="number of spaces to indent",
+    )
+    parser.add_argument(
+        "--min-supported-python",
+        type=Version,
+        default=DEFAULT_MIN_SUPPORTED_PYTHON,
+        help="latest Python version the project supports (e.g. 3.8)",
     )
     parser.add_argument(
         "--max-supported-python",

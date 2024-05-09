@@ -4,4 +4,5 @@ def format_toml(
     indent: int,
     keep_full_version: bool,
     max_supported_python: tuple[int, int],
+    min_supported_python: tuple[int, int],
 ) -> str: ...

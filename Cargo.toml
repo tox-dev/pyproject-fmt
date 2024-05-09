@@ -16,7 +16,7 @@ crate-type = [
 
 [dependencies]
 taplo = { version = "0.13.0" }       # formatter
-pyo3 = { version = "0.21.2" }        # integration with Python
+pyo3 = { version = "0.21.2" }        # integration with Python    zf
 lexical-sort = { version = "0.3.1" }
 regex = { version = "1.10.4" }
 

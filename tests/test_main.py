@@ -185,3 +185,61 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     run(args)
     output = pyproject_toml.read_text()
     assert output == dedent(start)
+
+
+def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    txt = """
+    [project]
+    keywords = [
+      "A",
+    ]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+    ]
+    dynamic = [
+      "B",
+    ]
+    dependencies = [
+      "requests>=2.0",
+    ]
+
+    [tool.pyproject-fmt]
+    indent = 4
+    keep_full_version = true
+    min_supported_python = "3.7"
+    max_supported_python = "3.10"
+    """
+    filename = tmp_path / "pyproject.toml"
+    filename.write_text(dedent(txt))
+    run([str(filename)])
+
+    expected = """\
+    [project]
+    keywords = [
+        "A",
+    ]
+    classifiers = [
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+    ]
+    dynamic = [
+        "B",
+    ]
+    dependencies = [
+        "requests>=2.0",
+    ]
+
+    [tool.pyproject-fmt]
+    indent = 4
+    keep_full_version = true
+    min_supported_python = "3.7"
+    max_supported_python = "3.10"
+    """
+    got = filename.read_text()
+    assert got == dedent(expected)
+    out, err = capsys.readouterr()
+    assert out
+    assert not err

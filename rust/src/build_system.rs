@@ -27,16 +27,22 @@ mod tests {
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
+    use taplo::syntax::SyntaxElement;
 
     use crate::build_system::fix_build_system;
     use crate::helpers::table::Tables;
 
     fn evaluate(start: &str, keep_full_version: bool) -> String {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
+        let count = root_ast.children_with_tokens().count();
         let mut tables = Tables::from_ast(&mut root_ast);
         fix_build_system(&mut tables, keep_full_version);
-        let entries = tables.entries();
-        root_ast.splice_children(0..entries.len(), entries);
+        let entries = tables
+            .table_set
+            .iter()
+            .flat_map(|e| e.borrow().clone())
+            .collect::<Vec<SyntaxElement>>();
+        root_ast.splice_children(0..count, entries);
         let opt = Options {
             column_width: 1,
             ..Options::default()

@@ -34,9 +34,10 @@ dynamic = [
 ]
 dependencies = [
   "packaging>=24",
+  'tomli>=2.0.1; python_version < "3.11"',
 ]
 optional-dependencies.docs = [
-  "furo>=2024.1.29",
+  "furo>=2024.5.6",
   "sphinx>=7.3.7",
   "sphinx-argparse-cli>=1.15",
   "sphinx-autodoc-typehints>=2.1",
@@ -44,7 +45,7 @@ optional-dependencies.docs = [
 ]
 optional-dependencies.test = [
   "covdefaults>=2.3",
-  "pytest>=8.1.1",
+  "pytest>=8.2",
   "pytest-cov>=5",
   "pytest-mock>=3.14",
 ]
@@ -62,6 +63,11 @@ python-source = "src"
 strip = true
 include = [
   "rust-toolchain.toml",
+]
+
+[tool.cibuildwheel]
+skip = [
+  "pp*",
 ]
 
 [tool.ruff]
@@ -116,11 +122,15 @@ ini_options.testpaths = [
 html.show_contexts = true
 html.skip_covered = false
 paths.source = [
-  "*/src",
-  ".tox/*/lib/python*/site-packages",
   "src",
+  ".tox/*/.venv/lib/*/site-packages",
+  ".tox\\*\\.venv\\Lib\\site-packages",
+  ".tox/*/lib/*/site-packages",
+  ".tox\\*\\Lib\\site-packages",
+  "**/src",
+  "**\\src",
 ]
-report.fail_under = 88
+report.fail_under = 100
 run.parallel = true
 run.plugins = [
   "covdefaults",

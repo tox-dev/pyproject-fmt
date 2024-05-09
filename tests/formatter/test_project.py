@@ -204,9 +204,15 @@ def test_entry_points(fmt: Fmt) -> None:
     alpha = {B = "b", "A.A" = "a"}
     """
     expected = """\
-    [project.entry-points]
-    alpha = {"A.A" = "a",B = "b"}
-    beta = {C = "c",D = "d"}
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    entry-points.alpha.A.A = "a"
+    entry-points.alpha.B = "b"
+    entry-points.beta.C = "c"
+    entry-points.beta.D = "d"
     """
     fmt(start, expected, max_supported_python=(3, 8))
 
@@ -555,52 +561,3 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
     ]
     """
     fmt(txt, expected, indent=2, keep_full_version=False, max_supported_python=(3, 8))
-
-
-def test_pyproject_toml_config(fmt: Fmt) -> None:
-    txt = """
-    [project]
-    keywords = [
-      "A",
-    ]
-    requires-python=">=3.8"
-    classifiers = [
-      "Programming Language :: Python :: 3 :: Only",
-    ]
-    dynamic = [
-      "B",
-    ]
-    dependencies = [
-      "requests>=2.0",
-    ]
-
-    [tool.pyproject-fmt]
-    indent = 4
-    keep_full_version = false
-    max_supported_python = "3.10"
-    """
-    expected = """\
-    [project]
-    keywords = [
-        "A",
-    ]
-    requires-python=">=3.8"
-    classifiers = [
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-    ]
-    dynamic = [
-        "B",
-    ]
-    dependencies = [
-        "requests>=2",
-    ]
-
-    [tool.pyproject-fmt]
-    indent = 4
-    keep_full_version = false
-    max_supported_python = "3.10"
-    """
-    fmt(txt, expected, indent=6, keep_full_version=True, max_supported_python=(3, 10))
