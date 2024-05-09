@@ -82,14 +82,14 @@ mod tests {
         indoc ! {r#"
     # comment
     a = "b"
-
+    
     [build-system]
     build-backend = "backend"
     requires = [
       "c>=1.5",
       "d==2",
     ]
-
+    
     [project]
     name = "alpha"
     classifiers = [
@@ -103,7 +103,7 @@ mod tests {
     dependencies = [
       "e>=1.5",
     ]
-
+    
     [tool.mypy]
     mk = "mv"
     "#},
@@ -117,6 +117,25 @@ mod tests {
         2,
         true,
         (3, 12)
+    )]
+    #[case::scripts(
+        indoc ! {r#"
+    [project.scripts]
+    c = "d"
+    a = "b"
+    "#},
+        indoc ! {r#"
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    scripts.a = "b"
+    scripts.c = "d"
+    "#},
+        2,
+        true,
+        (3, 8)
     )]
     fn test_format_toml(
         #[case] start: &str,

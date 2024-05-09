@@ -6,6 +6,8 @@ pub fn load_text(value: &str, kind: SyntaxKind) -> String {
     let mut chars = value.chars();
     let offset = if [SyntaxKind::STRING, SyntaxKind::STRING_LITERAL].contains(&kind) {
         1
+    } else if kind == SyntaxKind::IDENT {
+        0
     } else {
         3
     };

@@ -7,7 +7,7 @@ pub fn fix_build_system(tables: &mut Tables, keep_full_version: bool) {
     if table_element.is_none() {
         return;
     }
-    let table = table_element.unwrap();
+    let table = &mut table_element.unwrap().borrow_mut();
     for_entries(table, &mut |key, entry| match key.as_str() {
         "requires" => {
             transform_array(entry, &|s| format_requirement(s, keep_full_version));
@@ -27,7 +27,6 @@ mod tests {
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
-    use taplo::syntax::SyntaxElement;
 
     use crate::build_system::fix_build_system;
     use crate::helpers::table::Tables;
@@ -36,7 +35,7 @@ mod tests {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
         let mut tables = Tables::from_ast(&mut root_ast);
         fix_build_system(&mut tables, keep_full_version);
-        let entries = tables.table_set.into_iter().flatten().collect::<Vec<SyntaxElement>>();
+        let entries = tables.entries();
         root_ast.splice_children(0..entries.len(), entries);
         let opt = Options {
             column_width: 1,

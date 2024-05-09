@@ -161,9 +161,13 @@ def test_project_scripts(fmt: Fmt) -> None:
     a = "b"
     """
     expected = """\
-    [project.scripts]
-    a = "b"
-    c = "d"
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    scripts.a = "b"
+    scripts.c = "d"
     """
     fmt(start, expected, max_supported_python=(3, 8))
 
@@ -176,14 +180,18 @@ def test_project_optional_dependencies(fmt: Fmt) -> None:
     "D"]
     """
     expected = """\
-    [project.optional-dependencies]
-    docs = [
-      "C",
-      "D",
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
     ]
-    test = [
-      "A",
-      "B",
+    optional-dependencies.docs = [
+      "c",
+      "d",
+    ]
+    optional-dependencies.test = [
+      "a",
+      "b",
     ]
     """
     fmt(start, expected, max_supported_python=(3, 8))
@@ -488,9 +496,8 @@ def test_indent(fmt: Fmt, indent: int) -> None:
     dependencies = [
     {" " * indent}"d",
     ]
-    [project.optional-dependencies]
-    docs = [
-    {" " * indent}"E",
+    optional-dependencies.docs = [
+    {" " * indent}"e",
     ]
     """
     fmt(txt, expected, indent=indent, keep_full_version=True)
@@ -516,9 +523,8 @@ def test_keep_full_version_on(fmt: Fmt) -> None:
     dependencies = [
       "a==1.0.0",
     ]
-    [project.optional-dependencies]
-    docs = [
-      "B==2.0.0",
+    optional-dependencies.docs = [
+      "b==2.0.0",
     ]
     """
     fmt(txt, expected, indent=2, keep_full_version=True, max_supported_python=(3, 8))
@@ -544,9 +550,8 @@ def test_keep_full_version_off(fmt: Fmt) -> None:
     dependencies = [
       "a==1",
     ]
-    [project.optional-dependencies]
-    docs = [
-      "B==2",
+    optional-dependencies.docs = [
+      "b==2",
     ]
     """
     fmt(txt, expected, indent=2, keep_full_version=False, max_supported_python=(3, 8))

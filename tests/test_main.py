@@ -175,8 +175,7 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     dependencies = [
       "a==1.0.0",
     ]
-    [project.optional-dependencies]
-    docs = [
+    optional-dependencies.docs = [
       "b==2.0.0",
     ]
     """

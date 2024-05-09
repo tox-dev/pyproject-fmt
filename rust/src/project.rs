@@ -1,24 +1,27 @@
+use std::cell::{RefCell, RefMut};
+
 use regex::Regex;
 use taplo::syntax::{SyntaxElement, SyntaxKind, SyntaxNode};
 use taplo::HashSet;
 
 use crate::helpers::array::{sort_array, transform_array};
-use crate::helpers::create::{create_array, create_array_entry, create_comma};
+use crate::helpers::create::{create_array, create_array_entry, create_comma, create_key, create_table_entry};
 use crate::helpers::pep508::{format_requirement, get_canonic_requirement_name};
 use crate::helpers::string::{load_text, update_string};
 use crate::helpers::table::{for_entries, reorder_table_keys, Tables};
 
 pub fn fix_project(tables: &mut Tables, keep_full_version: bool, max_supported_python: (u8, u8)) {
+    collapse_sub_tables(tables);
     let table_element = tables.get(&String::from("project"));
     if table_element.is_none() {
         return;
     }
-    let table = table_element.unwrap();
+    let table = &mut table_element.unwrap().borrow_mut();
     for_entries(table, &mut |key, entry| match key.split('.').next().unwrap() {
         "name" => {
             update_string(entry, get_canonic_requirement_name);
         }
-        "version" | "readme" | "license" | "license-files" => {
+        "version" | "readme" | "license" | "license-files" | "scripts" => {
             update_string(entry, |s| String::from(s));
         }
         "description" => {
@@ -88,7 +91,57 @@ pub fn fix_project(tables: &mut Tables, keep_full_version: bool, max_supported_p
     );
 }
 
-fn generate_classifiers(table: &mut Vec<SyntaxElement>, max_supported_python: (u8, u8)) {
+fn collapse_sub_tables(tables: &mut Tables) {
+    let h2p = tables.header_to_pos.clone();
+    let extra: Vec<&String> = h2p.keys().filter(|s| s.starts_with("project.")).collect();
+    if extra.is_empty() {
+        return;
+    }
+    let project_key = "project";
+    if !tables.header_to_pos.contains_key(project_key) {
+        tables
+            .header_to_pos
+            .insert(String::from(project_key), tables.table_set.len());
+        tables.table_set.push(RefCell::new(create_table_entry(project_key)));
+    }
+    let mut project = tables.table_set[tables.header_to_pos[project_key]].borrow_mut();
+    for key in extra {
+        let mut sub_table = tables.table_set[tables.header_to_pos[key]].borrow_mut();
+        let sub_name = key.strip_prefix("project.").unwrap();
+        let mut header = false;
+        for child in sub_table.iter() {
+            let kind = child.kind();
+            if kind == SyntaxKind::TABLE_HEADER {
+                header = true;
+                continue;
+            }
+            if header && kind == SyntaxKind::NEWLINE {
+                continue;
+            }
+            if kind == SyntaxKind::ENTRY {
+                let mut to_insert = Vec::<SyntaxElement>::new();
+                let node = child.as_node().unwrap();
+                for mut e in node.children_with_tokens() {
+                    if e.kind() == SyntaxKind::KEY {
+                        for array_entry_value in e.as_node().unwrap().children_with_tokens() {
+                            if array_entry_value.kind() == SyntaxKind::IDENT {
+                                let txt = load_text(array_entry_value.as_token().unwrap().text(), SyntaxKind::IDENT);
+                                e = create_key(format!("{}.{}", sub_name, txt));
+                                break;
+                            }
+                        }
+                    }
+                    to_insert.push(e);
+                }
+                node.splice_children(0..to_insert.len(), to_insert);
+            }
+            project.push(child.clone());
+        }
+        sub_table.clear();
+    }
+}
+
+fn generate_classifiers(table: &mut RefMut<Vec<SyntaxElement>>, max_supported_python: (u8, u8)) {
     let (min, max, omit, classifiers) = get_python_requires_with_classifier(table, max_supported_python);
     match classifiers {
         None => {
@@ -98,7 +151,7 @@ fn generate_classifiers(table: &mut Vec<SyntaxElement>, max_supported_python: (u
         }
         Some(c) => {
             let mut key_value = String::new();
-            for table_row in table {
+            for table_row in table.iter() {
                 if table_row.kind() == SyntaxKind::ENTRY {
                     for entry in table_row.as_node().unwrap().children_with_tokens() {
                         if entry.kind() == SyntaxKind::KEY {
@@ -223,7 +276,7 @@ fn generate_classifiers_to_entry(
 type MaxMinPythonWithClassifier = ((u8, u8), (u8, u8), Vec<u8>, Option<HashSet<String>>);
 
 fn get_python_requires_with_classifier(
-    table: &mut Vec<SyntaxElement>,
+    table: &RefMut<Vec<SyntaxElement>>,
     max_supported_python: (u8, u8),
 ) -> MaxMinPythonWithClassifier {
     let mut classifiers: Option<HashSet<String>> = None;
@@ -300,7 +353,6 @@ mod tests {
     use rstest::rstest;
     use taplo::formatter::{format_syntax, Options};
     use taplo::parser::parse;
-    use taplo::syntax::SyntaxElement;
 
     use crate::helpers::table::Tables;
     use crate::project::fix_project;
@@ -309,7 +361,7 @@ mod tests {
         let mut root_ast = parse(start).into_syntax().clone_for_update();
         let mut tables = Tables::from_ast(&mut root_ast);
         fix_project(&mut tables, keep_full_version, max_supported_python);
-        let entries = tables.table_set.into_iter().flatten().collect::<Vec<SyntaxElement>>();
+        let entries = tables.entries();
         root_ast.splice_children(0..entries.len(), entries);
         let opt = Options {
             column_width: 1,
@@ -671,37 +723,48 @@ mod tests {
         true,
         (3, 12),
     )]
-    // #[case::project_opt_dependencies(
-    //     indoc ! {r#"
-    // [project]
-    // dependencies = ["packaging>=24"]
-    // requires-python = "==3.12"
-    // [project.optional-dependencies]
-    // test = ["pytest>=8.1.1",  "covdefaults>=2.3"]
-    // docs = ["sphinx-argparse-cli>=1.15", "Sphinx>=7.3.7"]
-    // "#},
-    //     indoc ! {r#"
-    // [project]
-    // requires-python = "==3.12"
-    // classifiers = [
-    //   "Programming Language :: Python :: 3 :: Only",
-    //   "Programming Language :: Python :: 3.12",
-    // ]
-    // dependencies = [
-    //   "packaging>=24",
-    // ]
-    // optional-dependencies.docs = [
-    //   "sphinx>=7.3.7",
-    //   "sphinx-argparse-cli>=1.15",
-    // ]
-    // optional-dependencies.test = [
-    //   "covdefaults>=2.3",
-    //   "pytest>=8.1.1",
-    // ]
-    // "#},
-    //     true,
-    //     (3, 12),
-    // )]
+    #[case::project_opt_dependencies(
+        indoc ! {r#"
+    [project.optional-dependencies]
+    test = ["pytest>=8.1.1",  "covdefaults>=2.3"]
+    docs = ["sphinx-argparse-cli>=1.15", "Sphinx>=7.3.7"]
+    "#},
+        indoc ! {r#"
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    optional-dependencies.docs = [
+      "sphinx>=7.3.7",
+      "sphinx-argparse-cli>=1.15",
+    ]
+    optional-dependencies.test = [
+      "covdefaults>=2.3",
+      "pytest>=8.1.1",
+    ]
+    "#},
+        true,
+        (3, 8),
+    )]
+    #[case::project_scritps_collapse(
+        indoc ! {r#"
+    [project.scripts]
+    c = 'd'
+    a = "b"
+    "#},
+        indoc ! {r#"
+    [project]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
+    ]
+    scripts.a = "b"
+    scripts.c = "d"
+    "#},
+        true,
+        (3, 8),
+    )]
     fn test_format_project(
         #[case] start: &str,
         #[case] expected: &str,

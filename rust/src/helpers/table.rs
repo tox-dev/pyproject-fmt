@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 use std::iter::zip;
 
@@ -11,13 +11,13 @@ use crate::helpers::create::create_empty_newline;
 #[derive(Debug)]
 pub struct Tables {
     pub header_to_pos: HashMap<String, usize>,
-    pub table_set: Vec<Vec<SyntaxElement>>,
+    pub table_set: Vec<RefCell<Vec<SyntaxElement>>>,
 }
 
 impl Tables {
-    pub(crate) fn get(&mut self, key: &String) -> Option<&mut Vec<SyntaxElement>> {
+    pub(crate) fn get(&mut self, key: &str) -> Option<&RefCell<Vec<SyntaxElement>>> {
         if self.header_to_pos.contains_key(key) {
-            Some(&mut self.table_set[self.header_to_pos[key]])
+            Some(&self.table_set[self.header_to_pos[key]])
         } else {
             None
         }
@@ -25,13 +25,13 @@ impl Tables {
 
     pub fn from_ast(root_ast: &mut SyntaxNode) -> Tables {
         let mut header_to_pos = HashMap::<String, usize>::new();
-        let mut table_set = Vec::<Vec<SyntaxElement>>::new();
+        let mut table_set = Vec::<RefCell<Vec<SyntaxElement>>>::new();
         let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
         let mut add_to_table_set = || {
             let mut entry_set_borrow = entry_set.borrow_mut();
             if !entry_set_borrow.is_empty() {
                 header_to_pos.insert(get_table_name(&entry_set_borrow[0]), table_set.len());
-                table_set.push(entry_set_borrow.clone());
+                table_set.push(RefCell::new(entry_set_borrow.clone()));
                 entry_set_borrow.clear();
             }
         };
@@ -60,7 +60,10 @@ impl Tables {
         }
         next.push(String::from(""));
         for (name, next_name) in zip(order.iter(), next.iter()) {
-            let mut entries = self.get(name).unwrap().clone();
+            let mut entries = self.get(name).unwrap().borrow().clone();
+            if entries.is_empty() {
+                continue;
+            }
             entry_count += entries.len();
             let last = entries.last().unwrap();
             if name.is_empty() && last.kind() == SyntaxKind::NEWLINE && entries.len() == 1 {
@@ -72,6 +75,14 @@ impl Tables {
             to_insert.extend(entries);
         }
         root_ast.splice_children(0..entry_count, to_insert);
+    }
+    #[allow(dead_code)] // used by tests
+    pub(crate) fn entries(&self) -> Vec<SyntaxElement> {
+        let mut res = Vec::<SyntaxElement>::new();
+        for e in self.table_set.iter() {
+            res.extend(e.borrow().clone());
+        }
+        res
     }
 }
 
@@ -109,7 +120,8 @@ fn get_key(k: &str) -> String {
     String::from(k)
 }
 
-pub fn reorder_table_keys(table: &mut Vec<SyntaxElement>, order: &[&str]) {
+pub fn reorder_table_keys(table: &mut RefMut<Vec<SyntaxElement>>, order: &[&str]) {
+    let size = table.len();
     let (key_to_pos, key_set) = load_keys(table);
     let mut to_insert = Vec::<SyntaxElement>::new();
     let mut handled = HashSet::<usize>::new();
@@ -133,10 +145,10 @@ pub fn reorder_table_keys(table: &mut Vec<SyntaxElement>, order: &[&str]) {
             to_insert.extend(entry);
         }
     }
-    table.splice(0..table.len(), to_insert);
+    table.splice(0..size, to_insert);
 }
 
-fn load_keys(table: &Vec<SyntaxElement>) -> (HashMap<String, usize>, Vec<Vec<SyntaxElement>>) {
+fn load_keys(table: &RefMut<Vec<SyntaxElement>>) -> (HashMap<String, usize>, Vec<Vec<SyntaxElement>>) {
     let mut key_to_pos = HashMap::<String, usize>::new();
     let mut key_set = Vec::<Vec<SyntaxElement>>::new();
     let entry_set = RefCell::new(Vec::<SyntaxElement>::new());
@@ -149,7 +161,7 @@ fn load_keys(table: &Vec<SyntaxElement>) -> (HashMap<String, usize>, Vec<Vec<Syn
         }
     };
     let mut key = String::from("");
-    for c in table {
+    for c in table.iter() {
         if c.kind() == SyntaxKind::ENTRY {
             add_to_key_set(key.clone());
             for e in c.as_node().unwrap().children_with_tokens() {
@@ -176,12 +188,12 @@ pub fn get_table_name(entry: &SyntaxElement) -> String {
     String::new()
 }
 
-pub fn for_entries<F>(table: &mut Vec<SyntaxElement>, f: &mut F)
+pub fn for_entries<F>(table: &RefMut<Vec<SyntaxElement>>, f: &mut F)
 where
     F: FnMut(String, &SyntaxNode),
 {
     let mut key = String::new();
-    for table_entry in table {
+    for table_entry in table.iter() {
         if table_entry.kind() == SyntaxKind::ENTRY {
             for entry in table_entry.as_node().unwrap().children_with_tokens() {
                 if entry.kind() == SyntaxKind::KEY {

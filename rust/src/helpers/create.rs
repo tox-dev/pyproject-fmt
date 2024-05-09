@@ -60,6 +60,23 @@ pub fn create_comma() -> SyntaxElement {
     panic!("Could not create comma");
 }
 
+pub fn create_key(text: String) -> SyntaxElement {
+    for root in parse(format!("{}=1", text).as_str())
+        .into_syntax()
+        .clone_for_update()
+        .children_with_tokens()
+    {
+        if root.kind() == SyntaxKind::ENTRY {
+            for value in root.as_node().unwrap().children_with_tokens() {
+                if value.kind() == SyntaxKind::KEY {
+                    return value;
+                }
+            }
+        }
+    }
+    panic!("Could not create key {}", text);
+}
+
 pub fn create_array(key: &str) -> SyntaxElement {
     let txt = format!("{} = []", key);
     for root in parse(txt.as_str())
@@ -98,4 +115,17 @@ pub fn create_array_entry(key: String) -> SyntaxElement {
         }
     }
     panic!("Could not create array");
+}
+
+pub fn create_table_entry(key: &str) -> Vec<SyntaxElement> {
+    let txt = format!("[{}]\n", key);
+    let mut res = Vec::<SyntaxElement>::new();
+    for root in parse(txt.as_str())
+        .into_syntax()
+        .clone_for_update()
+        .children_with_tokens()
+    {
+        res.push(root);
+    }
+    res
 }
