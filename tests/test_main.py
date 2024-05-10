@@ -6,11 +6,17 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-import pyproject_fmt.__main__
+from pyproject_fmt import __version__
 from pyproject_fmt.__main__ import GREEN, RED, RESET, color_diff, run
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from pytest_mock import MockerFixture
+
+
+def test_version() -> None:
+    assert isinstance(__version__, str)
 
 
 def test_color_diff() -> None:
@@ -97,10 +103,11 @@ def test_main(
     outcome: str,
     output: str,
     monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
     cwd: bool,
     check: bool,
 ) -> None:
-    monkeypatch.setattr(pyproject_fmt.__main__, "color_diff", no_color)
+    mocker.patch("pyproject_fmt.__main__.color_diff", no_color)
     if cwd:
         monkeypatch.chdir(tmp_path)
     pyproject_toml = tmp_path / "pyproject.toml"
@@ -147,7 +154,7 @@ def test_indent(tmp_path: Path, indent: int) -> None:
     expected = f"""\
     [build-system]
     requires = [
-    {" " * indent}"A",
+    {" " * indent}"a",
     ]
     """
     pyproject_toml = tmp_path / "pyproject.toml"
@@ -162,21 +169,84 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     start = """\
     [build-system]
     requires = [
-      "A==1.0.0",
+      "a==1.0.0",
     ]
 
     [project]
-    dependencies = [
-      "A==1.0.0",
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+      "Programming Language :: Python :: 3.8",
     ]
-    [project.optional-dependencies]
-    docs = [
-      "B==2.0.0",
+    dependencies = [
+      "a==1.0.0",
+    ]
+    optional-dependencies.docs = [
+      "b==2.0.0",
     ]
     """
     pyproject_toml = tmp_path / "pyproject.toml"
     pyproject_toml.write_text(dedent(start))
-    args = [str(pyproject_toml), "--keep-full-version"]
+    args = [str(pyproject_toml), "--keep-full-version", "--max-supported-python", "3.8"]
     run(args)
     output = pyproject_toml.read_text()
     assert output == dedent(start)
+
+
+def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    txt = """
+    [project]
+    keywords = [
+      "A",
+    ]
+    classifiers = [
+      "Programming Language :: Python :: 3 :: Only",
+    ]
+    dynamic = [
+      "B",
+    ]
+    dependencies = [
+      "requests>=2.0",
+    ]
+
+    [tool.pyproject-fmt]
+    column_width = 20
+    indent = 4
+    keep_full_version = true
+    min_supported_python = "3.7"
+    max_supported_python = "3.10"
+    """
+    filename = tmp_path / "pyproject.toml"
+    filename.write_text(dedent(txt))
+    run([str(filename)])
+
+    expected = """\
+    [project]
+    keywords = [
+        "A",
+    ]
+    classifiers = [
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+    ]
+    dynamic = [
+        "B",
+    ]
+    dependencies = [
+        "requests>=2.0",
+    ]
+
+    [tool.pyproject-fmt]
+    column_width = 20
+    indent = 4
+    keep_full_version = true
+    min_supported_python = "3.7"
+    max_supported_python = "3.10"
+    """
+    got = filename.read_text()
+    assert got == dedent(expected)
+    out, err = capsys.readouterr()
+    assert out
+    assert not err
