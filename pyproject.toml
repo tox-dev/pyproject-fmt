@@ -67,7 +67,7 @@ include = [
 
 [tool.cibuildwheel]
 build = [
-  "cp38",
+  "cp38-*",
 ]
 skip = [
   "pp*",
