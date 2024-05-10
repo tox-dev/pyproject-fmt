@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import importlib.metadata
-
+from datetime import datetime, timezone
 
 company, name = "tox-dev", "pyproject-fmt"
 release = importlib.metadata.version("pyproject_fmt")
