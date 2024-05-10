@@ -21,6 +21,7 @@ mod helpers;
 #[must_use]
 pub fn format_toml(
     content: &str,
+    column_width: usize,
     indent: usize,
     keep_full_version: bool,
     max_supported_python: (u8, u8),
@@ -48,7 +49,7 @@ pub fn format_toml(
         compact_arrays: false,        // do not compact for easier diffs
         compact_inline_tables: false, // do not compact for easier diffs
         compact_entries: false,       // do not compact for easier diffs
-        column_width: 1,              // always expand arrays per https://github.com/tamasfe/taplo/issues/390
+        column_width,                 // always expand arrays per https://github.com/tamasfe/taplo/issues/390
         indent_tables: false,
         indent_entries: false,
         inline_table_expand: true,
@@ -62,10 +63,13 @@ pub fn format_toml(
     format_syntax(root_ast, options)
 }
 
+/// # Errors
+///
+/// Will return `PyErr` if an error is raised during formatting.
 #[pymodule]
 #[pyo3(name = "_lib")]
 #[cfg(not(tarpaulin_include))]
-fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(format_toml, m)?)?;
     Ok(())
 }
@@ -156,7 +160,7 @@ mod tests {
         #[case] keep_full_version: bool,
         #[case] max_supported_python: (u8, u8),
     ) {
-        let got = format_toml(start, indent, keep_full_version, max_supported_python, (3, 8));
+        let got = format_toml(start, 1, indent, keep_full_version, max_supported_python, (3, 8));
         assert_eq!(got, expected);
     }
 }

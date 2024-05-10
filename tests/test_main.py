@@ -204,6 +204,7 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     ]
 
     [tool.pyproject-fmt]
+    column_width = 20
     indent = 4
     keep_full_version = true
     min_supported_python = "3.7"
@@ -233,6 +234,7 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     ]
 
     [tool.pyproject-fmt]
+    column_width = 20
     indent = 4
     keep_full_version = true
     min_supported_python = "3.7"

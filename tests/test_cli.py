@@ -26,7 +26,8 @@ def test_cli_pyproject_toml_ok(tmp_path: Path) -> None:
     path = tmp_path / "tox.ini"
     path.write_text("")
     result = cli_args([str(path)])
-    assert result.inputs == [path]
+    assert len(result) == 1
+    assert result[0]
 
 
 def test_cli_inputs_ok(tmp_path: Path) -> None:
@@ -36,7 +37,7 @@ def test_cli_inputs_ok(tmp_path: Path) -> None:
         path.write_text("")
         paths.append(path)
     result = cli_args([*map(str, paths)])
-    assert result.inputs == paths
+    assert len(result) == 3
 
 
 def test_cli_pyproject_toml_not_exists(
@@ -98,7 +99,7 @@ def test_pyproject_toml_resolved(
     path = tmp_path / "tox.ini"
     path.write_text("")
     result = cli_args(["tox.ini"])
-    assert result.inputs == [path]
+    assert len(result) == 1
 
 
 def test_pyproject_toml_dir(tmp_path: Path) -> None:

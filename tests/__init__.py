@@ -9,9 +9,11 @@ class Fmt(Protocol):
         start: str,
         expected: str,
         *,
+        column_width: int = ...,
         indent: int = ...,
         keep_full_version: bool = ...,
         max_supported_python: tuple[int, int] = ...,
+        min_supported_python: tuple[int, int] = ...,
     ) -> None: ...
 
 

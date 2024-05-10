@@ -17,6 +17,7 @@ def fmt() -> Fmt:
         start: str,
         expected: str,
         *,
+        column_width: int = 1,
         indent: int = 2,
         keep_full_version: bool = False,
         max_supported_python: tuple[int, int] = (3, 12),
@@ -24,6 +25,7 @@ def fmt() -> Fmt:
     ) -> None:
         result = format_toml(
             dedent(start),
+            column_width=column_width,
             indent=indent,
             keep_full_version=keep_full_version,
             max_supported_python=max_supported_python,
