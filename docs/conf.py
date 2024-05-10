@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from src.pyproject_fmt import __version__
+import importlib.metadata
+
 
 company, name = "tox-dev", "pyproject-fmt"
-release, version = __version__, ".".join(__version__.split(".")[:2])
+release = importlib.metadata.version("pyproject_fmt")
+version = ".".join(release.split(".")[:2])
 now = datetime.now(tz=timezone.utc)
 copyright = f"2022-{now.year}, {company}"  # noqa: A001
 master_doc, source_suffix = "index", ".rst"
