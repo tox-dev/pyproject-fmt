@@ -7,11 +7,12 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Sequence
 
-from pyproject_fmt.cli import PyProjectFmtNamespace, cli_args
-from pyproject_fmt.formatter import format_pyproject
+from pyproject_fmt_rust import format_toml
+
+from pyproject_fmt.cli import cli_args
 
 if TYPE_CHECKING:
-    from pyproject_fmt import Config
+    from pyproject_fmt.cli import Config
 
 GREEN = "\u001b[32m"
 RED = "\u001b[31m"
@@ -33,15 +34,22 @@ def color_diff(diff: Iterable[str]) -> Iterable[str]:
             yield line
 
 
-def _handle_one(config: Config, opts: PyProjectFmtNamespace) -> bool:
-    formatted = format_pyproject(config)
+def _handle_one(config: Config) -> bool:
+    formatted = format_toml(
+        config.toml,
+        column_width=config.column_width,
+        indent=config.indent,
+        keep_full_version=config.keep_full_version,
+        max_supported_python=(config.max_supported_python.major, config.max_supported_python.minor),
+        min_supported_python=(config.min_supported_python.major, config.min_supported_python.minor),
+    )
     before = config.toml
     changed = before != formatted
-    if opts.stdout:  # stdout just prints new format to stdout
+    if config.stdout:  # stdout just prints new format to stdout
         print(formatted, end="")  # noqa: T201
         return changed
 
-    if before != formatted and not opts.check:
+    if before != formatted and not config.check:
         config.pyproject_toml.write_text(formatted, encoding="utf-8")
     try:
         name = str(config.pyproject_toml.relative_to(Path.cwd()))
@@ -66,8 +74,8 @@ def run(args: Sequence[str] | None = None) -> int:
     :param args: CLI arguments
     :return: exit code
     """
-    opts = cli_args(sys.argv[1:] if args is None else args)
-    results = [_handle_one(config, opts) for config in opts.configs]
+    configs = cli_args(sys.argv[1:] if args is None else args)
+    results = [_handle_one(config) for config in configs]
     return 1 if any(results) else 0  # exit with non success on change
 
 

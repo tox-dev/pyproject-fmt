@@ -1,14 +1,9 @@
-"""Format your pyproject.toml."""
+"""Package root."""
 
 from __future__ import annotations
 
-from ._version import version as __version__
-from .formatter import format_pyproject
-from .formatter.config import Config, PyProjectConfig
+from ._version import __version__
 
 __all__ = [
-    "Config",
-    "PyProjectConfig",
     "__version__",
-    "format_pyproject",
 ]
