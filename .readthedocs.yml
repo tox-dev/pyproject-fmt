@@ -4,6 +4,14 @@ build:
   tools:
     python: "3.11"
     rust: "1.75"
+  jobs:
+    post_create_environment:
+      - pip install uv
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv pip install --upgrade pip setuptools
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv pip install --upgrade sphinx readthedocs-sphinx-ext
+    post_install:
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH uv pip install .[docs]
+
 python:
   install:
     - method: pip
