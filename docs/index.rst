@@ -34,8 +34,8 @@ Calculating max supported Python version
 ----------------------------------------
 
 This tool will automatically generate the ``Programming Language :: Python :: 3.X`` classifiers for you. To do so it
-needs to know what is the range of Python interpreter versions you support. The lower bound can be deduced by looking
-at the ``requires-python`` key in the ``pyproject.toml`` configuration file. For the upper bound by default will
+needs to know the range of Python interpreter versions you support. The lower bound can be deduced by looking
+at the ``requires-python`` key in the ``pyproject.toml`` configuration file. The upper bound, by default, will
 assume the latest stable release but can be changed via CLI flag or config.
 
 Command line interface
