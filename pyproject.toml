@@ -14,7 +14,9 @@ keywords = [
   "pyproject",
 ]
 license.file = "LICENSE.txt"
-authors = [{ name = "Bernat Gabor", email = "gaborjbernat@gmail.com" }]
+authors = [
+  { name = "Bernat Gabor", email = "gaborjbernat@gmail.com" },
+]
 requires-python = ">=3.8"
 classifiers = [
   "License :: OSI Approved :: MIT License",
@@ -31,7 +33,7 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "pyproject-fmt-rust==1",
+  "pyproject-fmt-rust==1.0.1",
 ]
 optional-dependencies.docs = [
   "furo>=2024.5.6",
@@ -53,22 +55,34 @@ urls."Source Code" = "https://github.com/tox-dev/pyproject-fmt"
 scripts.pyproject-fmt = "pyproject_fmt.__main__:run"
 
 [tool.hatch]
-build.dev-mode-dirs = ["src"]
+build.dev-mode-dirs = [
+  "src",
+]
 build.hooks.vcs.version-file = "src/pyproject_fmt/_version.py"
-build.targets.sdist.include = ["/src", "/tests","tox.ini"]
+build.targets.sdist.include = [
+  "/src",
+  "/tests",
+  "tox.ini",
+]
 version.source = "vcs"
 
 [tool.ruff]
 line-length = 120
 target-version = "py38"
-lint.isort = { known-first-party = ["pyproject_fmt"], required-imports = ["from __future__ import annotations"] }
-lint.select = ["ALL"]
+lint.isort = { known-first-party = [
+  "pyproject_fmt",
+], required-imports = [
+  "from __future__ import annotations",
+] }
+lint.select = [
+  "ALL",
+]
 lint.ignore = [
-  "ANN101",  # no type annotation for self
-  "ANN401",  # allow Any as type annotation
-  "D203",  # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
-  "D212",  # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible
-  "S104",  # Possible binding to all interface
+  "ANN101", # no type annotation for self
+  "ANN401", # allow Any as type annotation
+  "D203",   # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
+  "D212",   # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible
+  "S104",   # Possible binding to all interface
   "COM812", # Conflict with formatter
   "ISC001", # Conflict with formatter
   "CPY",    # No copyright statements
@@ -79,12 +93,12 @@ format.docstring-code-format = true
 format.docstring-code-line-length = 100
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
-  "S101",  # asserts allowed in tests...
-  "FBT",  # don"t care about booleans as positional arguments in tests
-  "INP001", # no implicit namespace
-  "D",  # don"t care about documentation in tests
-  "S603",  # `subprocess` call: check for execution of untrusted input
-  "PLR2004",  # Magic value used in comparison, consider replacing with a constant variable
+  "S101",    # asserts allowed in tests...
+  "FBT",     # don"t care about booleans as positional arguments in tests
+  "INP001",  # no implicit namespace
+  "D",       # don"t care about documentation in tests
+  "S603",    # `subprocess` call: check for execution of untrusted input
+  "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
   "PLR0913", # any number of arguments in tests
   "PLR0917", # any number of arguments in tests
   "PLC2701", # private import
@@ -95,7 +109,9 @@ builtin = "clear,usage,en-GB_to_en-US"
 count = true
 
 [tool.pytest]
-ini_options.testpaths = ["tests"]
+ini_options.testpaths = [
+  "tests",
+]
 
 [tool.coverage]
 html.show_contexts = true
@@ -111,7 +127,9 @@ paths.source = [
 ]
 report.fail_under = 100
 run.parallel = true
-run.plugins = ["covdefaults"]
+run.plugins = [
+  "covdefaults",
+]
 
 [tool.mypy]
 show_error_codes = true

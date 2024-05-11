@@ -15,6 +15,8 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Sequence
 
+from pyproject_fmt_rust import Settings
+
 if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
     import tomllib
 else:  # pragma: <3.11 cover
@@ -42,12 +44,7 @@ class Config:
     pyproject_toml: Path
     stdout: bool  # push to standard out
     check: bool  # check only
-
-    column_width: int  #: maximum column width
-    indent: int  #: indentation to apply
-    keep_full_version: bool  #: whether to keep full dependency versions
-    max_supported_python: tuple[int, int]  #: the maximum supported Python version
-    min_supported_python: tuple[int, int]  #: the minimum supported Python version
+    settings: Settings
 
     @property
     def toml(self) -> str:
@@ -176,11 +173,13 @@ def cli_args(args: Sequence[str]) -> list[Config]:
                 pyproject_toml=pyproject_toml,
                 stdout=opt.stdout,
                 check=opt.check,
-                column_width=column_width,
-                indent=indent,
-                keep_full_version=keep_full_version,
-                max_supported_python=max_supported_python,
-                min_supported_python=min_supported_python,
+                settings=Settings(
+                    column_width=column_width,
+                    indent=indent,
+                    keep_full_version=keep_full_version,
+                    max_supported_python=max_supported_python,
+                    min_supported_python=min_supported_python,
+                ),
             )
         )
 

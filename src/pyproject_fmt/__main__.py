@@ -35,14 +35,7 @@ def color_diff(diff: Iterable[str]) -> Iterable[str]:
 
 
 def _handle_one(config: Config) -> bool:
-    formatted = format_toml(
-        config.toml,
-        column_width=config.column_width,
-        indent=config.indent,
-        keep_full_version=config.keep_full_version,
-        max_supported_python=config.max_supported_python,
-        min_supported_python=config.min_supported_python,
-    )
+    formatted = format_toml(config.toml, config.settings)
     before = config.toml
     changed = before != formatted
     if config.stdout:  # stdout just prints new format to stdout
