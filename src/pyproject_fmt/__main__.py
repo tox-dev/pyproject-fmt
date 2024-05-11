@@ -40,8 +40,8 @@ def _handle_one(config: Config) -> bool:
         column_width=config.column_width,
         indent=config.indent,
         keep_full_version=config.keep_full_version,
-        max_supported_python=(config.max_supported_python.major, config.max_supported_python.minor),
-        min_supported_python=(config.min_supported_python.major, config.min_supported_python.minor),
+        max_supported_python=config.max_supported_python,
+        min_supported_python=config.min_supported_python,
     )
     before = config.toml
     changed = before != formatted

@@ -22,6 +22,31 @@ def test_cli_version(capsys: pytest.CaptureFixture[str]) -> None:
     assert out == f"pyproject-fmt ({version('pyproject-fmt')})\n"
 
 
+def test_cli_invalid_version(capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
+    path = tmp_path / "pyproject.toml"
+    path.write_text("")
+    with pytest.raises(SystemExit) as context:
+        cli_args([str(path), "--max-supported-python", "3"])
+    assert context.value.code == 2
+    out, err = capsys.readouterr()
+    assert not out
+    assert "error: argument --max-supported-python: invalid version: 3, must be e.g. 3.12\n" in err
+
+
+def test_cli_invalid_version_value(capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
+    path = tmp_path / "pyproject.toml"
+    path.write_text("")
+    with pytest.raises(SystemExit) as context:
+        cli_args([str(path), "--max-supported-python", "a.1"])
+    assert context.value.code == 2
+    out, err = capsys.readouterr()
+    assert not out
+    assert (
+        "error: argument --max-supported-python: invalid version: a.1 due "
+        'ValueError("invalid literal for int() with base 10:'
+    ) in err
+
+
 def test_cli_pyproject_toml_ok(tmp_path: Path) -> None:
     path = tmp_path / "tox.ini"
     path.write_text("")

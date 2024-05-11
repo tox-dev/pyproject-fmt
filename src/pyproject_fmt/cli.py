@@ -2,26 +2,23 @@
 
 from __future__ import annotations
 
-import sys
-from dataclasses import dataclass
-
-if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
-    import tomllib
-else:  # pragma: <3.11 cover
-    import tomli as tomllib
-
 import os
+import sys
 from argparse import (
     ArgumentDefaultsHelpFormatter,
     ArgumentParser,
     ArgumentTypeError,
     Namespace,
 )
+from dataclasses import dataclass
 from importlib.metadata import version
 from pathlib import Path
 from typing import Sequence
 
-from packaging.version import Version
+if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
+    import tomllib
+else:  # pragma: <3.11 cover
+    import tomli as tomllib
 
 
 class PyProjectFmtNamespace(Namespace):
@@ -34,8 +31,8 @@ class PyProjectFmtNamespace(Namespace):
     column_width: int
     indent: int
     keep_full_version: bool
-    max_supported_python: Version
-    min_supported_python: Version
+    max_supported_python: tuple[int, int]
+    min_supported_python: tuple[int, int]
 
 
 @dataclass(frozen=True)
@@ -49,8 +46,8 @@ class Config:
     column_width: int  #: maximum column width
     indent: int  #: indentation to apply
     keep_full_version: bool  #: whether to keep full dependency versions
-    max_supported_python: Version  #: the maximum supported Python version
-    min_supported_python: Version  #: the minimum supported Python version
+    max_supported_python: tuple[int, int]  #: the maximum supported Python version
+    min_supported_python: tuple[int, int]  #: the minimum supported Python version
 
     @property
     def toml(self) -> str:
@@ -81,6 +78,18 @@ def pyproject_toml_path_creator(argument: str) -> Path:
         msg = "cannot write path"
         raise ArgumentTypeError(msg)
     return path
+
+
+def _version_argument(got: str) -> tuple[int, int]:
+    parts = got.split(".")
+    if len(parts) != 2:  # noqa: PLR2004
+        msg = f"invalid version: {got}, must be e.g. 3.12"
+        raise ArgumentTypeError(msg)
+    try:
+        return int(parts[0]), int(parts[1])
+    except ValueError as exc:
+        msg = f"invalid version: {got} due {exc!r}, must be e.g. 3.12"
+        raise ArgumentTypeError(msg) from exc
 
 
 def _build_cli() -> ArgumentParser:
@@ -116,14 +125,14 @@ def _build_cli() -> ArgumentParser:
     )
     parser.add_argument(
         "--min-supported-python",
-        type=Version,
-        default="3.8",
+        type=_version_argument,
+        default=(3, 8),
         help="latest Python version the project supports (e.g. 3.8)",
     )
     parser.add_argument(
         "--max-supported-python",
-        type=Version,
-        default="3.12",
+        type=_version_argument,
+        default=(3, 12),
         help="latest Python version the project supports (e.g. 3.13)",
     )
     msg = "pyproject.toml file(s) to format"
@@ -159,9 +168,9 @@ def cli_args(args: Sequence[str]) -> list[Config]:
                     elif key == "keep_full_version":
                         keep_full_version = bool(entry)
                     elif key == "max_supported_python":
-                        max_supported_python = Version(entry)
+                        max_supported_python = _version_argument(entry)
                     elif key == "min_supported_python":  # pragma: no branch
-                        min_supported_python = Version(entry)
+                        min_supported_python = _version_argument(entry)
         res.append(
             Config(
                 pyproject_toml=pyproject_toml,
