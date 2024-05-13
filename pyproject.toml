@@ -34,7 +34,7 @@ dynamic = [
 ]
 dependencies = [
   "pyproject-fmt-rust==1.0.4",
-  "tomli; python_version<'3.11'",
+  "tomli>=1.2.3; python_version<'3.11'",
 ]
 optional-dependencies.docs = [
   "furo>=2024.5.6",
