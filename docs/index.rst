@@ -12,7 +12,7 @@ As a CLI tool
 
 Use `pipx <https://pypa.github.io/pipx/installation/>`_ to install the project:
 
-.. code-block:: bash
+.. code-block:: shell
 
    pipx install pyproject-fmt
 
@@ -25,18 +25,32 @@ See :gh:`pre-commit/pre-commit` for instructions, sample ``.pre-commit-config.ya
 .. code-block:: yaml
 
     - repo: https://github.com/tox-dev/pyproject-fmt
-      rev: "2.0.0"
+      rev: "2.0.4"
       hooks:
         - id: pyproject-fmt
 
+Configuration via file
+----------------------
 
-Calculating max supported Python version
-----------------------------------------
+The ``tool.pyproject-fmt`` table is used when present in the ``pyproject.toml`` file:
 
-This tool will automatically generate the ``Programming Language :: Python :: 3.X`` classifiers for you. To do so it
-needs to know the range of Python interpreter versions you support. The lower bound can be deduced by looking
-at the ``requires-python`` key in the ``pyproject.toml`` configuration file. The upper bound, by default, will
-assume the latest stable release but can be changed via CLI flag or config.
+.. code-block:: toml
+
+  [tool.pyproject-fmt]
+
+  # after how many column width split arrays/dicts into multiple lines, 1 will force always
+  column_width = 1
+
+  # how many spaces use for indentation
+  indent = 2
+
+  # if false will remove unnecessary trailing ``.0``'s from version specifiers
+  keep_full_version = false
+
+  # maximum Python version to use when generating version specifiers
+  max_supported_python = "3.12"
+
+If not set they will default to values from the CLI, the example above shows the defaults.
 
 Command line interface
 ----------------------
@@ -46,17 +60,13 @@ Command line interface
   :prog: pyproject-fmt
   :title:
 
-Configuration file
-------------------
+Python version classifiers
+--------------------------
 
-The ``tool.pyproject-fmt`` table is used when present in any of the ``pyproject.toml`` files
+This tool will automatically generate the ``Programming Language :: Python :: 3.X`` classifiers for you. To do so it
+needs to know the range of Python interpreter versions you support:
 
-.. code-block:: toml
-
-    # pyproject.toml
-    [tool.pyproject-fmt]
-    column_width = 120
-    indent = 4
-    keep_full_version = false
-    min_supported_python = "3.7"
-    max_supported_python = "3.10"
+- The lower bound can be set via the ``requires-python`` key in the ``pyproject.toml`` configuration file (defaults to
+  the oldest non end of line CPython version at the time of the release).
+- The upper bound, by default, will assume the latest stable release of CPython at the time of the release, but can be
+  changed via CLI flag or the config file.

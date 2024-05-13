@@ -212,8 +212,8 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     column_width = 20
     indent = 4
     keep_full_version = true
-    min_supported_python = "3.7"
     max_supported_python = "3.10"
+    ignore_extra = true
     """
     filename = tmp_path / "pyproject.toml"
     filename.write_text(dedent(txt))
@@ -226,7 +226,6 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     ]
     classifiers = [
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -242,8 +241,8 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     column_width = 20
     indent = 4
     keep_full_version = true
-    min_supported_python = "3.7"
     max_supported_python = "3.10"
+    ignore_extra = true
     """
     got = filename.read_text()
     assert got == dedent(expected)

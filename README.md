@@ -7,14 +7,6 @@
 [![PyPI - License](https://img.shields.io/pypi/l/pyproject-fmt?style=flat-square)](https://opensource.org/licenses/MIT)
 [![check](https://github.com/tox-dev/pyproject-fmt/actions/workflows/check.yml/badge.svg)](https://github.com/tox-dev/pyproject-fmt/actions/workflows/check.yml)
 
-Apply a consistent format to `pyproject.toml` files.
-[Read the full documentation here](https://pyproject-fmt.readthedocs.io/en/latest/).
+Apply a consistent format to the `pyproject.toml` files.
 
-## add to pre-commit
-
-```yaml
-- repo: https://github.com/tox-dev/pyproject-fmt
-  rev: "2.0.3"
-  hooks:
-    - id: pyproject-fmt
-```
+[For more information on how to use or configure read the documentation here](https://pyproject-fmt.readthedocs.io/en/latest/).

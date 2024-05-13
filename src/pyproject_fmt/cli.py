@@ -34,7 +34,6 @@ class PyProjectFmtNamespace(Namespace):
     indent: int
     keep_full_version: bool
     max_supported_python: tuple[int, int]
-    min_supported_python: tuple[int, int]
 
 
 @dataclass(frozen=True)
@@ -106,32 +105,29 @@ def _build_cli() -> ArgumentParser:
     group.add_argument("-s", "--stdout", action="store_true", help=msg)
     msg = "check and fail if any input would be formatted, printing any diffs"
     group.add_argument("--check", action="store_true", help=msg)
-    msg = "keep full dependency versions. For example do not change version 1.0.0 to 1"
-    parser.add_argument("--keep-full-version", action="store_true", help=msg)
     parser.add_argument(
         "--column-width",
         type=int,
         default=1,
         help="max column width in the file",
+        metavar="count",
     )
     parser.add_argument(
         "--indent",
         type=int,
         default=2,
         help="number of spaces to indent",
-    )
-    parser.add_argument(
-        "--min-supported-python",
-        type=_version_argument,
-        default=(3, 8),
-        help="latest Python version the project supports (e.g. 3.8)",
+        metavar="count",
     )
     parser.add_argument(
         "--max-supported-python",
+        metavar="minor.major",
         type=_version_argument,
         default=(3, 12),
         help="latest Python version the project supports (e.g. 3.13)",
     )
+    msg = "keep full dependency versions - do not remove redundant .0 from versions"
+    parser.add_argument("--keep-full-version", action="store_true", help=msg)
     msg = "pyproject.toml file(s) to format"
     parser.add_argument("inputs", nargs="+", type=pyproject_toml_path_creator, help=msg)
     return parser
@@ -153,7 +149,6 @@ def cli_args(args: Sequence[str]) -> list[Config]:
         indent = opt.indent
         keep_full_version = opt.keep_full_version
         max_supported_python = opt.max_supported_python
-        min_supported_python = opt.min_supported_python
         with pyproject_toml.open("rb") as file_handler:
             config = tomllib.load(file_handler)
             if "tool" in config and "pyproject-fmt" in config["tool"]:
@@ -166,8 +161,6 @@ def cli_args(args: Sequence[str]) -> list[Config]:
                         keep_full_version = bool(entry)
                     elif key == "max_supported_python":
                         max_supported_python = _version_argument(entry)
-                    elif key == "min_supported_python":  # pragma: no branch
-                        min_supported_python = _version_argument(entry)
         res.append(
             Config(
                 pyproject_toml=pyproject_toml,
@@ -178,7 +171,7 @@ def cli_args(args: Sequence[str]) -> list[Config]:
                     indent=indent,
                     keep_full_version=keep_full_version,
                     max_supported_python=max_supported_python,
-                    min_supported_python=min_supported_python,
+                    min_supported_python=(3, 8),  # default for when the user did not specify via requires-python
                 ),
             )
         )
