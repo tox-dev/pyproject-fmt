@@ -44,6 +44,8 @@ def _handle_one(config: Config) -> bool:
 
     if before != formatted and not config.check:
         config.pyproject_toml.write_text(formatted, encoding="utf-8")
+    if config.no_print_diff:
+        return changed
     try:
         name = str(config.pyproject_toml.relative_to(Path.cwd()))
     except ValueError:
@@ -64,8 +66,8 @@ def run(args: Sequence[str] | None = None) -> int:
     """
     Run the formatter.
 
-    :param args: CLI arguments
-    :return: exit code
+    :param args: command line arguments, by default use sys.argv[1:]
+    :return: exit code - 0 means already formatted correctly, otherwise 1
     """
     configs = cli_args(sys.argv[1:] if args is None else args)
     results = [_handle_one(config) for config in configs]

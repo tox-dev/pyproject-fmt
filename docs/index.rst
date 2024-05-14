@@ -7,8 +7,8 @@ See `changelog here <https://github.com/tox-dev/pyproject-fmt/releases>`_.
 Use
 ---
 
-As a CLI tool
-~~~~~~~~~~~~~
+Via ``CLI``
+~~~~~~~~~~~
 
 Use `pipx <https://pypa.github.io/pipx/installation/>`_ to install the project:
 
@@ -17,8 +17,8 @@ Use `pipx <https://pypa.github.io/pipx/installation/>`_ to install the project:
    pipx install pyproject-fmt
 
 
-As a ``pre-commit`` hook
-~~~~~~~~~~~~~~~~~~~~~~~~
+Via ``pre-commit`` hook
+~~~~~~~~~~~~~~~~~~~~~~~
 
 See :gh:`pre-commit/pre-commit` for instructions, sample ``.pre-commit-config.yaml``:
 
@@ -28,6 +28,17 @@ See :gh:`pre-commit/pre-commit` for instructions, sample ``.pre-commit-config.ya
       rev: "2.0.4"
       hooks:
         - id: pyproject-fmt
+
+Via Python
+~~~~~~~~~~
+
+.. automodule:: pyproject_fmt
+   :members:
+
+.. toctree::
+   :hidden:
+
+   self
 
 Configuration via file
 ----------------------
