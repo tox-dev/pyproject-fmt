@@ -131,6 +131,7 @@ run.parallel = true
 run.plugins = [
   "covdefaults",
 ]
+covdefaults.subtract_omit = "*/__main__.py"
 
 [tool.mypy]
 show_error_codes = true
