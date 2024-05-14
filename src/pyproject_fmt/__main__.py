@@ -7,8 +7,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Sequence
 
-from pyproject_fmt_rust import format_toml
-
+from pyproject_fmt._api import format_toml
 from pyproject_fmt.cli import cli_args
 
 if TYPE_CHECKING:

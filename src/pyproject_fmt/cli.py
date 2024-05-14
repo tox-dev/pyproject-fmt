@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from argparse import (
     ArgumentDefaultsHelpFormatter,
     ArgumentParser,
@@ -11,16 +10,12 @@ from argparse import (
     Namespace,
 )
 from dataclasses import dataclass
+from functools import partial
 from importlib.metadata import version
 from pathlib import Path
 from typing import Sequence
 
-from pyproject_fmt_rust import Settings
-
-if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
-    import tomllib
-else:  # pragma: <3.11 cover
-    import tomli as tomllib
+from pyproject_fmt._api import Settings
 
 
 class PyProjectFmtNamespace(Namespace):
@@ -76,19 +71,8 @@ def pyproject_toml_path_creator(argument: str) -> Path:
     return path
 
 
-def _version_argument(got: str) -> tuple[int, int]:
-    parts = got.split(".")
-    if len(parts) != 2:  # noqa: PLR2004
-        msg = f"invalid version: {got}, must be e.g. 3.12"
-        raise ArgumentTypeError(msg)
-    try:
-        return int(parts[0]), int(parts[1])
-    except ValueError as exc:
-        msg = f"invalid version: {got} due {exc!r}, must be e.g. 3.12"
-        raise ArgumentTypeError(msg) from exc
-
-
 def _build_cli() -> ArgumentParser:
+    defaults = Settings()
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         prog="pyproject-fmt",
@@ -108,22 +92,22 @@ def _build_cli() -> ArgumentParser:
     parser.add_argument(
         "--column-width",
         type=int,
-        default=1,
+        default=defaults.column_width,
         help="max column width in the file",
         metavar="count",
     )
     parser.add_argument(
         "--indent",
         type=int,
-        default=2,
+        default=defaults.indent,
         help="number of spaces to indent",
         metavar="count",
     )
     parser.add_argument(
         "--max-supported-python",
         metavar="minor.major",
-        type=_version_argument,
-        default=(3, 12),
+        type=partial(Settings._version_argument, exc=ArgumentTypeError),  # noqa: SLF001
+        default=defaults.max_supported_python,
         help="latest Python version the project supports (e.g. 3.13)",
     )
     msg = "keep full dependency versions - do not remove redundant .0 from versions"
@@ -143,40 +127,21 @@ def cli_args(args: Sequence[str]) -> list[Config]:
     parser = _build_cli()
     opt = PyProjectFmtNamespace()
     parser.parse_args(namespace=opt, args=args)
-    res = []
-    for pyproject_toml in opt.inputs:
-        column_width = opt.column_width
-        indent = opt.indent
-        keep_full_version = opt.keep_full_version
-        max_supported_python = opt.max_supported_python
-        with pyproject_toml.open("rb") as file_handler:
-            config = tomllib.load(file_handler)
-            if "tool" in config and "pyproject-fmt" in config["tool"]:
-                for key, entry in config["tool"]["pyproject-fmt"].items():
-                    if key == "column_width":
-                        column_width = int(entry)
-                    elif key == "indent":
-                        indent = int(entry)
-                    elif key == "keep_full_version":
-                        keep_full_version = bool(entry)
-                    elif key == "max_supported_python":
-                        max_supported_python = _version_argument(entry)
-        res.append(
-            Config(
-                pyproject_toml=pyproject_toml,
-                stdout=opt.stdout,
-                check=opt.check,
-                settings=Settings(
-                    column_width=column_width,
-                    indent=indent,
-                    keep_full_version=keep_full_version,
-                    max_supported_python=max_supported_python,
-                    min_supported_python=(3, 8),  # default for when the user did not specify via requires-python
-                ),
-            )
+    settings = Settings(
+        column_width=opt.column_width,
+        indent=opt.indent,
+        keep_full_version=opt.keep_full_version,
+        max_supported_python=opt.max_supported_python,
+    )
+    return [
+        Config(
+            pyproject_toml=pyproject_toml,
+            stdout=opt.stdout,
+            check=opt.check,
+            settings=settings,
         )
-
-    return res
+        for pyproject_toml in opt.inputs
+    ]
 
 
 __all__ = [
