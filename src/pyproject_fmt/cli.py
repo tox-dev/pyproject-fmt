@@ -120,7 +120,7 @@ def _build_cli() -> ArgumentParser:
     format_group.add_argument(
         "--column-width",
         type=int,
-        default=1,
+        default=120,
         help="max column width in the TOML file",
         metavar="count",
     )
