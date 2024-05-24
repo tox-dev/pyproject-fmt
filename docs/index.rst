@@ -50,7 +50,7 @@ The ``tool.pyproject-fmt`` table is used when present in the ``pyproject.toml`` 
   [tool.pyproject-fmt]
 
   # after how many column width split arrays/dicts into multiple lines, 1 will force always
-  column_width = 1
+  column_width = 120
 
   # how many spaces use for indentation
   indent = 2
