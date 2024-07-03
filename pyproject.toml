@@ -2,7 +2,7 @@
 build-backend = "hatchling.build"
 requires = [
   "hatch-vcs>=0.4",
-  "hatchling>=1.24.2",
+  "hatchling>=1.25",
 ]
 
 [project]
@@ -33,19 +33,19 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "pyproject-fmt-rust==1.1.4",
+  "pyproject-fmt-rust==1.1.5",
   "tomli>=2.0.1; python_version<'3.11'",
 ]
 optional-dependencies.docs = [
   "furo>=2024.5.6",
   "sphinx>=7.3.7",
-  "sphinx-argparse-cli>=1.15",
-  "sphinx-autodoc-typehints>=2.1",
+  "sphinx-argparse-cli>=1.16",
+  "sphinx-autodoc-typehints>=2.2.2",
   "sphinx-copybutton>=0.5.2",
 ]
 optional-dependencies.test = [
   "covdefaults>=2.3",
-  "pytest>=8.2",
+  "pytest>=8.2.2",
   "pytest-cov>=5",
   "pytest-mock>=3.14",
 ]
