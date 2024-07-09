@@ -4,6 +4,14 @@ pyproject-fmt
 Apply a consistent format to your ``pyproject.toml`` file with comment support.
 See `changelog here <https://github.com/tox-dev/pyproject-fmt/releases>`_.
 
+
+Philosophy
+----------
+This tool aims to be an *opinionated formatter*, with similar objectives to
+`black <https://github.com/psf/black>`_. This means it deliberately does not support
+a wide variety of configuration settings. In return, you get consistency, predictability,
+and smaller diffs.
+
 Use
 ---
 
