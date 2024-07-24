@@ -41,25 +41,23 @@ class PyProjectFmtNamespace(Namespace):
 class Config:
     """Configuration flags for the formatting."""
 
-    pyproject_toml: Path
-    stdout: bool  # push to standard out
+    pyproject_toml: Path | None  # path to the toml file or None if stdin
+    toml: str  # the toml file content
+    stdout: bool  # push to standard out, implied if reading from stdin
     check: bool  # check only
     no_print_diff: bool  # don't print diff
     settings: Settings
 
-    @property
-    def toml(self) -> str:
-        """:return: the toml files content"""
-        return self.pyproject_toml.read_text(encoding="utf-8")
 
-
-def pyproject_toml_path_creator(argument: str) -> Path:
+def pyproject_toml_path_creator(argument: str) -> Path | None:
     """
     Validate that pyproject.toml can be formatted.
 
     :param argument: the string argument passed in
-    :return: the pyproject.toml path
+    :return: the pyproject.toml path or None if stdin
     """
+    if argument == "-":
+        return None  # stdin, no further validation needed
     path = Path(argument).absolute()
     if path.is_dir():
         path /= "pyproject.toml"
@@ -105,7 +103,7 @@ def _build_cli() -> ArgumentParser:
 
     mode_group = parser.add_argument_group("run mode")
     mode = mode_group.add_mutually_exclusive_group()
-    msg = "print the formatted TOML to the stdout"
+    msg = "print the formatted TOML to the stdout, implied if reading from stdin"
     mode.add_argument("-s", "--stdout", action="store_true", help=msg)
     msg = "check and fail if any input would be formatted, printing any diffs"
     mode.add_argument("--check", action="store_true", help=msg)
@@ -141,7 +139,7 @@ def _build_cli() -> ArgumentParser:
         help="latest Python version the project supports (e.g. 3.13)",
     )
 
-    msg = "pyproject.toml file(s) to format"
+    msg = "pyproject.toml file(s) to format, use '-' to read from stdin"
     parser.add_argument(
         "inputs",
         nargs="+",
@@ -167,21 +165,22 @@ def cli_args(args: Sequence[str]) -> list[Config]:
         indent = opt.indent
         keep_full_version = opt.keep_full_version
         max_supported_python = opt.max_supported_python
-        with pyproject_toml.open("rb") as file_handler:
-            config = tomllib.load(file_handler)
-            if "tool" in config and "pyproject-fmt" in config["tool"]:
-                for key, entry in config["tool"]["pyproject-fmt"].items():
-                    if key == "column_width":
-                        column_width = int(entry)
-                    elif key == "indent":
-                        indent = int(entry)
-                    elif key == "keep_full_version":
-                        keep_full_version = bool(entry)
-                    elif key == "max_supported_python":
-                        max_supported_python = _version_argument(entry)
+        raw_pyproject_toml = sys.stdin.read() if pyproject_toml is None else pyproject_toml.read_text(encoding="utf-8")
+        config = tomllib.loads(raw_pyproject_toml)
+        if "tool" in config and "pyproject-fmt" in config["tool"]:
+            for key, entry in config["tool"]["pyproject-fmt"].items():
+                if key == "column_width":
+                    column_width = int(entry)
+                elif key == "indent":
+                    indent = int(entry)
+                elif key == "keep_full_version":
+                    keep_full_version = bool(entry)
+                elif key == "max_supported_python":
+                    max_supported_python = _version_argument(entry)
         res.append(
             Config(
                 pyproject_toml=pyproject_toml,
+                toml=raw_pyproject_toml,
                 stdout=opt.stdout,
                 check=opt.check,
                 no_print_diff=opt.no_print_diff,

@@ -38,7 +38,7 @@ def _handle_one(config: Config) -> bool:
     formatted = format_toml(config.toml, config.settings)
     before = config.toml
     changed = before != formatted
-    if config.stdout:  # stdout just prints new format to stdout
+    if config.pyproject_toml is None or config.stdout:  # when reading from stdin or writing to stdout, print new format
         print(formatted, end="")  # noqa: T201
         return changed
 
