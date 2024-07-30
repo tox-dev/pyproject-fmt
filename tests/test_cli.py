@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import os
 import sys
 from importlib.metadata import version
@@ -12,6 +13,8 @@ from pyproject_fmt.cli import cli_args
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from pytest_mock import MockerFixture
 
 
 def test_cli_version(capsys: pytest.CaptureFixture[str]) -> None:
@@ -63,6 +66,14 @@ def test_cli_inputs_ok(tmp_path: Path) -> None:
         paths.append(path)
     result = cli_args([*map(str, paths)])
     assert len(result) == 3
+
+
+def test_cli_pyproject_toml_stdin(mocker: MockerFixture) -> None:
+    mocker.patch("pyproject_fmt.cli.sys.stdin", io.StringIO(""))
+    result = cli_args(["-"])
+    assert len(result) == 1
+    assert result[0].pyproject_toml is None
+    assert not result[0].toml
 
 
 def test_cli_pyproject_toml_not_exists(
