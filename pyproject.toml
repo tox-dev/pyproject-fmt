@@ -33,19 +33,19 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "pyproject-fmt-rust==1.1.5",
+  "pyproject-fmt-rust==1.1.6",
   "tomli>=2.0.1; python_version<'3.11'",
 ]
 optional-dependencies.docs = [
-  "furo>=2024.5.6",
-  "sphinx>=7.3.7",
+  "furo>=2024.7.18",
+  "sphinx>=7.4.4",
   "sphinx-argparse-cli>=1.16",
-  "sphinx-autodoc-typehints>=2.2.2",
+  "sphinx-autodoc-typehints>=2.2.3",
   "sphinx-copybutton>=0.5.2",
 ]
 optional-dependencies.test = [
   "covdefaults>=2.3",
-  "pytest>=8.2.2",
+  "pytest>=8.3.2",
   "pytest-cov>=5",
   "pytest-mock>=3.14",
 ]
@@ -83,8 +83,9 @@ lint.ignore = [
   "CPY",    # No copyright statements
   "D203",   # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
   "D212",   # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible
+  "DOC501", # not working with Sphinx
   "ISC001", # Conflict with formatter
-  "S104",   # Possible binding to all interface
+  "S104",   # Possible binding to all interfaces
 ]
 lint.per-file-ignores."tests/**/*.py" = [
   "D",       # don"t care about documentation in tests

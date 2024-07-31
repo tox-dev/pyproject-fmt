@@ -55,6 +55,7 @@ def pyproject_toml_path_creator(argument: str) -> Path | None:
 
     :param argument: the string argument passed in
     :return: the pyproject.toml path or None if stdin
+    :raises ArgumentTypeError: invalid argument
     """
     if argument == "-":
         return None  # stdin, no further validation needed
