@@ -34,7 +34,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: install tox
-        run: uv pip install tox tox-uv --system
+        run: uv pip install tox-uv --system
       - uses: actions/checkout@v4
       - name: setup python for test ${{ matrix.py }}
         uses: actions/setup-python@v5
@@ -65,7 +65,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: install tox
-        run: uv pip install tox tox-uv --system
+        run: uv pip install tox-uv --system
       - name: Setup test suite
         run: tox -vv --notest --skip-missing-interpreters false -e ${{ matrix.tox_env }}
       - name: Run test suite

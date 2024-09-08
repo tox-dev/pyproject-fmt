@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dynamic = [
   "version",
@@ -109,6 +110,9 @@ lint.preview = true
 [tool.codespell]
 builtin = "clear,usage,en-GB_to_en-US"
 count = true
+
+[tool.pyproject-fmt]
+max_supported_python = "3.13"
 
 [tool.pytest]
 ini_options.testpaths = [
