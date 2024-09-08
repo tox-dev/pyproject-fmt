@@ -20,6 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         py:
+          - "3.13"
           - "3.12"
           - "3.11"
           - "3.10"
@@ -39,18 +40,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py }}
-      - name: Pick environment to run
-        run: |
-          import codecs; import os; import sys
-          env = "TOXENV=py{}{}\n".format(*sys.version_info[0:2])
-          print("Picked:\n{}for{}".format(env, sys.version))
-          with codecs.open(os.environ["GITHUB_ENV"], "a", "utf-8") as file_handler:
-               file_handler.write(env)
-        shell: python
+          allow-prereleases: true
       - name: setup test suite
-        run: tox -vv --notest
+        run: tox run -vv --notest --skip-missing-interpreters false -e ${{ matrix.py }}
       - name: run test suite
-        run: tox --skip-pkg-install
+        run: tox run  --skip-pkg-install -e ${{ matrix.py }}
 
   check:
     name: tox env ${{ matrix.tox_env }}
@@ -72,7 +66,7 @@ jobs:
           python-version: "3.12"
       - name: install tox
         run: uv pip install tox tox-uv --system
-      - name: run check for ${{ matrix.tox_env }}
-        run: python -m tox -e ${{ matrix.tox_env }}
-        env:
-          UPGRADE_ADVISORY: "yes"
+      - name: Setup test suite
+        run: tox -vv --notest --skip-missing-interpreters false -e ${{ matrix.tox_env }}
+      - name: Run test suite
+        run: tox --skip-pkg-install -e ${{ matrix.tox_env }}

@@ -37,10 +37,10 @@ dependencies = [
   "tomli>=2.0.1; python_version<'3.11'",
 ]
 optional-dependencies.docs = [
-  "furo>=2024.7.18",
-  "sphinx>=7.4.4",
-  "sphinx-argparse-cli>=1.16",
-  "sphinx-autodoc-typehints>=2.2.3",
+  "furo>=2024.8.6",
+  "sphinx>=8.0.2",
+  "sphinx-argparse-cli>=1.17",
+  "sphinx-autodoc-typehints>=2.4",
   "sphinx-copybutton>=0.5.2",
 ]
 optional-dependencies.test = [
@@ -83,19 +83,20 @@ lint.ignore = [
   "CPY",    # No copyright statements
   "D203",   # `one-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible
   "D212",   # `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible
+  "DOC",    # not supported
   "DOC501", # not working with Sphinx
   "ISC001", # Conflict with formatter
   "S104",   # Possible binding to all interfaces
 ]
 lint.per-file-ignores."tests/**/*.py" = [
-  "D",       # don"t care about documentation in tests
-  "FBT",     # don"t care about booleans as positional arguments in tests
+  "D",       # don't care about documentation in tests
+  "FBT",     # don't care about booleans as positional arguments in tests
   "INP001",  # no implicit namespace
   "PLC2701", # private import
   "PLR0913", # any number of arguments in tests
   "PLR0917", # any number of arguments in tests
   "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
-  "S101",    # asserts allowed in tests...
+  "S101",    # asserts allowed in tests
   "S603",    # `subprocess` call: check for execution of untrusted input
 ]
 lint.isort = { known-first-party = [
