@@ -5,7 +5,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyproject-fmt?style=flat-square)](https://pypi.org/project/pyproject-fmt)
 [![Downloads](https://static.pepy.tech/badge/pyproject-fmt/month)](https://pepy.tech/project/pyproject-fmt)
 [![PyPI - License](https://img.shields.io/pypi/l/pyproject-fmt?style=flat-square)](https://opensource.org/licenses/MIT)
-[![check](https://github.com/tox-dev/pyproject-fmt/actions/workflows/check.yml/badge.svg)](https://github.com/tox-dev/pyproject-fmt/actions/workflows/check.yml)
+[![check](https://github.com/tox-dev/pyproject-fmt/actions/workflows/check.yaml/badge.svg)](https://github.com/tox-dev/pyproject-fmt/actions/workflows/check.yaml)
 
 Apply a consistent format to the `pyproject.toml` files.
 
