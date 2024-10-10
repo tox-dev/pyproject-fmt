@@ -13,9 +13,12 @@ from argparse import (
 from dataclasses import dataclass
 from importlib.metadata import version
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from pyproject_fmt_rust import Settings
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 if sys.version_info >= (3, 11):  # pragma: >=3.11 cover
     import tomllib
@@ -80,12 +83,12 @@ def pyproject_toml_path_creator(argument: str) -> Path | None:
 def _version_argument(got: str) -> tuple[int, int]:
     parts = got.split(".")
     if len(parts) != 2:  # noqa: PLR2004
-        msg = f"invalid version: {got}, must be e.g. 3.12"
+        msg = f"invalid version: {got}, must be e.g. 3.13"
         raise ArgumentTypeError(msg)
     try:
         return int(parts[0]), int(parts[1])
     except ValueError as exc:
-        msg = f"invalid version: {got} due {exc!r}, must be e.g. 3.12"
+        msg = f"invalid version: {got} due {exc!r}, must be e.g. 3.13"
         raise ArgumentTypeError(msg) from exc
 
 
@@ -136,7 +139,7 @@ def _build_cli() -> ArgumentParser:
         "--max-supported-python",
         metavar="minor.major",
         type=_version_argument,
-        default=(3, 12),
+        default=(3, 13),
         help="latest Python version the project supports (e.g. 3.13)",
     )
 
@@ -190,7 +193,7 @@ def cli_args(args: Sequence[str]) -> list[Config]:
                     indent=indent,
                     keep_full_version=keep_full_version,
                     max_supported_python=max_supported_python,
-                    min_supported_python=(3, 8),  # default for when the user did not specify via requires-python
+                    min_supported_python=(3, 9),  # default for when the user did not specify via requires-python
                 ),
             )
         )

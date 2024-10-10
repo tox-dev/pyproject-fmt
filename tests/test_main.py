@@ -175,7 +175,7 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     [project]
     classifiers = [
       "Programming Language :: Python :: 3 :: Only",
-      "Programming Language :: Python :: 3.8",
+      "Programming Language :: Python :: 3.9",
     ]
     dependencies = [
       "a==1.0.0",
@@ -186,7 +186,7 @@ def test_keep_full_version_cli(tmp_path: Path) -> None:
     """
     pyproject_toml = tmp_path / "pyproject.toml"
     pyproject_toml.write_text(dedent(start))
-    args = [str(pyproject_toml), "--keep-full-version", "--max-supported-python", "3.8"]
+    args = [str(pyproject_toml), "--keep-full-version", "--max-supported-python", "3.9"]
     run(args)
     output = pyproject_toml.read_text()
     assert output == dedent(start)
@@ -212,7 +212,7 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     column_width = 20
     indent = 4
     keep_full_version = true
-    max_supported_python = "3.10"
+    max_supported_python = "3.11"
     ignore_extra = true
     """
     filename = tmp_path / "pyproject.toml"
@@ -226,9 +226,9 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     ]
     classifiers = [
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ]
     dynamic = [
         "B",
@@ -241,7 +241,7 @@ def test_pyproject_toml_config(tmp_path: Path, capsys: pytest.CaptureFixture[str
     column_width = 20
     indent = 4
     keep_full_version = true
-    max_supported_python = "3.10"
+    max_supported_python = "3.11"
     ignore_extra = true
     """
     got = filename.read_text()
