@@ -5,13 +5,15 @@ from __future__ import annotations
 import difflib
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Sequence
+from typing import TYPE_CHECKING
 
 from pyproject_fmt_rust import format_toml
 
 from pyproject_fmt.cli import cli_args
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from pyproject_fmt.cli import Config
 
 GREEN = "\u001b[32m"

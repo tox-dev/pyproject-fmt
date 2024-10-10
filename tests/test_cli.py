@@ -33,7 +33,7 @@ def test_cli_invalid_version(capsys: pytest.CaptureFixture[str], tmp_path: Path)
     assert context.value.code == 2
     out, err = capsys.readouterr()
     assert not out
-    assert "error: argument --max-supported-python: invalid version: 3, must be e.g. 3.12\n" in err
+    assert "error: argument --max-supported-python: invalid version: 3, must be e.g. 3.13\n" in err
 
 
 def test_cli_invalid_version_value(capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
