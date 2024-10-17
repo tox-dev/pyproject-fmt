@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "pyproject-fmt-mirror"
-version = "2.4.0"
+version = "2.4.1"
 description = "Format your pyproject.toml file"
 readme = "README.md"
 keywords = [
