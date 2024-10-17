@@ -1,12 +1,12 @@
 [build-system]
 build-backend = "hatchling.build"
 requires = [
-  "hatch-vcs>=0.4",
   "hatchling>=1.25",
 ]
 
 [project]
-name = "pyproject-fmt"
+name = "pyproject-fmt-mirror"
+version = "2.3.1"
 description = "Format your pyproject.toml file"
 readme = "README.md"
 keywords = [
@@ -29,43 +29,12 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
-dynamic = [
-  "version",
-]
 dependencies = [
-  "pyproject-fmt-rust==1.2.1",
-  "tomli>=2.0.2; python_version<'3.11'",
+  "pyproject-fmt==2.3.1",
 ]
-optional-dependencies.docs = [
-  "furo>=2024.8.6",
-  "sphinx>=8.0.2",
-  "sphinx-argparse-cli>=1.18.2",
-  "sphinx-autodoc-typehints>=2.4.4",
-  "sphinx-copybutton>=0.5.2",
-]
-optional-dependencies.test = [
-  "covdefaults>=2.3",
-  "pytest>=8.3.3",
-  "pytest-cov>=5",
-  "pytest-mock>=3.14",
-]
-urls."Bug Tracker" = "https://github.com/tox-dev/pyproject-fmt/issues"
-urls."Changelog" = "https://github.com/tox-dev/pyproject-fmt/releases"
-urls.Documentation = "https://github.com/tox-dev/pyproject-fmt/"
-urls."Source Code" = "https://github.com/tox-dev/pyproject-fmt"
-scripts.pyproject-fmt = "pyproject_fmt.__main__:run"
 
 [tool.hatch]
-build.dev-mode-dirs = [
-  "src",
-]
-build.hooks.vcs.version-file = "src/pyproject_fmt/_version.py"
-build.targets.sdist.include = [
-  "/src",
-  "/tests",
-  "tox.ini",
-]
-version.source = "vcs"
+build.targets.wheel.bypass-selection = true
 
 [tool.ruff]
 line-length = 120
@@ -87,6 +56,12 @@ lint.ignore = [
   "ISC001", # Conflict with formatter
   "S104",   # Possible binding to all interfaces
 ]
+lint.per-file-ignores."tasks/**/*.py" = [
+  "D",      # don't care about documentation in tsask files
+  "INP001", # not a package
+  "S",      # no security concerns in mirror
+  "T201",   # prints are alloowed
+]
 lint.per-file-ignores."tests/**/*.py" = [
   "D",       # don't care about documentation in tests
   "FBT",     # don't care about booleans as positional arguments in tests
@@ -95,12 +70,9 @@ lint.per-file-ignores."tests/**/*.py" = [
   "PLR0913", # any number of arguments in tests
   "PLR0917", # any number of arguments in tests
   "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
-  "S101",    # asserts allowed in tests
-  "S603",    # `subprocess` call: check for execution of untrusted input
+  "S",       # no security concerns in tests
 ]
-lint.isort = { known-first-party = [
-  "pyproject_fmt",
-], required-imports = [
+lint.isort = { known-first-party = [  ], required-imports = [
   "from __future__ import annotations",
 ] }
 lint.preview = true
@@ -116,6 +88,7 @@ max_supported_python = "3.13"
 ini_options.testpaths = [
   "tests",
 ]
+ini_options.verbosity_assertions = 2
 
 [tool.coverage]
 html.show_contexts = true
@@ -139,3 +112,32 @@ covdefaults.subtract_omit = "*/__main__.py"
 [tool.mypy]
 show_error_codes = true
 strict = true
+
+[dependency-groups]
+dev = [
+  { include-group = "tasks" },
+  { include-group = "test" },
+  { include-group = "type" },
+]
+fix = [
+  "pre-commit-uv>=4.1.3",
+]
+tasks = [
+  "gitpython>=3.1.43",
+  "httpx>=0.27.2",
+  "packaging>=24.1",
+]
+test = [
+  "covdefaults>=2.3",
+  "pygments>=2.18",
+  "pytest>=8.3.2",
+  "pytest-cov>=5",
+  { include-group = "fix" },
+]
+type = [
+  "mypy==1.11.2",
+  "types-cachetools>=5.5.0.20240820",
+  "types-chardet>=5.0.4.6",
+  { include-group = "test" },
+  { include-group = "tasks" },
+]

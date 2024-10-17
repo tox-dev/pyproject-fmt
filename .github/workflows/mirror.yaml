@@ -1,0 +1,29 @@
+name: Mirror
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+  schedule:
+    - cron: "0 8 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+      - name: Run mirroring
+        run: uv run tasks/mirror.py '${{ github.ref == 'refs/heads/main' }}'

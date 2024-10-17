@@ -1,15 +1,14 @@
-name: check
+name: Test
 on:
   workflow_dispatch:
   push:
     branches: ["main"]
-    tags-ignore: ["**"]
   pull_request:
   schedule:
     - cron: "0 8 * * *"
 
 concurrency:
-  group: check-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,7 +25,6 @@ jobs:
           - "3.9"
           - type
           - dev
-          - pkg_meta
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +34,6 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install tox
         run: uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv
       - name: Install Python

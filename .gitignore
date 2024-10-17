@@ -1,7 +1,3 @@
-*.egg-info/
-.tox/
 .*_cache
+.tox
 __pycache__
-**.pyc
-dist
-/src/pyproject_fmt/_version.py
