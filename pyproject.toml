@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "pyproject-fmt-mirror"
-version = "2.3.1"
+version = "2.4.0"
 description = "Format your pyproject.toml file"
 readme = "README.md"
 keywords = [
@@ -30,7 +30,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-  "pyproject-fmt==2.3.1",
+  "pyproject-fmt==2.4.0",
 ]
 
 [tool.hatch]
