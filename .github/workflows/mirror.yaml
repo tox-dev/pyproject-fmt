@@ -9,17 +9,20 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   mirror:
     permissions:
       contents: write
+    environment:
+      name: mirror
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.PA_TOKEN }}
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v3
         with:

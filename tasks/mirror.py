@@ -31,22 +31,24 @@ def run() -> None:
     missing_tags = sorted(Version(i) for i in released_tags - existing_tags)
 
     if missing_tags and os.environ.get("GITHUB_ACTIONS"):
-        check_call(["git", "config", "--global", "user.email", "mirror@tox.wiki"])
-        check_call(["git", "config", "--global", "user.name", "Mirroring Mike"])
+        check_call(["git", "config", "--global", "user.email", "gaborjbernat@gmail.com"])
+        check_call(["git", "config", "--global", "user.name", "Bernat Gabor"])
     toml = ROOT / "pyproject.toml"
 
     for tag in missing_tags:
-        print(f"Mirror {tag}")
+        print(f"\n\nMirror {tag}")
         text = toml.read_text(encoding="utf-8")
         text = re.sub(r'version = ".*?"', f'version = "{tag}"', text)
-        text = re.sub(r'"pyproject-fmt==.*"', f"pyproject-fmt=={tag}", text)
+        text = re.sub(r'"pyproject-fmt==.*"', f'"pyproject-fmt=={tag}"', text)
         toml.write_text(text, encoding="utf-8")
         check_call(["git", "add", "pyproject.toml"])
+        check_call(["git", "diff", "HEAD", "-u"])
         check_call(["git", "commit", "-m", f"Mirror {tag}"])
         check_call(["git", "tag", str(tag)])
 
     if missing_tags and sys.argv[1] == "true":
-        check_call(["git", "push", "--tags"])
+        print("\n\nPush")
+        check_call(["git", "push", "--tags", "-f"])
         check_call(["git", "push"])
 
 
