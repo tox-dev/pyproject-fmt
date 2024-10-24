@@ -19,14 +19,7 @@ jobs:
       name: mirror
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: tox-dev/action-pre-commit-mirrorer/mirror@main
         with:
-          fetch-depth: 0
+          project: "pyproject-fmt"
           token: ${{ secrets.PA_TOKEN }}
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-          cache-dependency-glob: "pyproject.toml"
-      - name: Run mirroring
-        run: uv run tasks/mirror.py '${{ github.ref == 'refs/heads/main' }}'
