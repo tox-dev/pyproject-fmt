@@ -23,7 +23,7 @@ jobs:
             --language=python --package-name=pyproject-fmt --files-regex '(^|/)pyproject\.toml$'
       - run: |
           git remote set-url origin https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY
-          git push origin HEAD:refs/heads/main --tags
+          git push origin HEAD:refs/heads/main --tags -f
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
