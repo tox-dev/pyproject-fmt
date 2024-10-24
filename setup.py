@@ -4,7 +4,7 @@ from setuptools import setup
 
 
 setup(
-    name="pre_commit_placeholder_package",
-    version="0.0.0",
-    install_requires=["pyproject-fmt==2.4.3"],
+    name='pre_commit_placeholder_package',
+    version='0.0.0',
+    install_requires=['pyproject-fmt==0.1.0'],
 )

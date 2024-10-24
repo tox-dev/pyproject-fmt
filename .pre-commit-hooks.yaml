@@ -1,8 +1,10 @@
-- id: pyproject-fmt
-  name: pyproject-fmt
-  description: apply a consistent format to `pyproject.toml` files
-  entry: pyproject-fmt
-  language: python
-  language_version: python3
-  files: '(^|/)pyproject\.toml$'
-  types: [file, text, toml]
+-   id: pyproject-fmt
+    name: pyproject-fmt
+    description: ''
+    entry: pyproject-fmt
+    language: python
+    'files': (^|/)pyproject\.toml$
+    args: []
+    require_serial: false
+    additional_dependencies: []
+    minimum_pre_commit_version: '0'
