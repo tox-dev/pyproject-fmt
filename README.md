@@ -1,6 +1,6 @@
 # pyproject-fmt mirror
 
-[![Main](https://github.com/tox-dev/pyproject-fmt/actions/workflows/main.yaml/badge.svg)](https://github.com/tox-dev/pyproject-fmt/actions/workflows/main.yaml)
+[![Mirror](https://github.com/tox-dev/pyproject-fmt/actions/workflows/main.yml/badge.svg)](https://github.com/tox-dev/pyproject-fmt/actions/workflows/main.yml)
 
 Mirror of [`pyproject-fmt`](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt) for
 [pre-commit](https://github.com/pre-commit/pre-commit).
