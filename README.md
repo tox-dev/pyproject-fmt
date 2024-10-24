@@ -10,7 +10,7 @@ Mirror of [`pyproject-fmt`](https://github.com/tox-dev/toml-fmt/tree/main/pyproj
 Add it to your `.pre-commit-config.yaml`:
 
 ```yaml
-- repo: https://github.com/pre-commit/pyproject-fmt
+- repo: https://github.com/tox-dev/pyproject-fmt
   rev: "" # Use the sha / tag you want to point at
   hooks:
     - id: pyproject-fmt
