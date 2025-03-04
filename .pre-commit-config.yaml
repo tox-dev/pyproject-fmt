@@ -15,7 +15,7 @@ repos:
       - id: codespell
         additional_dependencies: ["tomli>=2.0.1"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.5.2"
+    rev: "v3.5.3"
     hooks:
       - id: prettier
         name: Prettier
