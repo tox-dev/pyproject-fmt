@@ -19,8 +19,9 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: "latest"
+          enable-cache: "false"
       - run: >-
-          uvx -p 3.13 --from pre-commit-mirror-maker pre-commit-mirror . \
+          uvx -p 3.14 --from pre-commit-mirror-maker pre-commit-mirror . \
             --language=python --package-name=pyproject-fmt --files-regex '(^|/)pyproject\.toml$'
       - run: |
           git remote set-url origin https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY
