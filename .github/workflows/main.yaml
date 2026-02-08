@@ -32,7 +32,7 @@ jobs:
           VERSION=$(cat .version)
           sed -i "s/rev: \".*\"/rev: \"v$VERSION\"/" README.md
       - name: 💅 Format generated files
-        run: uvx prek run --all-files
+        run: uvx prek run --all-files || true
       - name: 🔄 Commit fixes and update tag
         id: commit
         run: |
