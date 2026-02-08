@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a bug
+    url: https://github.com/tox-dev/toml-fmt/issues/new?template=pyproject-fmt-bug.yml
+    about: Report bugs in the main repository
+  - name: Request a feature
+    url: https://github.com/tox-dev/toml-fmt/issues/new?template=pyproject-fmt-feature.yml
+    about: Suggest enhancements in the main repository
