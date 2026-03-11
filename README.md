@@ -11,7 +11,7 @@ Add it to your `.pre-commit-config.yaml`:
 
 ```yaml
 - repo: https://github.com/tox-dev/pyproject-fmt
-  rev: "v2.16.2"
+  rev: "v2.18.1"
   hooks:
     - id: pyproject-fmt
 ```
