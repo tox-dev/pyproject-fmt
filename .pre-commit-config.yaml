@@ -20,6 +20,10 @@ repos:
       - id: prettier
         name: Prettier
         args: ["--print-width=120", "--prose-wrap=always"]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.23.1
+    hooks:
+      - id: zizmor
   - repo: meta
     hooks:
       - id: check-hooks-apply
