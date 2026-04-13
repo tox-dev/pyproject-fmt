@@ -15,13 +15,13 @@ repos:
       - id: codespell
         additional_dependencies: ["tomli>=2.2.1"]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.8.1"
+    rev: "v3.8.2"
     hooks:
       - id: prettier
         name: Prettier
         args: ["--print-width=120", "--prose-wrap=always"]
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.23.1
+    rev: v1.24.0
     hooks:
       - id: zizmor
   - repo: meta
