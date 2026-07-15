@@ -6,10 +6,8 @@ on:
   pull_request:
   schedule:
     - cron: "30 8 * * *"
-
 permissions:
   contents: write
-
 jobs:
   build:
     name: Mirror
@@ -28,8 +26,7 @@ jobs:
           enable-cache: "false"
       - name: 🪞 Run pre-commit-mirror-maker
         run: >-
-          uvx -p 3.14 --from pre-commit-mirror-maker pre-commit-mirror . --language=python --package-name=pyproject-fmt
-          --files-regex '(^|/)pyproject\.toml$'
+          uvx -p 3.14 --from pre-commit-mirror-maker pre-commit-mirror . --language=python --package-name=pyproject-fmt --files-regex '(^|/)pyproject\.toml$'
       - name: 📝 Update README with current version
         run: |
           VERSION=$(cat .version)
