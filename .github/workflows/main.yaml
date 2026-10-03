@@ -11,10 +11,10 @@ permissions:
 jobs:
   build:
     name: Mirror
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: 🛒 Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6 # zizmor: ignore[artipacked]
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked]
       - name: 🔧 Configure git
         run: |
           git config --global user.name 'Github Actions'
