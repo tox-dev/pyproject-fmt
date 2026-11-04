@@ -3,54 +3,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  pull_request:
   schedule:
     - cron: "30 8 * * *"
-permissions:
-  contents: write
+permissions: {}
 jobs:
-  build:
-    name: Mirror
-    runs-on: ubuntu-26.04
-    steps:
-      - name: 🛒 Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked]
-      - name: 🔧 Configure git
-        run: |
-          git config --global user.name 'Github Actions'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-      - name: 📦 Install uv
-        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
-        with:
-          version: "latest"
-          enable-cache: "false"
-      - name: 🪞 Run pre-commit-mirror-maker
-        run: >-
-          uvx -p 3.15 --from pre-commit-mirror-maker pre-commit-mirror . --language=python --package-name=pyproject-fmt --files-regex '(^|/)pyproject\.toml$'
-      - name: 📝 Update README with current version
-        run: |
-          VERSION=$(cat .version)
-          sed -i "s/rev: \".*\"/rev: \"v$VERSION\"/" README.md
-      - name: 💅 Format generated files
-        run: uvx --python 3.15 prek run --all-files || true
-      - name: 🔄 Commit fixes and update tag
-        id: commit
-        run: |
-          git add -A
-          if ! git diff --cached --quiet; then
-            VERSION=$(cat .version)
-            git commit -m "Mirror: $VERSION"
-            git tag -f "v$VERSION"
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          fi
-      - name: 🚀 Push changes
-        if: github.ref == 'refs/heads/main' && steps.commit.outputs.version
-        run: |
-          git push origin HEAD:refs/heads/main
-          git push origin --tags -f
-      - name: 🎉 Create GitHub release
-        if: github.ref == 'refs/heads/main' && steps.commit.outputs.version
-        run: gh release create "v${STEPS_COMMIT_OUTPUTS_VERSION}" --generate-notes
-        env:
-          GH_TOKEN: ${{ github.token }}
-          STEPS_COMMIT_OUTPUTS_VERSION: ${{ steps.commit.outputs.version }}
+  mirror:
+    uses: tox-dev/github-workflows/.github/workflows/publish-pre-commit-mirror.yaml@bceb5c005e19823dc8835f536f53f172ae223927 # 6.5.0
+    permissions:
+      contents: write
+    with:
+      package-name: pyproject-fmt
+      files-regex: '(^|/)pyproject\.toml$'
