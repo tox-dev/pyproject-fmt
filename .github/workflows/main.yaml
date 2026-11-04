@@ -4,7 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: "30 8 * * *"
+    - cron: "15 7 * * *"
 permissions: {}
 jobs:
   mirror:
