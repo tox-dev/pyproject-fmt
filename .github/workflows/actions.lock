@@ -5,3 +5,4 @@ version: 'v0.0.3'
 workflows:
     '.github/workflows/main.yaml': []
     '.github/workflows/scorecard.yaml': []
+dependencies: {}
