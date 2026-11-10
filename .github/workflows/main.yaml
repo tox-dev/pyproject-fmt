@@ -8,7 +8,7 @@ on:
 permissions: {}
 jobs:
   mirror:
-    uses: tox-dev/github-workflows/.github/workflows/publish-pre-commit-mirror.yaml@2c1f5e4ceda37c41eb8367b5cbeaa741aa60a566 # 6.5.2
+    uses: tox-dev/github-workflows/.github/workflows/publish-pre-commit-mirror.yaml@bf1c3ab0aa137d307a07aad844d507af73039387 # 6.8.0
     permissions:
       contents: write
     with:
