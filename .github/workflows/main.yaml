@@ -3,11 +3,33 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: "15 7 * * *"
+  # toml-fmt's pyproject-fmt release workflow sends this once the version is on PyPI
+  repository_dispatch:
+    types: [release]
 permissions: {}
 jobs:
+  pypi:
+    name: ⏳ Wait for the release on PyPI
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-26.04
+    permissions: {}
+    steps:
+      # PyPI's JSON API can serve the previous version for a few minutes after a publish
+      - name: ⏳ Wait until PyPI lists the released version
+        run: |
+          set -euo pipefail
+          for _ in $(seq 60); do
+            latest=$(curl -fsS "https://pypi.org/pypi/pyproject-fmt/json" | jq -r .info.version) || latest=
+            if [[ "$latest" == "$VERSION" ]]; then exit 0; fi
+            sleep 10
+          done
+          echo "::error::PyPI still lists ${latest:-nothing} as the newest pyproject-fmt, not $VERSION" >&2
+          exit 1
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
   mirror:
+    needs: pypi
+    if: ${{ !failure() && !cancelled() }}
     uses: tox-dev/github-workflows/.github/workflows/publish-pre-commit-mirror.yaml@bf1c3ab0aa137d307a07aad844d507af73039387 # 6.8.0
     permissions:
       contents: write
