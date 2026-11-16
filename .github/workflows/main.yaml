@@ -30,7 +30,7 @@ jobs:
   mirror:
     needs: pypi
     if: ${{ !failure() && !cancelled() }}
-    uses: tox-dev/github-workflows/.github/workflows/publish-pre-commit-mirror.yaml@bf1c3ab0aa137d307a07aad844d507af73039387 # 6.8.0
+    uses: tox-dev/github-workflows/.github/workflows/publish-pre-commit-mirror.yaml@ef0cd88bef592260a48345753b8b509b209ab189 # 6.8.3
     permissions:
       contents: write
     with:
