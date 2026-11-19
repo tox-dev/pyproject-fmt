@@ -13,7 +13,7 @@ Add it to your `.pre-commit-config.yaml`:
 
 ```yaml
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.31.1
+    rev: v2.31.2
     hooks:
       - id: pyproject-fmt
 ```
